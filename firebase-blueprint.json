@@ -1,0 +1,32 @@
+{
+  "entities": {
+    "Maskapai": {
+      "title": "Maskapai",
+      "description": "Informasi tiket pesawat dan ketersediaan kursi",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "name": { "type": "string" },
+        "hargaJual": { "type": "number" },
+        "hargaBeli": { "type": "number" },
+        "margin": { "type": "number" },
+        "persen": { "type": "number" },
+        "programDays": { "type": "number" },
+        "tanggalKeberangkatan": { "type": "string", "format": "date" },
+        "tanggalKepulangan": { "type": "string", "format": "date" },
+        "originCityName": { "type": "string" },
+        "destinationCityName": { "type": "string" },
+        "namaVendor": { "type": "string" },
+        "totalSeat": { "type": "number", "description": "Total kursi yang tersedia" },
+        "remainingSeat": { "type": "number", "description": "Sisa kursi yang tersedia" }
+      },
+      "required": ["id", "name", "tanggalKeberangkatan", "tanggalKepulangan", "totalSeat", "remainingSeat"]
+    }
+  },
+  "firestore": {
+    "/maskapai": {
+      "schema": "Maskapai",
+      "description": "Koleksi data maskapai penerbangan"
+    }
+  }
+}

@@ -1,0 +1,72 @@
+// ===============================================================
+// Assumed Data Model
+// ===============================================================
+//
+// Collection: maskapai
+// Document ID: auto-generated or custom id
+// Fields:
+//   - id: string (required)
+//   - name: string (required)
+//   - hargaJual: number
+//   - hargaBeli: number
+//   - margin: number
+//   - persen: number
+//   - programDays: number
+//   - tanggalKeberangkatan: string (ISO date)
+//   - tanggalKepulangan: string (ISO date)
+//   - originCityName: string
+//   - destinationCityName: string
+//   - namaVendor: string
+//   - totalSeat: number (required)
+//   - remainingSeat: number (required)
+//
+// ===============================================================
+
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // Helper Functions
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    function isAdmin() {
+      return isAuthenticated() && 
+        (get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin' ||
+         (request.auth.token.email == "ndie.young31@gmail.com" && request.auth.token.email_verified == true));
+    }
+
+    function isValidMaskapai(data) {
+      return data.keys().hasAll(['id', 'name', 'tanggalKeberangkatan', 'tanggalKepulangan', 'totalSeat', 'remainingSeat']) &&
+             data.id is string &&
+             data.name is string && data.name.size() < 200 &&
+             data.totalSeat is number && data.totalSeat >= 0 &&
+             data.remainingSeat is number && data.remainingSeat >= 0 &&
+             data.remainingSeat <= data.totalSeat;
+    }
+
+    match /maskapai/{maskapaiId} {
+      // Anyone authenticated can read (for checking availability)
+      allow read: if isAuthenticated();
+      
+      // Only admins can create or delete
+      allow create: if isAdmin() && isValidMaskapai(request.resource.data);
+      allow delete: if isAdmin();
+      
+      // Update: Admins can update anything, 
+      // Users can only update remainingSeat (decrementing) if they are booking
+      allow update: if isAuthenticated() && 
+        (isAdmin() || 
+         (request.resource.data.diff(resource.data).affectedKeys().hasOnly(['remainingSeat']) &&
+          request.resource.data.remainingSeat < resource.data.remainingSeat &&
+          request.resource.data.remainingSeat >= 0));
+    }
+
+    match /users/{userId} {
+      allow read: if isAuthenticated() && request.auth.uid == userId;
+      allow write: if isAuthenticated() && request.auth.uid == userId && 
+                    !request.resource.data.keys().contains('role'); // Users can't set their own role
+    }
+  }
+}
