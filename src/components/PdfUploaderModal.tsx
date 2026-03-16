@@ -65,7 +65,7 @@ export const PdfUploaderModal: React.FC<PdfUploaderModalProps> = ({ isOpen, onCl
       }
       
       if (!apiKey) {
-        throw new Error('Gemini API key is missing.');
+        throw new Error('API Key Gemini tidak ditemukan. Pastikan Anda telah mengatur VITE_GEMINI_API_KEY di environment variables Vercel.');
       }
 
       const ai = new GoogleGenAI({ apiKey });

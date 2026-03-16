@@ -62,7 +62,24 @@ export const AIPromptInput: React.FC<AIPromptInputProps> = ({
     setError('');
     
     try {
-      const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
+      let apiKey = '';
+      try {
+        // @ts-ignore
+        apiKey = process.env.GEMINI_API_KEY;
+      } catch (e) {
+        // Ignore
+      }
+      
+      if (!apiKey) {
+        // @ts-ignore
+        apiKey = import.meta.env.VITE_GEMINI_API_KEY || '';
+      }
+      
+      if (!apiKey) {
+        throw new Error('API Key Gemini tidak ditemukan. Pastikan Anda telah mengatur VITE_GEMINI_API_KEY di environment variables Vercel.');
+      }
+
+      const ai = new GoogleGenAI({ apiKey });
       
       let finalPrompt = prompt;
       if (contextData) {
