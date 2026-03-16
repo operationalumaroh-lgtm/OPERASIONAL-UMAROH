@@ -97,7 +97,7 @@ export const AIPromptInput: React.FC<AIPromptInputProps> = ({
       }
 
       const response = await ai.models.generateContent({
-        model: 'gemini-3.1-pro-preview', // Using pro model for better document understanding
+        model: 'gemini-3-flash-preview', // Using flash model to avoid quota limits
         contents: { parts },
         config: {
           systemInstruction,
