@@ -35,10 +35,11 @@ export const DashboardView: React.FC<DashboardViewProps> = ({ onNavigate }) => {
   ];
 
   const airlineInfo = [
-    { id: '1', airline: 'Saudia Airlines', departure: '12 Apr 2026', return: '26 Apr 2026', availableSeats: 15, totalSeats: 50 },
-    { id: '2', airline: 'Garuda Indonesia', departure: '05 May 2026', return: '19 May 2026', availableSeats: 32, totalSeats: 45 },
-    { id: '3', airline: 'Qatar Airways', departure: '20 May 2026', return: '03 Jun 2026', availableSeats: 5, totalSeats: 30 },
-    { id: '4', airline: 'Lion Air', departure: '15 Jun 2026', return: '29 Jun 2026', availableSeats: 40, totalSeats: 45 },
+    { id: 'promo-ga-1', airline: 'Garuda (Promo Juli)', departure: '12 Jul 2026', return: '19 Jul 2026', availableSeats: 80, totalSeats: 80 },
+    { id: 'promo-sv-1', airline: 'Saudia (Promo Juli)', departure: '09 Jul 2026', return: '18 Jul 2026', availableSeats: 40, totalSeats: 40 },
+    { id: 'promo-in-1', airline: 'Indigo (Promo Jun-Jul)', departure: '21 Jun 2026', return: '29 Jun 2026', availableSeats: 90, totalSeats: 90 },
+    { id: 'promo-wy-sep', airline: 'Oman Air (Promo Sep)', departure: '03 Sep 2026', return: '11 Sep 2026', availableSeats: 15, totalSeats: 15 },
+    { id: 'promo-qr-jun', airline: 'Qatar (Promo Jun)', departure: '18 Jun 2026', return: '27 Jun 2026', availableSeats: 30, totalSeats: 30 },
   ];
 
   const vendorServices: VendorService[] = [
@@ -149,6 +150,66 @@ export const DashboardView: React.FC<DashboardViewProps> = ({ onNavigate }) => {
           <LayoutDashboard className="w-6 h-6 text-white" />
         </div>
         <h1 className="text-2xl font-bold text-gray-900">Dashboard Overview</h1>
+      </div>
+
+      {/* Promo Banner */}
+      <div className="mb-8 bg-gradient-to-r from-amber-500 to-amber-600 rounded-2xl p-6 text-white shadow-lg relative overflow-hidden">
+        <div className="absolute top-0 right-0 p-4 opacity-10">
+          <Plane className="w-32 h-32 rotate-12" />
+        </div>
+        <div className="relative z-10">
+          <div className="flex items-center gap-2 mb-2">
+            <span className="bg-white/20 backdrop-blur-md px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest">Special Offer</span>
+            <span className="animate-pulse flex h-2 w-2 rounded-full bg-white"></span>
+          </div>
+          <h2 className="text-2xl font-black mb-2">🌙✨ BIG PROMO TICKET 2026 🌙✨</h2>
+          <p className="text-amber-50 font-medium mb-4 max-w-xl">
+            FRESHNEL, NQH, AZZAHRA & ABM READY PNR - GARUDA, SAUDIA, INDIGO, OMAN & QATAR (JUN-DEC 2026). Harga Mulai 11Jtan, DP Hanya 2Jt.
+          </p>
+          <div className="flex flex-wrap gap-4">
+            <div className="bg-white/10 backdrop-blur-md rounded-xl p-3 border border-white/20">
+              <p className="text-[10px] uppercase tracking-wider opacity-80 mb-1">FRESHNEL Sales</p>
+              <p className="font-bold text-sm">RIDHO: 082228939996</p>
+              <p className="font-bold text-sm">UMAR: 082333344936</p>
+            </div>
+            <div className="bg-white/10 backdrop-blur-md rounded-xl p-3 border border-white/20">
+              <p className="text-[10px] uppercase tracking-wider opacity-80 mb-1">ABM Travel</p>
+              <p className="font-bold text-sm">SELVI: 081320002218</p>
+              <p className="font-bold text-sm">NINA: 081320002219</p>
+            </div>
+            <div className="bg-white/10 backdrop-blur-md rounded-xl p-3 border border-white/20">
+              <p className="text-[10px] uppercase tracking-wider opacity-80 mb-1">AZZAHRA Travel</p>
+              <p className="font-bold text-sm">ASTRIE: 089531820777</p>
+              <p className="font-bold text-sm">ALI: 08971799215</p>
+            </div>
+            <div className="flex gap-2 self-center">
+              <a 
+                href="https://chat.whatsapp.com/FbBKB7rAM1BL6k4GFp5GiH" 
+                target="_blank" 
+                rel="noopener noreferrer"
+                className="bg-white text-amber-600 px-4 py-3 rounded-xl font-bold text-sm hover:bg-amber-50 transition-colors shadow-md flex items-center gap-2"
+              >
+                <MessageCircle className="w-4 h-4" /> FRESHNEL
+              </a>
+              <a 
+                href="https://chat.whatsapp.com/HpCNxJdZvtrEZNGsM4XcVL?mode=gi_t" 
+                target="_blank" 
+                rel="noopener noreferrer"
+                className="bg-amber-700 text-white px-4 py-3 rounded-xl font-bold text-sm hover:bg-amber-800 transition-colors shadow-md flex items-center gap-2"
+              >
+                <MessageCircle className="w-4 h-4" /> AZZAHRA
+              </a>
+              <a 
+                href="https://chat.whatsapp.com/HpCNxJdZvtrEZNGsM4XcVL?mode=gi_t" 
+                target="_blank" 
+                rel="noopener noreferrer"
+                className="bg-emerald-600 text-white px-4 py-3 rounded-xl font-bold text-sm hover:bg-emerald-700 transition-colors shadow-md flex items-center gap-2"
+              >
+                <MessageCircle className="w-4 h-4" /> ABM
+              </a>
+            </div>
+          </div>
+        </div>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">

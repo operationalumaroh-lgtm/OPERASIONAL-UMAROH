@@ -138,6 +138,98 @@ export const Footer: React.FC = () => {
               </div>
             </div>
 
+            {/* NQH Wisata Promo */}
+            <div>
+              <h4 className="text-amber-600 font-bold mb-4 flex items-center gap-2">
+                <Phone className="w-4 h-4" /> NQH Wisata
+              </h4>
+              <div className="space-y-4 text-sm">
+                <div>
+                  <p className="text-xs text-gray-500 uppercase tracking-wider font-semibold mb-1">Reservasi Tiket</p>
+                  <div className="space-y-1">
+                    <p className="font-bold text-black text-xs">SANI: 085811007001</p>
+                    <p className="font-bold text-black text-xs">SYAHLA: 085814788361</p>
+                  </div>
+                </div>
+                <div>
+                  <p className="text-xs text-gray-500 uppercase tracking-wider font-semibold mb-1">Visa & Hotel</p>
+                  <div className="space-y-1">
+                    <p className="font-medium text-black text-xs">FAESAL: 081399250475</p>
+                    <p className="font-medium text-black text-xs">RENNY: 081296816327</p>
+                  </div>
+                </div>
+                <div className="pt-1">
+                  <a href="https://chat.whatsapp.com/ECg9fKmcJCb8l53sRRFcmF" target="_blank" rel="noopener noreferrer" className="text-amber-600 font-bold hover:underline text-xs">
+                    Join WA Group
+                  </a>
+                </div>
+              </div>
+            </div>
+
+            {/* FRESHNEL Promo */}
+            <div>
+              <h4 className="text-amber-600 font-bold mb-4 flex items-center gap-2">
+                <Phone className="w-4 h-4" /> FRESHNEL Promo
+              </h4>
+              <div className="space-y-4 text-sm">
+                <div>
+                  <p className="text-xs text-gray-500 uppercase tracking-wider font-semibold mb-1">Sales Team</p>
+                  <div className="space-y-1">
+                    <p className="font-bold text-black text-xs">UMAR: 082333344936</p>
+                    <p className="font-bold text-black text-xs">RIDHO: 082228939996</p>
+                    <p className="font-bold text-black text-xs">SEPTI: 081250001352</p>
+                    <p className="font-bold text-black text-xs">FINA: 082228939995</p>
+                  </div>
+                </div>
+                <div className="pt-1">
+                  <a href="https://chat.whatsapp.com/FbBKB7rAM1BL6k4GFp5GiH" target="_blank" rel="noopener noreferrer" className="text-amber-600 font-bold hover:underline text-xs">
+                    Join WA Group
+                  </a>
+                </div>
+              </div>
+            </div>
+
+            {/* AZZAHRA Travel */}
+            <div>
+              <h4 className="text-amber-600 font-bold mb-4 flex items-center gap-2">
+                <Phone className="w-4 h-4" /> AZZAHRA Travel
+              </h4>
+              <div className="space-y-4 text-sm">
+                <div>
+                  <p className="text-xs text-gray-500 uppercase tracking-wider font-semibold mb-1">Sales Team</p>
+                  <div className="space-y-1">
+                    <p className="font-bold text-black text-xs">ASTRIE: 089531820777</p>
+                    <p className="font-bold text-black text-xs">ALI: 08971799215</p>
+                  </div>
+                </div>
+                <div className="pt-1">
+                  <a href="https://chat.whatsapp.com/HpCNxJdZvtrEZNGsM4XcVL?mode=gi_t" target="_blank" rel="noopener noreferrer" className="text-amber-600 font-bold hover:underline text-xs">
+                    Join WA Group
+                  </a>
+                </div>
+              </div>
+            </div>
+
+            {/* ABM Travel (PT AZZA BAROKAH MADINAH) */}
+            <div>
+              <h4 className="text-amber-600 font-bold mb-4 flex items-center gap-2">
+                <Phone className="w-4 h-4" /> ABM Travel
+              </h4>
+              <div className="space-y-4 text-sm">
+                <div>
+                  <p className="text-xs text-gray-500 uppercase tracking-wider font-semibold mb-1">Sales Team</p>
+                  <div className="space-y-1">
+                    <p className="font-bold text-black text-xs">SELVI: 081320002218</p>
+                    <p className="font-bold text-black text-xs">NINA: 081320002219</p>
+                    <p className="font-bold text-black text-xs">DAHLIA: 081243062200</p>
+                  </div>
+                </div>
+                <div className="pt-1">
+                  <p className="text-[10px] text-gray-500 italic">Office: 021 4750 657</p>
+                </div>
+              </div>
+            </div>
+
             {/* Jam Operasional */}
             <div>
               <h4 className="text-amber-600 font-bold mb-4 flex items-center gap-2">
