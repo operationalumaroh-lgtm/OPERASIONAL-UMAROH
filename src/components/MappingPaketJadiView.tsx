@@ -1,7 +1,9 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { Calendar, Search, Download, Filter, Edit, CheckCircle, AlertCircle, Clock, Package, Save, X, Plus } from 'lucide-react';
 import { format, subDays, differenceInDays, isToday, isPast, isFuture, parseISO, startOfDay } from 'date-fns';
 import { id as idLocale } from 'date-fns/locale';
+import { collection, onSnapshot, doc, updateDoc, addDoc, setDoc, getDocs } from 'firebase/firestore';
+import { db } from '../firebase';
 
 type PaymentStatus = 'Belum Bayar' | 'DP' | 'Lunas';
 
@@ -102,7 +104,8 @@ const initialData: VendorService[] = [
 ];
 
 export const MappingPaketJadiView: React.FC = () => {
-  const [services, setServices] = useState<VendorService[]>(initialData);
+  const [services, setServices] = useState<VendorService[]>([]);
+  const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [filterStatus, setFilterStatus] = useState<string>('All');
   const [filterDate, setFilterDate] = useState<string>('');
@@ -113,6 +116,32 @@ export const MappingPaketJadiView: React.FC = () => {
   const [editIsManualDate, setEditIsManualDate] = useState<boolean>(false);
   const [editManualDate, setEditManualDate] = useState<string>('');
   const [showAddModal, setShowAddModal] = useState(false);
+
+  useEffect(() => {
+    const servicesRef = collection(db, 'vendor_services');
+    
+    // Check if collection is empty and seed if necessary
+    const seedData = async () => {
+      const snapshot = await getDocs(servicesRef);
+      if (snapshot.empty) {
+        for (const item of initialData) {
+          await setDoc(doc(db, 'vendor_services', item.id), item);
+        }
+      }
+    };
+    seedData();
+
+    const unsubscribe = onSnapshot(servicesRef, (snapshot) => {
+      const data = snapshot.docs.map(doc => ({
+        ...doc.data(),
+        id: doc.id
+      })) as VendorService[];
+      setServices(data);
+      setLoading(false);
+    });
+
+    return () => unsubscribe();
+  }, []);
   const [newService, setNewService] = useState<Partial<VendorService>>({
     namaPaket: '',
     namaLayanan: '',
@@ -182,43 +211,51 @@ export const MappingPaketJadiView: React.FC = () => {
     setEditManualDate(service.manualPelunasanDate || '');
   };
 
-  const handleSaveEdit = (id: string) => {
-    setServices(services.map(s => s.id === id ? { 
-      ...s, 
-      statusPembayaran: editStatus, 
-      pic: editPic,
-      estimasiBiaya: editBiaya,
-      isManualDate: editIsManualDate,
-      manualPelunasanDate: editIsManualDate ? editManualDate : undefined
-    } : s));
-    setEditingId(null);
+  const handleSaveEdit = async (id: string) => {
+    try {
+      const serviceRef = doc(db, 'vendor_services', id);
+      await updateDoc(serviceRef, {
+        statusPembayaran: editStatus,
+        pic: editPic,
+        estimasiBiaya: editBiaya,
+        isManualDate: editIsManualDate,
+        manualPelunasanDate: editIsManualDate ? editManualDate : null
+      });
+      setEditingId(null);
+    } catch (error) {
+      console.error("Error updating document: ", error);
+    }
   };
 
-  const handleAddService = () => {
+  const handleAddService = async () => {
     if (!newService.namaPaket || !newService.namaLayanan || !newService.vendor) return;
     
-    const serviceToAdd: VendorService = {
-      id: Math.random().toString(36).substr(2, 9),
-      paketId: `P${Math.floor(Math.random() * 1000)}`,
-      ...(newService as VendorService)
-    };
-    
-    setServices([serviceToAdd, ...services]);
-    setShowAddModal(false);
-    setNewService({
-      namaPaket: '',
-      namaLayanan: '',
-      vendor: '',
-      tanggalKeberangkatan: format(new Date(), 'yyyy-MM-dd'),
-      tanggalKepulangan: format(new Date(), 'yyyy-MM-dd'),
-      reminderDPHMinus: 30,
-      reminderPelunasanHMinus: 14,
-      estimasiBiaya: 0,
-      statusPembayaran: 'Belum Bayar',
-      pic: 'Rinaldi',
-      catatan: '',
-      isManualDate: false
-    });
+    try {
+      const serviceToAdd = {
+        paketId: `P${Math.floor(Math.random() * 1000)}`,
+        ...(newService as VendorService),
+        id: Math.random().toString(36).substr(2, 9),
+      };
+      
+      await setDoc(doc(db, 'vendor_services', serviceToAdd.id), serviceToAdd);
+      setShowAddModal(false);
+      setNewService({
+        namaPaket: '',
+        namaLayanan: '',
+        vendor: '',
+        tanggalKeberangkatan: format(new Date(), 'yyyy-MM-dd'),
+        tanggalKepulangan: format(new Date(), 'yyyy-MM-dd'),
+        reminderDPHMinus: 30,
+        reminderPelunasanHMinus: 14,
+        estimasiBiaya: 0,
+        statusPembayaran: 'Belum Bayar',
+        pic: 'Rinaldi',
+        catatan: '',
+        isManualDate: false
+      });
+    } catch (error) {
+      console.error("Error adding document: ", error);
+    }
   };
 
   const formatCurrency = (amount: number) => {
@@ -272,24 +309,24 @@ export const MappingPaketJadiView: React.FC = () => {
 
   return (
     <div className="container mx-auto px-4 py-8">
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
+      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 mb-8">
         <div className="flex items-center gap-3">
-          <div className="p-2 bg-amber-600 rounded-lg shadow-lg">
+          <div className="p-2 bg-amber-600 rounded-lg shadow-lg shrink-0">
             <Calendar className="w-6 h-6 text-white" />
           </div>
           <div>
-            <h1 className="text-2xl font-bold text-gray-900">Mapping Pembayaran & Booking Layanan</h1>
-            <p className="text-sm text-gray-500">Reminder jadwal pembayaran vendor maskapai, hotel, visa, dll.</p>
+            <h1 className="text-xl md:text-2xl font-bold text-gray-900">Mapping Pembayaran & Booking Layanan</h1>
+            <p className="text-xs md:text-sm text-gray-500">Reminder jadwal pembayaran vendor maskapai, hotel, visa, dll.</p>
           </div>
         </div>
         
-        <div className="flex flex-wrap items-center gap-3">
-          <div className="relative">
+        <div className="flex flex-wrap items-center gap-2 md:gap-3">
+          <div className="relative flex-grow md:flex-grow-0">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
             <input 
               type="text" 
               placeholder="Cari layanan, vendor..." 
-              className="pl-10 pr-4 py-2 bg-white border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-amber-500 outline-none w-64"
+              className="pl-10 pr-4 py-2 bg-white border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-amber-500 outline-none w-full md:w-64"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
             />
@@ -297,13 +334,13 @@ export const MappingPaketJadiView: React.FC = () => {
           
           <input 
             type="date" 
-            className="px-4 py-2 bg-white border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-amber-500 outline-none"
+            className="flex-grow md:flex-grow-0 px-4 py-2 bg-white border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-amber-500 outline-none"
             value={filterDate}
             onChange={(e) => setFilterDate(e.target.value)}
           />
 
           <select 
-            className="px-4 py-2 bg-white border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-amber-500 outline-none"
+            className="flex-grow md:flex-grow-0 px-4 py-2 bg-white border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-amber-500 outline-none"
             value={filterStatus}
             onChange={(e) => setFilterStatus(e.target.value)}
           >
@@ -313,28 +350,30 @@ export const MappingPaketJadiView: React.FC = () => {
             <option value="Lunas">Lunas</option>
           </select>
 
-          <button className="flex items-center gap-2 px-4 py-2 bg-emerald-600 text-white rounded-lg text-sm font-bold hover:bg-emerald-700 transition-all shadow-sm">
-            <Download className="w-4 h-4" />
-            Export
-          </button>
-          
-          <button 
-            onClick={() => setShowAddModal(true)}
-            className="flex items-center gap-2 px-4 py-2 bg-gray-900 text-white rounded-lg text-sm font-bold hover:bg-gray-800 transition-all shadow-sm"
-          >
-            <Plus className="w-4 h-4" />
-            Tambah Manual
-          </button>
+          <div className="flex gap-2 w-full md:w-auto">
+            <button className="flex-1 md:flex-none flex items-center justify-center gap-2 px-4 py-2 bg-emerald-600 text-white rounded-lg text-sm font-bold hover:bg-emerald-700 transition-all shadow-sm">
+              <Download className="w-4 h-4" />
+              Export
+            </button>
+            
+            <button 
+              onClick={() => setShowAddModal(true)}
+              className="flex-1 md:flex-none flex items-center justify-center gap-2 px-4 py-2 bg-gray-900 text-white rounded-lg text-sm font-bold hover:bg-gray-800 transition-all shadow-sm"
+            >
+              <Plus className="w-4 h-4" />
+              Tambah <span className="hidden sm:inline">Manual</span>
+            </button>
+          </div>
         </div>
       </div>
 
       {/* Summary Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6 mb-8">
         <div className="bg-white p-6 rounded-2xl border border-red-100 shadow-sm relative overflow-hidden">
           <div className="absolute top-0 right-0 p-4 opacity-10">
             <AlertCircle className="w-16 h-16 text-red-600" />
           </div>
-          <h3 className="text-sm font-bold text-red-600 uppercase tracking-widest mb-2">Sudah Lewat (Overdue)</h3>
+          <h3 className="text-sm font-bold text-red-600 uppercase tracking-widest mb-2">Sudah Lewat</h3>
           <p className="text-4xl font-black text-gray-900">{summaries.sudahLewat}</p>
           <p className="text-sm text-gray-500 mt-2">Tagihan melewati jatuh tempo</p>
         </div>
@@ -346,7 +385,7 @@ export const MappingPaketJadiView: React.FC = () => {
           <p className="text-4xl font-black text-gray-900">{summaries.hariIni}</p>
           <p className="text-sm text-gray-500 mt-2">Tagihan jatuh tempo segera</p>
         </div>
-        <div className="bg-white p-6 rounded-2xl border border-blue-100 shadow-sm relative overflow-hidden">
+        <div className="bg-white p-6 rounded-2xl border border-blue-100 shadow-sm relative overflow-hidden sm:col-span-2 lg:col-span-1">
           <div className="absolute top-0 right-0 p-4 opacity-10">
             <Calendar className="w-16 h-16 text-blue-600" />
           </div>
@@ -357,172 +396,330 @@ export const MappingPaketJadiView: React.FC = () => {
       </div>
 
       <div className="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden">
-        <div className="overflow-x-auto">
-          <table className="w-full border-collapse">
-            <thead className="bg-gray-900 text-[#FDB913] text-[10px] uppercase tracking-wider font-bold">
-              <tr>
-                <th className="px-4 py-4 border-r border-gray-700 text-left">Paket & Layanan</th>
-                <th className="px-4 py-4 border-r border-gray-700 text-left">Vendor</th>
-                <th className="px-4 py-4 border-r border-gray-700 text-left">Jadwal (CI/CO)</th>
-                <th className="px-4 py-4 border-r border-gray-700 text-left">Reminder DP</th>
-                <th className="px-4 py-4 border-r border-gray-700 text-left">Pembayaran Selanjutnya</th>
-                <th className="px-4 py-4 border-r border-gray-700 text-right">Estimasi Biaya</th>
-                <th className="px-4 py-4 border-r border-gray-700 text-center">Status</th>
-                <th className="px-4 py-4 border-r border-gray-700 text-left">PIC</th>
-                <th className="px-4 py-4 text-center">Aksi</th>
-              </tr>
-            </thead>
-            <tbody className="text-sm">
+        {loading ? (
+          <div className="flex flex-col items-center justify-center py-20">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-amber-600 mb-4"></div>
+            <p className="text-gray-500 font-medium">Memuat data layanan...</p>
+          </div>
+        ) : (
+          <>
+            {/* Desktop Table View */}
+            <div className="hidden xl:block overflow-x-auto">
+              <table className="w-full border-collapse">
+                <thead className="bg-gray-900 text-[#FDB913] text-[10px] uppercase tracking-wider font-bold">
+                  <tr>
+                    <th className="px-4 py-4 border-r border-gray-700 text-left">Paket & Layanan</th>
+                    <th className="px-4 py-4 border-r border-gray-700 text-left">Vendor</th>
+                    <th className="px-4 py-4 border-r border-gray-700 text-left">Jadwal (CI/CO)</th>
+                    <th className="px-4 py-4 border-r border-gray-700 text-left">Reminder DP</th>
+                    <th className="px-4 py-4 border-r border-gray-700 text-left">Pembayaran Selanjutnya</th>
+                    <th className="px-4 py-4 border-r border-gray-700 text-right">Estimasi Biaya</th>
+                    <th className="px-4 py-4 border-r border-gray-700 text-center">Status</th>
+                    <th className="px-4 py-4 border-r border-gray-700 text-left">PIC</th>
+                    <th className="px-4 py-4 text-center">Aksi</th>
+                  </tr>
+                </thead>
+                <tbody className="text-sm">
+                  {filteredServices.map((service) => {
+                    const dpInfo = getDueDateInfo(service.tanggalKeberangkatan, service.reminderDPHMinus, service.statusPembayaran, true);
+                    const pelunasanInfo = getDueDateInfo(service.tanggalKeberangkatan, service.reminderPelunasanHMinus, service.statusPembayaran, false, service.isManualDate, service.manualPelunasanDate);
+
+                    return (
+                      <tr key={service.id} className="hover:bg-gray-50 border-b border-gray-100 transition-colors">
+                        <td className="px-4 py-4">
+                          <div className="font-bold text-gray-900">{service.namaLayanan}</div>
+                          <div className="text-xs text-gray-500 mt-1">{service.namaPaket}</div>
+                        </td>
+                        <td className="px-4 py-4">
+                          <div className="font-medium text-gray-800">{service.vendor}</div>
+                          <div className="text-xs text-gray-500 italic mt-1">{service.catatan}</div>
+                        </td>
+                        <td className="px-4 py-4">
+                          <div className="text-xs font-medium text-emerald-700">CI: {format(parseISO(service.tanggalKeberangkatan), 'dd MMM yyyy', { locale: idLocale })}</div>
+                          <div className="text-xs font-medium text-rose-700 mt-1">CO: {format(parseISO(service.tanggalKepulangan), 'dd MMM yyyy', { locale: idLocale })}</div>
+                        </td>
+                        <td className="px-4 py-4">
+                          <div className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-medium ${dpInfo.colorClass}`}>
+                            <span className={`w-1.5 h-1.5 rounded-full ${dpInfo.dotClass}`}></span>
+                            {dpInfo.formattedDate}
+                          </div>
+                          <div className="text-[10px] text-gray-500 mt-1">H-{service.reminderDPHMinus}</div>
+                        </td>
+                        <td className="px-4 py-4">
+                          {editingId === service.id ? (
+                            <div className="space-y-2">
+                              <div className="flex items-center gap-2">
+                                <input 
+                                  type="checkbox" 
+                                  id={`manual-date-${service.id}`}
+                                  checked={editIsManualDate}
+                                  onChange={(e) => setEditIsManualDate(e.target.checked)}
+                                  className="rounded border-gray-300 text-amber-600 focus:ring-amber-500"
+                                />
+                                <label htmlFor={`manual-date-${service.id}`} className="text-[10px] font-medium text-gray-700">Set Manual</label>
+                              </div>
+                              {editIsManualDate ? (
+                                <input 
+                                  type="date"
+                                  className="w-full px-2 py-1 border border-amber-300 rounded text-xs focus:outline-none focus:ring-2 focus:ring-amber-500"
+                                  value={editManualDate}
+                                  onChange={(e) => setEditManualDate(e.target.value)}
+                                />
+                              ) : (
+                                <div className="text-[10px] text-gray-500">Otomatis (H-{service.reminderPelunasanHMinus})</div>
+                              )}
+                            </div>
+                          ) : (
+                            <>
+                              <div className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-medium ${pelunasanInfo.colorClass}`}>
+                                <span className={`w-1.5 h-1.5 rounded-full ${pelunasanInfo.dotClass}`}></span>
+                                {pelunasanInfo.formattedDate}
+                              </div>
+                              <div className="text-[10px] text-gray-500 mt-1">
+                                {service.isManualDate ? 'Manual' : `Otomatis (H-${service.reminderPelunasanHMinus})`}
+                              </div>
+                            </>
+                          )}
+                        </td>
+                        <td className="px-4 py-4 text-right font-bold text-gray-700">
+                          {editingId === service.id ? (
+                            <input 
+                              type="number"
+                              className="w-full px-2 py-1 border border-amber-300 rounded text-xs text-right focus:outline-none focus:ring-2 focus:ring-amber-500"
+                              value={editBiaya}
+                              onChange={(e) => setEditBiaya(Number(e.target.value))}
+                            />
+                          ) : (
+                            formatCurrency(service.estimasiBiaya)
+                          )}
+                        </td>
+                        <td className="px-4 py-4 text-center">
+                          {editingId === service.id ? (
+                            <select 
+                              className="px-2 py-1 border border-amber-300 rounded text-xs font-bold focus:outline-none focus:ring-2 focus:ring-amber-500"
+                              value={editStatus}
+                              onChange={(e) => setEditStatus(e.target.value as PaymentStatus)}
+                            >
+                              <option value="Belum Bayar">Belum Bayar</option>
+                              <option value="DP">DP</option>
+                              <option value="Lunas">Lunas</option>
+                            </select>
+                          ) : (
+                            <span className={`px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wide ${
+                              service.statusPembayaran === 'Lunas' ? 'bg-emerald-100 text-emerald-700' : 
+                              service.statusPembayaran === 'DP' ? 'bg-blue-100 text-blue-700' : 
+                              'bg-gray-100 text-gray-700'
+                            }`}>
+                              {service.statusPembayaran}
+                            </span>
+                          )}
+                        </td>
+                        <td className="px-4 py-4 text-gray-600 font-medium">
+                          {editingId === service.id ? (
+                            <select 
+                              className="px-2 py-1 border border-amber-300 rounded text-xs font-bold focus:outline-none focus:ring-2 focus:ring-amber-500"
+                              value={editPic}
+                              onChange={(e) => setEditPic(e.target.value)}
+                            >
+                              <option value="Rinaldi">Rinaldi</option>
+                              <option value="Seruni">Seruni</option>
+                              <option value="Mirna">Mirna</option>
+                            </select>
+                          ) : (
+                            service.pic
+                          )}
+                        </td>
+                        <td className="px-4 py-4 text-center">
+                          {editingId === service.id ? (
+                            <div className="flex items-center justify-center gap-2">
+                              <button 
+                                onClick={() => handleSaveEdit(service.id)}
+                                className="flex items-center gap-1 px-3 py-1.5 bg-emerald-600 text-white hover:bg-emerald-700 rounded-lg transition-colors shadow-sm"
+                                title="Approve & Simpan Permanen"
+                              >
+                                <CheckCircle className="w-4 h-4" />
+                                <span className="text-xs font-bold">Approve</span>
+                              </button>
+                              <button 
+                                onClick={() => setEditingId(null)}
+                                className="p-1.5 bg-gray-100 text-gray-700 hover:bg-gray-200 rounded-lg transition-colors"
+                                title="Batal"
+                              >
+                                <X className="w-4 h-4" />
+                              </button>
+                            </div>
+                          ) : (
+                            <button 
+                              onClick={() => handleEditClick(service)}
+                              className="p-1.5 text-gray-400 hover:text-amber-600 hover:bg-amber-50 rounded-lg transition-colors"
+                              title="Edit Status"
+                            >
+                              <Edit className="w-4 h-4" />
+                            </button>
+                          )}
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+
+            {/* Mobile/Tablet Card View */}
+            <div className="xl:hidden divide-y divide-gray-100">
               {filteredServices.map((service) => {
                 const dpInfo = getDueDateInfo(service.tanggalKeberangkatan, service.reminderDPHMinus, service.statusPembayaran, true);
                 const pelunasanInfo = getDueDateInfo(service.tanggalKeberangkatan, service.reminderPelunasanHMinus, service.statusPembayaran, false, service.isManualDate, service.manualPelunasanDate);
+                const isEditing = editingId === service.id;
 
                 return (
-                  <tr key={service.id} className="hover:bg-gray-50 border-b border-gray-100 transition-colors">
-                    <td className="px-4 py-4">
-                      <div className="font-bold text-gray-900">{service.namaLayanan}</div>
-                      <div className="text-xs text-gray-500 mt-1">{service.namaPaket}</div>
-                    </td>
-                    <td className="px-4 py-4">
-                      <div className="font-medium text-gray-800">{service.vendor}</div>
-                      <div className="text-xs text-gray-500 italic mt-1">{service.catatan}</div>
-                    </td>
-                    <td className="px-4 py-4">
-                      <div className="text-xs font-medium text-emerald-700">CI: {format(parseISO(service.tanggalKeberangkatan), 'dd MMM yyyy', { locale: idLocale })}</div>
-                      <div className="text-xs font-medium text-rose-700 mt-1">CO: {format(parseISO(service.tanggalKepulangan), 'dd MMM yyyy', { locale: idLocale })}</div>
-                    </td>
-                    <td className="px-4 py-4">
-                      <div className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-medium ${dpInfo.colorClass}`}>
-                        <span className={`w-1.5 h-1.5 rounded-full ${dpInfo.dotClass}`}></span>
-                        {dpInfo.formattedDate}
+                  <div key={service.id} className={`p-4 md:p-6 ${isEditing ? 'bg-amber-50/30' : 'bg-white'}`}>
+                    <div className="flex justify-between items-start mb-4">
+                      <div>
+                        <h3 className="font-bold text-gray-900">{service.namaLayanan}</h3>
+                        <p className="text-xs text-gray-500">{service.namaPaket}</p>
                       </div>
-                      <div className="text-[10px] text-gray-500 mt-1">H-{service.reminderDPHMinus}</div>
-                    </td>
-                    <td className="px-4 py-4">
-                      {editingId === service.id ? (
-                        <div className="space-y-2">
+                      <div className="text-right">
+                        {isEditing ? (
                           <div className="flex items-center gap-2">
-                            <input 
-                              type="checkbox" 
-                              id={`manual-date-${service.id}`}
-                              checked={editIsManualDate}
-                              onChange={(e) => setEditIsManualDate(e.target.checked)}
-                              className="rounded border-gray-300 text-amber-600 focus:ring-amber-500"
-                            />
-                            <label htmlFor={`manual-date-${service.id}`} className="text-[10px] font-medium text-gray-700">Set Manual</label>
+                            <button 
+                              onClick={() => handleSaveEdit(service.id)}
+                              className="p-2 bg-emerald-600 text-white rounded-lg"
+                            >
+                              <CheckCircle className="w-4 h-4" />
+                            </button>
+                            <button 
+                              onClick={() => setEditingId(null)}
+                              className="p-2 bg-gray-200 text-gray-700 rounded-lg"
+                            >
+                              <X className="w-4 h-4" />
+                            </button>
                           </div>
-                          {editIsManualDate ? (
-                            <input 
-                              type="date"
-                              className="w-full px-2 py-1 border border-amber-300 rounded text-xs focus:outline-none focus:ring-2 focus:ring-amber-500"
-                              value={editManualDate}
-                              onChange={(e) => setEditManualDate(e.target.value)}
-                            />
+                        ) : (
+                          <button 
+                            onClick={() => handleEditClick(service)}
+                            className="p-2 text-gray-400 hover:text-amber-600 hover:bg-amber-50 rounded-lg"
+                          >
+                            <Edit className="w-4 h-4" />
+                          </button>
+                        )}
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                      <div className="space-y-2">
+                        <div className="flex justify-between text-xs">
+                          <span className="text-gray-500">Vendor:</span>
+                          <span className="font-medium text-gray-900">{service.vendor}</span>
+                        </div>
+                        <div className="flex justify-between text-xs">
+                          <span className="text-gray-500">Jadwal:</span>
+                          <span className="font-medium text-emerald-700">
+                            {format(parseISO(service.tanggalKeberangkatan), 'dd MMM')} - {format(parseISO(service.tanggalKepulangan), 'dd MMM yyyy')}
+                          </span>
+                        </div>
+                        <div className="flex justify-between text-xs">
+                          <span className="text-gray-500">PIC:</span>
+                          {isEditing ? (
+                            <select 
+                              className="px-2 py-1 border border-amber-300 rounded text-xs"
+                              value={editPic}
+                              onChange={(e) => setEditPic(e.target.value)}
+                            >
+                              <option value="Rinaldi">Rinaldi</option>
+                              <option value="Seruni">Seruni</option>
+                              <option value="Mirna">Mirna</option>
+                            </select>
                           ) : (
-                            <div className="text-[10px] text-gray-500">Otomatis (H-{service.reminderPelunasanHMinus})</div>
+                            <span className="font-medium text-gray-900">{service.pic}</span>
                           )}
                         </div>
-                      ) : (
-                        <>
+                      </div>
+
+                      <div className="space-y-2">
+                        <div className="flex justify-between text-xs">
+                          <span className="text-gray-500">Estimasi Biaya:</span>
+                          {isEditing ? (
+                            <input 
+                              type="number"
+                              className="w-32 px-2 py-1 border border-amber-300 rounded text-xs text-right"
+                              value={editBiaya}
+                              onChange={(e) => setEditBiaya(Number(e.target.value))}
+                            />
+                          ) : (
+                            <span className="font-bold text-gray-900">{formatCurrency(service.estimasiBiaya)}</span>
+                          )}
+                        </div>
+                        <div className="flex justify-between text-xs">
+                          <span className="text-gray-500">Status:</span>
+                          {isEditing ? (
+                            <select 
+                              className="px-2 py-1 border border-amber-300 rounded text-xs font-bold"
+                              value={editStatus}
+                              onChange={(e) => setEditStatus(e.target.value as PaymentStatus)}
+                            >
+                              <option value="Belum Bayar">Belum Bayar</option>
+                              <option value="DP">DP</option>
+                              <option value="Lunas">Lunas</option>
+                            </select>
+                          ) : (
+                            <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold uppercase ${
+                              service.statusPembayaran === 'Lunas' ? 'bg-emerald-100 text-emerald-700' : 
+                              service.statusPembayaran === 'DP' ? 'bg-blue-100 text-blue-700' : 
+                              'bg-gray-100 text-gray-700'
+                            }`}>
+                              {service.statusPembayaran}
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3 pt-4 border-t border-gray-50">
+                      <div>
+                        <p className="text-[10px] font-bold text-gray-400 uppercase mb-1">Reminder DP</p>
+                        <div className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-medium ${dpInfo.colorClass}`}>
+                          <span className={`w-1.5 h-1.5 rounded-full ${dpInfo.dotClass}`}></span>
+                          {dpInfo.formattedDate}
+                        </div>
+                      </div>
+                      <div>
+                        <p className="text-[10px] font-bold text-gray-400 uppercase mb-1">Pembayaran Selanjutnya</p>
+                        {isEditing ? (
+                          <div className="space-y-2">
+                            <div className="flex items-center gap-2">
+                              <input 
+                                type="checkbox" 
+                                id={`manual-date-mobile-${service.id}`}
+                                checked={editIsManualDate}
+                                onChange={(e) => setEditIsManualDate(e.target.checked)}
+                                className="rounded border-gray-300 text-amber-600"
+                              />
+                              <label htmlFor={`manual-date-mobile-${service.id}`} className="text-[10px] font-medium text-gray-700">Set Manual</label>
+                            </div>
+                            {editIsManualDate && (
+                              <input 
+                                type="date"
+                                className="w-full px-2 py-1 border border-amber-300 rounded text-xs"
+                                value={editManualDate}
+                                onChange={(e) => setEditManualDate(e.target.value)}
+                              />
+                            )}
+                          </div>
+                        ) : (
                           <div className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-medium ${pelunasanInfo.colorClass}`}>
                             <span className={`w-1.5 h-1.5 rounded-full ${pelunasanInfo.dotClass}`}></span>
                             {pelunasanInfo.formattedDate}
                           </div>
-                          <div className="text-[10px] text-gray-500 mt-1">
-                            {service.isManualDate ? 'Manual' : `Otomatis (H-${service.reminderPelunasanHMinus})`}
-                          </div>
-                        </>
-                      )}
-                    </td>
-                    <td className="px-4 py-4 text-right font-bold text-gray-700">
-                      {editingId === service.id ? (
-                        <input 
-                          type="number"
-                          className="w-full px-2 py-1 border border-amber-300 rounded text-xs text-right focus:outline-none focus:ring-2 focus:ring-amber-500"
-                          value={editBiaya}
-                          onChange={(e) => setEditBiaya(Number(e.target.value))}
-                        />
-                      ) : (
-                        formatCurrency(service.estimasiBiaya)
-                      )}
-                    </td>
-                    <td className="px-4 py-4 text-center">
-                      {editingId === service.id ? (
-                        <select 
-                          className="px-2 py-1 border border-amber-300 rounded text-xs font-bold focus:outline-none focus:ring-2 focus:ring-amber-500"
-                          value={editStatus}
-                          onChange={(e) => setEditStatus(e.target.value as PaymentStatus)}
-                        >
-                          <option value="Belum Bayar">Belum Bayar</option>
-                          <option value="DP">DP</option>
-                          <option value="Lunas">Lunas</option>
-                        </select>
-                      ) : (
-                        <span className={`px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wide ${
-                          service.statusPembayaran === 'Lunas' ? 'bg-emerald-100 text-emerald-700' : 
-                          service.statusPembayaran === 'DP' ? 'bg-blue-100 text-blue-700' : 
-                          'bg-gray-100 text-gray-700'
-                        }`}>
-                          {service.statusPembayaran}
-                        </span>
-                      )}
-                    </td>
-                    <td className="px-4 py-4 text-gray-600 font-medium">
-                      {editingId === service.id ? (
-                        <select 
-                          className="px-2 py-1 border border-amber-300 rounded text-xs font-bold focus:outline-none focus:ring-2 focus:ring-amber-500"
-                          value={editPic}
-                          onChange={(e) => setEditPic(e.target.value)}
-                        >
-                          <option value="Rinaldi">Rinaldi</option>
-                          <option value="Seruni">Seruni</option>
-                          <option value="Mirna">Mirna</option>
-                        </select>
-                      ) : (
-                        service.pic
-                      )}
-                    </td>
-                    <td className="px-4 py-4 text-center">
-                      {editingId === service.id ? (
-                        <div className="flex items-center justify-center gap-2">
-                          <button 
-                            onClick={() => handleSaveEdit(service.id)}
-                            className="p-1.5 bg-emerald-100 text-emerald-700 hover:bg-emerald-200 rounded-lg transition-colors"
-                            title="Simpan"
-                          >
-                            <CheckCircle className="w-4 h-4" />
-                          </button>
-                          <button 
-                            onClick={() => setEditingId(null)}
-                            className="p-1.5 bg-gray-100 text-gray-700 hover:bg-gray-200 rounded-lg transition-colors"
-                            title="Batal"
-                          >
-                            <X className="w-4 h-4" />
-                          </button>
-                        </div>
-                      ) : (
-                        <button 
-                          onClick={() => handleEditClick(service)}
-                          className="p-1.5 text-gray-400 hover:text-amber-600 hover:bg-amber-50 rounded-lg transition-colors"
-                          title="Edit Status"
-                        >
-                          <Edit className="w-4 h-4" />
-                        </button>
-                      )}
-                    </td>
-                  </tr>
+                        )}
+                      </div>
+                    </div>
+                  </div>
                 );
               })}
-              {filteredServices.length === 0 && (
-                <tr>
-                  <td colSpan={8} className="px-4 py-8 text-center text-gray-500">
-                    Tidak ada data reminder yang sesuai dengan filter.
-                  </td>
-                </tr>
-              )}
-            </tbody>
-          </table>
-        </div>
+            </div>
+          </>
+        )}
       </div>
 
       {/* Add Manual Modal */}

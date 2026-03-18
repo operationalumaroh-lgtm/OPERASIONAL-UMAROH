@@ -54,8 +54,8 @@ export const HandlingSaudiView: React.FC = () => {
   }, [kurs, marginPercent]);
 
   return (
-    <div className="container mx-auto px-4 py-8">
-      <div className="flex flex-col lg:flex-row gap-8">
+    <div className="container mx-auto px-2 sm:px-4 py-4 sm:py-8">
+      <div className="flex flex-col lg:flex-row gap-4 sm:gap-8">
         
         {/* Calculator Section */}
         <div className="lg:w-1/3 space-y-6">
@@ -163,7 +163,8 @@ export const HandlingSaudiView: React.FC = () => {
               </div>
             </div>
             
-            <div className="overflow-x-auto">
+            {/* Desktop Table View */}
+            <div className="hidden xl:block overflow-x-auto">
               <table className="w-full text-sm text-left">
                 <thead className="bg-gray-100 text-gray-600 font-medium uppercase text-xs">
                   <tr>
@@ -191,6 +192,34 @@ export const HandlingSaudiView: React.FC = () => {
                   ))}
                 </tbody>
               </table>
+            </div>
+
+            {/* Mobile/Tablet Card View */}
+            <div className="xl:hidden divide-y divide-gray-100">
+              {tableData.map((row) => (
+                <div 
+                  key={row.pax} 
+                  className={`p-4 hover:bg-gray-50 transition-colors ${row.pax === paxInput ? 'bg-emerald-50' : ''}`}
+                >
+                  <div className="flex justify-between items-start mb-3">
+                    <div>
+                      <div className="text-sm font-bold text-gray-900">Pax: {row.pax}</div>
+                      <div className="text-xs text-gray-500 mt-1">HPP: ${row.hpp}</div>
+                    </div>
+                    <div className="text-right">
+                      <div className="text-emerald-700 font-bold text-lg">
+                        {formatCurrency(row.jual)}
+                      </div>
+                      <div className="text-xs text-gray-400">
+                        Beli: {formatCurrency(row.beli)}
+                      </div>
+                    </div>
+                  </div>
+                  <div className="text-xs text-emerald-600 font-medium">
+                    Margin: {formatCurrency(row.margin)} ({marginPercent}%)
+                  </div>
+                </div>
+              ))}
             </div>
           </div>
         </div>

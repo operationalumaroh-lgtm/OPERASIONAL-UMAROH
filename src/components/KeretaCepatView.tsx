@@ -187,7 +187,7 @@ export const KeretaCepatView: React.FC = () => {
           </div>
 
           <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
-            <div className="overflow-x-auto">
+            <div className="hidden xl:block overflow-x-auto">
               <table className="w-full text-sm text-left">
                 <thead className="text-xs text-gray-700 uppercase bg-gray-50 border-b border-gray-200">
                   <tr>
@@ -232,6 +232,46 @@ export const KeretaCepatView: React.FC = () => {
                   )}
                 </tbody>
               </table>
+            </div>
+
+            {/* Mobile/Tablet Card View */}
+            <div className="xl:hidden divide-y divide-gray-100">
+              {filteredData.length > 0 ? (
+                filteredData.map((item) => (
+                  <div 
+                    key={item.id} 
+                    className={`p-4 hover:bg-gray-50 transition-colors cursor-pointer ${
+                      selectedItemId === item.id ? 'bg-emerald-50' : ''
+                    }`}
+                    onClick={() => setSelectedItemId(item.id)}
+                  >
+                    <div className="flex justify-between items-start mb-2">
+                      <h3 className="font-bold text-gray-900">{item.item}</h3>
+                      <div className="text-emerald-600 font-bold">
+                        Rp {item.hargaJual.toLocaleString('id-ID')}
+                      </div>
+                    </div>
+                    <div className="grid grid-cols-2 gap-2 text-xs">
+                      <div>
+                        <span className="text-gray-500 uppercase font-semibold">Harga Asing: </span>
+                        <span className="text-gray-700">{item.mataUang} {item.hargaAsing.toLocaleString('id-ID')}</span>
+                      </div>
+                      <div className="text-right">
+                        <span className="text-gray-500 uppercase font-semibold">Margin: </span>
+                        <span className="text-emerald-700">{item.persen}%</span>
+                      </div>
+                      <div>
+                        <span className="text-gray-500 uppercase font-semibold">Harga Beli: </span>
+                        <span className="text-gray-700">Rp {item.hargaBeli.toLocaleString('id-ID')}</span>
+                      </div>
+                    </div>
+                  </div>
+                ))
+              ) : (
+                <div className="p-8 text-center text-gray-500">
+                  No items found matching "{searchTerm}"
+                </div>
+              )}
             </div>
           </div>
         </div>

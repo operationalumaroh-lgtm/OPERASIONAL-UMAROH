@@ -35,7 +35,7 @@ export const VisaView: React.FC = () => {
       </div>
 
       <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
-        <div className="overflow-x-auto">
+        <div className="hidden xl:block overflow-x-auto">
           <table className="w-full text-sm text-left">
             <thead className="text-xs text-gray-700 uppercase bg-gray-50 border-b border-gray-200">
               <tr>
@@ -69,6 +69,41 @@ export const VisaView: React.FC = () => {
               ))}
             </tbody>
           </table>
+        </div>
+
+        {/* Mobile/Tablet Card View */}
+        <div className="xl:hidden divide-y divide-gray-100">
+          {visaData.map((item) => (
+            <div key={item.id} className="p-4 hover:bg-gray-50 transition-colors">
+              <div className="flex justify-between items-start mb-3">
+                <div>
+                  <h3 className="font-bold text-gray-900 text-lg">{item.vendorName}</h3>
+                  <div className="text-sm text-gray-500 mt-1">
+                    Range: <span className="font-medium text-emerald-600">{item.paxRange} PAX</span>
+                  </div>
+                </div>
+                <div className="text-right">
+                  <div className="text-emerald-600 font-bold text-lg">
+                    Rp {item.sellingPrice.toLocaleString('id-ID')}
+                  </div>
+                  <div className="text-xs text-gray-400">
+                    ${item.foreignPriceUsd} (Kurs: {item.exchangeRate.toLocaleString('id-ID')})
+                  </div>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-y-3 gap-x-4 text-sm">
+                <div>
+                  <div className="text-gray-500 text-xs uppercase font-semibold">Harga Vendor</div>
+                  <div className="text-gray-900">Rp {item.vendorPrice.toLocaleString('id-ID')}</div>
+                </div>
+                <div>
+                  <div className="text-gray-500 text-xs uppercase font-semibold">Margin</div>
+                  <div className="text-emerald-700 font-medium">Rp {item.margin.toLocaleString('id-ID')} ({item.percentage}%)</div>
+                </div>
+              </div>
+            </div>
+          ))}
         </div>
       </div>
     </div>

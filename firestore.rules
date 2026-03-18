@@ -20,6 +20,25 @@
 //   - totalSeat: number (required)
 //   - remainingSeat: number (required)
 //
+// Collection: vendor_services
+// Document ID: auto-generated or custom id
+// Fields:
+//   - id: string (required)
+//   - paketId: string (required)
+//   - namaPaket: string (required)
+//   - namaLayanan: string (required)
+//   - vendor: string (required)
+//   - tanggalKeberangkatan: string (ISO date)
+//   - tanggalKepulangan: string (ISO date)
+//   - reminderDPHMinus: number
+//   - reminderPelunasanHMinus: number
+//   - estimasiBiaya: number
+//   - statusPembayaran: string (Belum Bayar, DP, Lunas)
+//   - pic: string (required)
+//   - catatan: string
+//   - isManualDate: boolean
+//   - manualPelunasanDate: string (ISO date)
+//
 // ===============================================================
 
 rules_version = '2';
@@ -34,7 +53,7 @@ service cloud.firestore {
     function isAdmin() {
       return isAuthenticated() && 
         (get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin' ||
-         (request.auth.token.email == "ndie.young31@gmail.com" && request.auth.token.email_verified == true));
+         (request.auth.token.email == "operationalumaroh@gmail.com" && request.auth.token.email_verified == true));
     }
 
     function isValidMaskapai(data) {
@@ -46,16 +65,21 @@ service cloud.firestore {
              data.remainingSeat <= data.totalSeat;
     }
 
+    function isValidVendorService(data) {
+      return data.keys().hasAll(['id', 'paketId', 'namaPaket', 'namaLayanan', 'vendor', 'tanggalKeberangkatan', 'tanggalKepulangan', 'statusPembayaran', 'pic']) &&
+             data.id is string &&
+             data.paketId is string &&
+             data.namaPaket is string && data.namaPaket.size() < 200 &&
+             data.namaLayanan is string && data.namaLayanan.size() < 100 &&
+             data.vendor is string && data.vendor.size() < 100 &&
+             data.statusPembayaran in ['Belum Bayar', 'DP', 'Lunas'] &&
+             data.pic is string && data.pic.size() < 100;
+    }
+
     match /maskapai/{maskapaiId} {
-      // Anyone authenticated can read (for checking availability)
       allow read: if isAuthenticated();
-      
-      // Only admins can create or delete
       allow create: if isAdmin() && isValidMaskapai(request.resource.data);
       allow delete: if isAdmin();
-      
-      // Update: Admins can update anything, 
-      // Users can only update remainingSeat (decrementing) if they are booking
       allow update: if isAuthenticated() && 
         (isAdmin() || 
          (request.resource.data.diff(resource.data).affectedKeys().hasOnly(['remainingSeat']) &&
@@ -63,10 +87,15 @@ service cloud.firestore {
           request.resource.data.remainingSeat >= 0));
     }
 
+    match /vendor_services/{serviceId} {
+      allow read: if isAuthenticated();
+      allow write: if isAuthenticated() && isValidVendorService(request.resource.data);
+    }
+
     match /users/{userId} {
       allow read: if isAuthenticated() && request.auth.uid == userId;
       allow write: if isAuthenticated() && request.auth.uid == userId && 
-                    !request.resource.data.keys().contains('role'); // Users can't set their own role
+                    !request.resource.data.keys().contains('role');
     }
   }
 }

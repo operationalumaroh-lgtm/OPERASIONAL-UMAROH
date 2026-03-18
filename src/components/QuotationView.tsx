@@ -894,39 +894,39 @@ export const QuotationView: React.FC = () => {
       </div>
 
       {/* Controls */}
-      <div className="bg-white p-4 rounded-xl shadow-sm border border-gray-200 w-full max-w-[210mm] flex items-center justify-between print:hidden">
-        <div className="flex items-center gap-4 flex-wrap">
+      <div className="bg-white p-4 rounded-xl shadow-sm border border-gray-200 w-full max-w-[210mm] flex flex-col lg:flex-row items-center justify-between gap-4 print:hidden">
+        <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4 w-full lg:w-auto">
           <div className="flex items-center gap-2">
-            <Calendar className="text-gray-500 w-5 h-5" />
-            <span className="font-medium text-gray-700">Select Period:</span>
+            <Calendar className="text-gray-500 w-5 h-5 flex-shrink-0" />
+            <span className="font-medium text-gray-700 whitespace-nowrap">Period:</span>
             <input
               type="date"
               value={selectedDate}
               onChange={(e) => setSelectedDate(e.target.value)}
-              className="border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-emerald-500 outline-none"
+              className="border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-emerald-500 outline-none w-full"
             />
           </div>
 
           <div className="flex items-center gap-2">
-            <Users className="text-gray-500 w-5 h-5" />
-            <span className="font-medium text-gray-700">Pax:</span>
+            <Users className="text-gray-500 w-5 h-5 flex-shrink-0" />
+            <span className="font-medium text-gray-700 whitespace-nowrap">Pax:</span>
             <input
               type="number"
               min="1"
               max="50"
               value={paxCount}
               onChange={(e) => setPaxCount(Number(e.target.value))}
-              className="border border-gray-300 rounded-lg px-3 py-2 w-20 focus:ring-2 focus:ring-emerald-500 outline-none"
+              className="border border-gray-300 rounded-lg px-3 py-2 w-full focus:ring-2 focus:ring-emerald-500 outline-none"
             />
           </div>
 
           <div className="flex items-center gap-2">
-            <RefreshCw className="text-gray-500 w-5 h-5" />
-            <span className="font-medium text-gray-700">Currency:</span>
+            <RefreshCw className="text-gray-500 w-5 h-5 flex-shrink-0" />
+            <span className="font-medium text-gray-700 whitespace-nowrap">Currency:</span>
             <select
               value={currency}
               onChange={(e) => setCurrency(e.target.value as 'SAR' | 'USD' | 'IDR')}
-              className="border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-emerald-500 outline-none"
+              className="border border-gray-300 rounded-lg px-3 py-2 w-full focus:ring-2 focus:ring-emerald-500 outline-none"
             >
               <option value="IDR">IDR (Rupiah)</option>
               <option value="SAR">SAR (Real)</option>
@@ -935,30 +935,30 @@ export const QuotationView: React.FC = () => {
           </div>
 
           <div className="flex items-center gap-2">
-            <RefreshCw className="text-gray-500 w-5 h-5" />
-            <span className="font-medium text-gray-700">Kurs SAR:</span>
+            <RefreshCw className="text-gray-500 w-5 h-5 flex-shrink-0" />
+            <span className="font-medium text-gray-700 whitespace-nowrap">Kurs SAR:</span>
             <input
               type="number"
               value={kurs}
               onChange={(e) => setKurs(Number(e.target.value))}
-              className="border border-gray-300 rounded-lg px-3 py-2 w-24 focus:ring-2 focus:ring-emerald-500 outline-none"
+              className="border border-gray-300 rounded-lg px-3 py-2 w-full focus:ring-2 focus:ring-emerald-500 outline-none"
             />
           </div>
 
           <div className="flex items-center gap-2">
-            <RefreshCw className="text-gray-500 w-5 h-5" />
-            <span className="font-medium text-gray-700">Kurs USD:</span>
+            <RefreshCw className="text-gray-500 w-5 h-5 flex-shrink-0" />
+            <span className="font-medium text-gray-700 whitespace-nowrap">Kurs USD:</span>
             <input
               type="number"
               value={kursUsd}
               onChange={(e) => setKursUsd(Number(e.target.value))}
-              className="border border-gray-300 rounded-lg px-3 py-2 w-24 focus:ring-2 focus:ring-emerald-500 outline-none"
+              className="border border-gray-300 rounded-lg px-3 py-2 w-full focus:ring-2 focus:ring-emerald-500 outline-none"
             />
           </div>
 
-          <div className="flex items-center gap-2">
-            <Briefcase className="text-gray-500 w-5 h-5" />
-            <div className="flex items-center gap-4">
+          <div className="flex items-center gap-2 sm:col-span-2 xl:col-span-1">
+            <Briefcase className="text-gray-500 w-5 h-5 flex-shrink-0" />
+            <div className="flex items-center gap-4 flex-wrap">
               <label className="flex items-center gap-2 cursor-pointer select-none">
                 <input
                   type="checkbox"
@@ -966,7 +966,7 @@ export const QuotationView: React.FC = () => {
                   onChange={(e) => setIncludeHandling(e.target.checked)}
                   className="w-4 h-4 text-emerald-600 rounded focus:ring-emerald-500"
                 />
-                <span className="font-medium text-gray-700">Handling</span>
+                <span className="font-medium text-gray-700 text-sm">Handling</span>
               </label>
               <label className="flex items-center gap-2 cursor-pointer select-none">
                 <input
@@ -975,7 +975,7 @@ export const QuotationView: React.FC = () => {
                   onChange={(e) => setIncludeMutawif(e.target.checked)}
                   className="w-4 h-4 text-emerald-600 rounded focus:ring-emerald-500"
                 />
-                <span className="font-medium text-gray-700">Mutawif</span>
+                <span className="font-medium text-gray-700 text-sm">Mutawif</span>
               </label>
               <label className="flex items-center gap-2 cursor-pointer select-none">
                 <input
@@ -984,50 +984,50 @@ export const QuotationView: React.FC = () => {
                   onChange={(e) => setIncludeVisa(e.target.checked)}
                   className="w-4 h-4 text-emerald-600 rounded focus:ring-emerald-500"
                 />
-                <span className="font-medium text-gray-700">Visa</span>
+                <span className="font-medium text-gray-700 text-sm">Visa</span>
               </label>
             </div>
           </div>
         </div>
         
-        <div className="flex items-center gap-3">
+        <div className="flex flex-col sm:flex-row items-center gap-3 w-full lg:w-auto">
           <button 
             onClick={handleDownloadOfferingJpg}
             disabled={isGeneratingOffering}
-            className="flex items-center gap-2 bg-emerald-600 text-white px-4 py-2 rounded-lg hover:bg-emerald-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            className="flex items-center justify-center gap-2 bg-emerald-600 text-white px-4 py-2 rounded-lg hover:bg-emerald-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed w-full sm:w-auto"
           >
             {isGeneratingOffering ? (
               <RefreshCw className="w-4 h-4 animate-spin" />
             ) : (
               <FileText className="w-4 h-4" />
             )}
-            {isGeneratingOffering ? 'Generating...' : 'Offering (JPG)'}
+            <span className="whitespace-nowrap">{isGeneratingOffering ? 'Generating...' : 'Offering (JPG)'}</span>
           </button>
 
           <button 
             onClick={handleDownloadOfferingPdf}
             disabled={isGeneratingOffering}
-            className="flex items-center gap-2 bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            className="flex items-center justify-center gap-2 bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed w-full sm:w-auto"
           >
             {isGeneratingOffering ? (
               <RefreshCw className="w-4 h-4 animate-spin" />
             ) : (
               <FileText className="w-4 h-4" />
             )}
-            {isGeneratingOffering ? 'Generating...' : 'Offering (PDF)'}
+            <span className="whitespace-nowrap">{isGeneratingOffering ? 'Generating...' : 'Offering (PDF)'}</span>
           </button>
 
           <button 
             onClick={handleDownloadImage}
             disabled={isGeneratingImage}
-            className="flex items-center gap-2 bg-gray-900 text-white px-4 py-2 rounded-lg hover:bg-gray-800 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            className="flex items-center justify-center gap-2 bg-gray-900 text-white px-4 py-2 rounded-lg hover:bg-gray-800 transition-colors disabled:opacity-50 disabled:cursor-not-allowed w-full sm:w-auto"
           >
             {isGeneratingImage ? (
               <RefreshCw className="w-4 h-4 animate-spin" />
             ) : (
               <Download className="w-4 h-4" />
             )}
-            {isGeneratingImage ? 'Generating JPG...' : 'Download JPG'}
+            <span className="whitespace-nowrap">{isGeneratingImage ? 'Generating...' : 'Download JPG'}</span>
           </button>
         </div>
       </div>
@@ -1045,7 +1045,8 @@ export const QuotationView: React.FC = () => {
       </datalist>
 
       {/* A4 Aspect Ratio Container */}
-      <div ref={printRef} className="w-[210mm] min-h-[297mm] bg-amber-400 shadow-2xl relative text-gray-900 font-sans flex flex-col print:shadow-none print:m-0">
+      <div className="w-full overflow-x-auto pb-8 flex justify-center no-scrollbar">
+        <div ref={printRef} className="w-[210mm] min-h-[297mm] bg-amber-400 shadow-2xl relative text-gray-900 font-sans flex flex-col print:shadow-none print:m-0 flex-shrink-0">
         
         {/* Background Pattern (Subtle) */}
         <div className="absolute inset-0 opacity-5 pointer-events-none" 
@@ -1223,5 +1224,6 @@ export const QuotationView: React.FC = () => {
         </div>
       </div>
     </div>
-  );
+  </div>
+);
 };

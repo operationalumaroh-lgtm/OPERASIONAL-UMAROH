@@ -21,12 +21,39 @@
         "remainingSeat": { "type": "number", "description": "Sisa kursi yang tersedia" }
       },
       "required": ["id", "name", "tanggalKeberangkatan", "tanggalKepulangan", "totalSeat", "remainingSeat"]
+    },
+    "VendorService": {
+      "title": "VendorService",
+      "description": "Informasi mapping pembayaran dan booking layanan vendor",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "paketId": { "type": "string" },
+        "namaPaket": { "type": "string" },
+        "namaLayanan": { "type": "string" },
+        "vendor": { "type": "string" },
+        "tanggalKeberangkatan": { "type": "string", "format": "date" },
+        "tanggalKepulangan": { "type": "string", "format": "date" },
+        "reminderDPHMinus": { "type": "number" },
+        "reminderPelunasanHMinus": { "type": "number" },
+        "estimasiBiaya": { "type": "number" },
+        "statusPembayaran": { "type": "string", "enum": ["Belum Bayar", "DP", "Lunas"] },
+        "pic": { "type": "string" },
+        "catatan": { "type": "string" },
+        "isManualDate": { "type": "boolean" },
+        "manualPelunasanDate": { "type": "string", "format": "date" }
+      },
+      "required": ["id", "paketId", "namaPaket", "namaLayanan", "vendor", "tanggalKeberangkatan", "tanggalKepulangan", "statusPembayaran", "pic"]
     }
   },
   "firestore": {
     "/maskapai": {
       "schema": "Maskapai",
       "description": "Koleksi data maskapai penerbangan"
+    },
+    "/vendor_services": {
+      "schema": "VendorService",
+      "description": "Koleksi data mapping pembayaran vendor"
     }
   }
 }

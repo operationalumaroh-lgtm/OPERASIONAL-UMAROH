@@ -127,7 +127,8 @@ export const MutawifView: React.FC = () => {
       </div>
 
       <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
-        <div className="overflow-x-auto">
+        {/* Desktop Table View */}
+        <div className="hidden xl:block overflow-x-auto">
           <table className="w-full text-sm text-left">
             <thead className="text-xs text-gray-700 uppercase bg-gray-50 border-b border-gray-200">
               <tr>
@@ -163,6 +164,41 @@ export const MutawifView: React.FC = () => {
               ))}
             </tbody>
           </table>
+        </div>
+
+        {/* Mobile/Tablet Card View */}
+        <div className="xl:hidden divide-y divide-gray-100">
+          {mutawifData.map((item) => (
+            <div key={item.pax} className="p-4 hover:bg-gray-50 transition-colors">
+              <div className="flex justify-between items-start mb-3">
+                <div>
+                  <h3 className="font-bold text-gray-900">MUTAWIF + TRANSPORTASI</h3>
+                  <div className="text-sm text-gray-500 mt-1">
+                    Pax: <span className="font-bold text-emerald-600">{item.pax}</span> | Hari: {jumlahHari}
+                  </div>
+                </div>
+                <div className="text-right">
+                  <div className="text-emerald-600 font-bold text-lg">
+                    Rp {item.hargaJual.toLocaleString('id-ID', { maximumFractionDigits: 0 })}
+                  </div>
+                  <div className="text-xs text-gray-400">
+                    {hargaAsing} SAR (Kurs: {kurs})
+                  </div>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-y-3 gap-x-4 text-sm">
+                <div>
+                  <div className="text-gray-500 text-xs uppercase font-semibold">Harga Beli</div>
+                  <div className="text-gray-900">Rp {item.hargaBeli.toLocaleString('id-ID', { maximumFractionDigits: 0 })}</div>
+                </div>
+                <div>
+                  <div className="text-gray-500 text-xs uppercase font-semibold">Margin</div>
+                  <div className="text-emerald-700 font-medium">Rp {item.margin.toLocaleString('id-ID', { maximumFractionDigits: 0 })} ({persentase}%)</div>
+                </div>
+              </div>
+            </div>
+          ))}
         </div>
       </div>
     </div>

@@ -77,7 +77,7 @@ export const MaskapaiView: React.FC = () => {
           </div>
         </div>
 
-        <div className="overflow-x-auto">
+        <div className="hidden xl:block overflow-x-auto">
           <table className="w-full text-sm text-left">
             <thead className="text-xs text-gray-700 uppercase bg-gray-100">
               <tr>
@@ -149,6 +149,79 @@ export const MaskapaiView: React.FC = () => {
               ))}
             </tbody>
           </table>
+          {filteredData.length === 0 && (
+            <div className="text-center py-8 text-gray-500">
+              Tidak ada data maskapai yang ditemukan.
+            </div>
+          )}
+        </div>
+
+        {/* Mobile/Tablet Card View */}
+        <div className="xl:hidden divide-y divide-gray-100">
+          {filteredData.map((item) => (
+            <div key={item.id} className="p-4 hover:bg-gray-50 transition-colors">
+              <div className="flex justify-between items-start mb-3">
+                <div>
+                  <h3 className="font-bold text-gray-900 text-lg">{item.name}</h3>
+                  <div className="flex items-center gap-2 text-sm text-gray-500 mt-1">
+                    <span className="font-medium text-emerald-600">{item.originCityName}</span>
+                    <span>→</span>
+                    <span className="font-medium text-emerald-600">{item.destinationCityName}</span>
+                  </div>
+                </div>
+                <div className="flex flex-col items-end">
+                  <span className={`px-2 py-1 rounded text-xs font-bold ${
+                    item.availableSeats === 0 ? 'bg-red-100 text-red-700' :
+                    item.availableSeats <= 5 ? 'bg-orange-100 text-orange-700' :
+                    'bg-blue-100 text-blue-700'
+                  }`}>
+                    {item.availableSeats} / {item.totalSeats} Seats
+                  </span>
+                  <div className="text-emerald-600 font-bold mt-1">
+                    {formatCurrency(item.hargaJual)}
+                  </div>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-y-3 gap-x-4 text-sm mb-4">
+                <div>
+                  <div className="text-gray-500 text-xs uppercase font-semibold">Tgl Berangkat</div>
+                  <div className="text-gray-900">{item.tanggalKeberangkatan}</div>
+                </div>
+                <div>
+                  <div className="text-gray-500 text-xs uppercase font-semibold">Tgl Pulang</div>
+                  <div className="text-gray-900">{item.tanggalKepulangan}</div>
+                </div>
+                <div>
+                  <div className="text-gray-500 text-xs uppercase font-semibold">Vendor</div>
+                  <div className="text-gray-900">{item.namaVendor}</div>
+                </div>
+                <div>
+                  <div className="text-gray-500 text-xs uppercase font-semibold">Program</div>
+                  <div className="text-gray-900">{item.programDays} Days</div>
+                </div>
+                <div>
+                  <div className="text-gray-500 text-xs uppercase font-semibold">Harga Beli</div>
+                  <div className="text-gray-700">{formatCurrency(item.hargaBeli)}</div>
+                </div>
+                <div>
+                  <div className="text-gray-500 text-xs uppercase font-semibold">Margin</div>
+                  <div className="text-emerald-700 font-medium">{formatCurrency(item.margin)} ({item.persen}%)</div>
+                </div>
+              </div>
+
+              <div className="flex items-center justify-end gap-3 pt-3 border-t border-gray-50">
+                <button className="flex items-center gap-1 text-blue-600 hover:bg-blue-50 px-3 py-1.5 rounded-lg text-sm font-medium transition-colors">
+                  <Edit2 className="w-4 h-4" />
+                  Edit
+                </button>
+                <button className="flex items-center gap-1 text-red-600 hover:bg-red-50 px-3 py-1.5 rounded-lg text-sm font-medium transition-colors">
+                  <Trash2 className="w-4 h-4" />
+                  Hapus
+                </button>
+              </div>
+            </div>
+          ))}
           {filteredData.length === 0 && (
             <div className="text-center py-8 text-gray-500">
               Tidak ada data maskapai yang ditemukan.

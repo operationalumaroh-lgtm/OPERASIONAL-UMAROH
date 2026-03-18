@@ -236,17 +236,19 @@ export const DashboardView: React.FC<DashboardViewProps> = ({ onNavigate }) => {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-8">
-        <div className="lg:col-span-2 bg-white p-8 rounded-2xl shadow-sm border border-gray-100">
+        <div className="lg:col-span-2 bg-white p-4 md:p-8 rounded-2xl shadow-sm border border-gray-100">
           <div className="flex items-center justify-between mb-6">
             <h2 className="text-lg font-bold text-gray-900">Pending Payments</h2>
             <button 
               onClick={() => onNavigate?.('mapping')}
               className="text-sm text-blue-600 font-semibold hover:underline flex items-center gap-1"
             >
-              View All Mapping <ArrowRight className="w-4 h-4" />
+              View All <span className="hidden sm:inline">Mapping</span> <ArrowRight className="w-4 h-4" />
             </button>
           </div>
-          <div className="overflow-x-auto">
+
+          {/* Desktop Table View */}
+          <div className="hidden md:block overflow-x-auto">
             <table className="w-full">
               <thead>
                 <tr className="text-left text-xs font-bold text-gray-400 uppercase tracking-wider border-b border-gray-50">
@@ -316,11 +318,68 @@ export const DashboardView: React.FC<DashboardViewProps> = ({ onNavigate }) => {
               </tbody>
             </table>
           </div>
+
+          {/* Mobile Card View */}
+          <div className="md:hidden space-y-4">
+            {pendingPayments.map((payment) => (
+              <div key={payment.id} className="p-4 rounded-xl border border-gray-100 bg-gray-50/50 space-y-3">
+                <div className="flex justify-between items-start">
+                  <div>
+                    <p className="text-sm font-bold text-gray-900">{payment.package}</p>
+                    <span className={`inline-block mt-1 px-2 py-0.5 rounded-full text-[10px] font-bold uppercase ${
+                      payment.type === 'TICKET' ? 'bg-blue-50 text-blue-700' : 'bg-amber-50 text-amber-700'
+                    }`}>
+                      {payment.type}
+                    </span>
+                  </div>
+                  <p className="text-sm font-black text-rose-600">{payment.amount}</p>
+                </div>
+                
+                <div className="flex justify-between items-end">
+                  <div>
+                    <p className="text-xs text-gray-700">{payment.item}</p>
+                    <p className="text-[10px] text-gray-400">{payment.vendor}</p>
+                  </div>
+                  <div className="text-right">
+                    <p className="text-[10px] font-bold text-gray-400 uppercase mb-1">Due Date</p>
+                    <span className="px-2 py-1 rounded-full bg-blue-50 text-blue-700 text-[10px] font-bold border border-blue-100">
+                      {payment.dueDate}
+                    </span>
+                  </div>
+                </div>
+
+                <div className="pt-3 border-t border-gray-100 flex justify-between items-center">
+                  <div className={`inline-flex items-center gap-1 px-2 py-1 rounded-full border text-[10px] font-bold ${getStatusColor(payment.daysRemaining)}`}>
+                    <Clock className="w-3 h-3" />
+                    {payment.daysRemaining < 0 
+                      ? `Overdue by ${Math.abs(payment.daysRemaining)} days` 
+                      : payment.daysRemaining === 0 
+                        ? 'Due Today' 
+                        : `${payment.daysRemaining} days left`}
+                  </div>
+                  <div className="flex gap-2">
+                    <button 
+                      onClick={() => sendWhatsAppReminder(payment)}
+                      className="p-2 rounded-lg bg-emerald-50 text-emerald-600"
+                    >
+                      <MessageCircle className="w-4 h-4" />
+                    </button>
+                    <button 
+                      onClick={() => onNavigate?.('mapping')}
+                      className="p-2 rounded-lg bg-blue-50 text-blue-600"
+                    >
+                      <ArrowRight className="w-4 h-4" />
+                    </button>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
         </div>
 
-        <div className="bg-white p-8 rounded-2xl shadow-sm border border-gray-100">
+        <div className="bg-white p-6 md:p-8 rounded-2xl shadow-sm border border-gray-100">
           <h2 className="text-lg font-bold text-gray-900 mb-6">Quick Actions</h2>
-          <div className="grid grid-cols-1 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-1 gap-4">
             <button 
               onClick={() => onNavigate?.('sales-order')}
               className="p-4 rounded-xl bg-amber-50 border border-amber-100 text-amber-700 font-semibold text-sm hover:bg-amber-100 transition-colors text-left flex items-center justify-between"
