@@ -17,23 +17,38 @@ import { logoBase64 } from './utils/logoBase64';
 import { LogOut, User } from 'lucide-react';
 
 function App() {
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const [userRole, setUserRole] = useState<Role | null>(null);
-  const [activeTab, setActiveTab] = useState<TabType>('dashboard');
+  const [isLoggedIn, setIsLoggedIn] = useState(() => {
+    return localStorage.getItem('isLoggedIn') === 'true';
+  });
+  const [userRole, setUserRole] = useState<Role | null>(() => {
+    return localStorage.getItem('userRole') as Role | null;
+  });
+  const [activeTab, setActiveTab] = useState<TabType>(() => {
+    return (localStorage.getItem('activeTab') as TabType) || 'dashboard';
+  });
 
   const handleLogin = (role: Role) => {
     setUserRole(role);
     setIsLoggedIn(true);
-    if (role === 'mitra') {
-      setActiveTab('templates');
-    } else {
-      setActiveTab('dashboard');
-    }
+    localStorage.setItem('isLoggedIn', 'true');
+    localStorage.setItem('userRole', role);
+    
+    const initialTab = role === 'mitra' ? 'templates' : 'dashboard';
+    setActiveTab(initialTab);
+    localStorage.setItem('activeTab', initialTab);
   };
 
   const handleLogout = () => {
     setIsLoggedIn(false);
     setUserRole(null);
+    localStorage.removeItem('isLoggedIn');
+    localStorage.removeItem('userRole');
+    localStorage.removeItem('activeTab');
+  };
+
+  const handleTabChange = (tab: TabType) => {
+    setActiveTab(tab);
+    localStorage.setItem('activeTab', tab);
   };
 
   if (!isLoggedIn) {
@@ -43,7 +58,7 @@ function App() {
   const renderContent = () => {
     switch (activeTab) {
       case 'dashboard':
-        return <DashboardView onNavigate={setActiveTab} />;
+        return <DashboardView onNavigate={handleTabChange} />;
       case 'database':
         return <DatabaseView />;
       case 'templates':
@@ -55,7 +70,7 @@ function App() {
       case 'flights':
         return <FlightMonitoringView />;
       default:
-        return <DashboardView onNavigate={setActiveTab} />;
+        return <DashboardView onNavigate={handleTabChange} />;
     }
   };
 
@@ -99,7 +114,7 @@ function App() {
         </div>
       </header>
 
-      <Navbar activeTab={activeTab} onTabChange={setActiveTab} userRole={userRole} />
+      <Navbar activeTab={activeTab} onTabChange={handleTabChange} userRole={userRole} />
 
       {/* Main Content */}
       <main className="flex-grow bg-gray-50">

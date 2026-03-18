@@ -5,11 +5,9 @@ import { isDateInRange, parseDateRange } from '../utils/dateUtils';
 import { HANDLING_TIERS } from '../data/handlingSaudi';
 import { visaData } from '../data/visa';
 import html2canvas from 'html2canvas';
-import html2pdf from 'html2pdf.js';
 import { AIPromptInput } from './AIPromptInput';
 import { Type } from '@google/genai';
 import { logoBase64 } from '../utils/logoBase64';
-import { ProfessionalOffering } from './ProfessionalOffering';
 import { format } from 'date-fns';
 import { id } from 'date-fns/locale';
 import { FileText } from 'lucide-react';
@@ -33,9 +31,7 @@ export const QuotationView: React.FC = () => {
   const [kursUsd, setKursUsd] = useState<number>(17000);
   const [rows, setRows] = useState<QuotationRow[]>(Array(14).fill({}));
   const [isGeneratingImage, setIsGeneratingImage] = useState(false);
-  const [isGeneratingOffering, setIsGeneratingOffering] = useState(false);
   const printRef = useRef<HTMLDivElement>(null);
-  const offeringRef = useRef<HTMLDivElement>(null);
 
   const quotationSchema = {
     type: Type.OBJECT,
@@ -637,187 +633,6 @@ export const QuotationView: React.FC = () => {
     }
   };
 
-  const handleDownloadOfferingJpg = async () => {
-    if (!offeringRef.current) return;
-    setIsGeneratingOffering(true);
-    
-    const original = offeringRef.current;
-    const clone = original.cloneNode(true) as HTMLElement;
-    clone.style.position = 'fixed';
-    clone.style.left = '-9999px';
-    clone.style.top = '0';
-    clone.style.width = '210mm';
-    document.body.appendChild(clone);
-
-    try {
-      const convertToRgb = (color: string) => {
-        if (!color || (!color.includes('oklch') && !color.includes('oklab'))) return color;
-        const canvas = document.createElement('canvas');
-        canvas.width = 1;
-        canvas.height = 1;
-        const ctx = canvas.getContext('2d');
-        if (!ctx) return '#000000';
-        try {
-          ctx.fillStyle = color;
-          const result = ctx.fillStyle;
-          if (result.includes('oklch') || result.includes('oklab')) return '#000000';
-          return result;
-        } catch (e) {
-          return '#000000';
-        }
-      };
-
-      const allClones = clone.querySelectorAll('*');
-      const sanitizeNode = (cloned: HTMLElement) => {
-        const computed = window.getComputedStyle(cloned);
-        const propsToCheck = [
-          'color', 'background-color', 'border-color', 
-          'border-top-color', 'border-right-color', 'border-bottom-color', 'border-left-color',
-          'outline-color', 'text-decoration-color', 
-          'fill', 'stroke', 'stop-color', 'flood-color', 'lighting-color',
-          'caret-color', 'column-rule-color',
-          'box-shadow', 'filter', 'backdrop-filter', 'background-image'
-        ];
-
-        propsToCheck.forEach(prop => {
-          const val = computed.getPropertyValue(prop);
-          if (val && (val.includes('oklch') || val.includes('oklab'))) {
-            if (prop === 'box-shadow' || prop === 'filter' || prop === 'backdrop-filter' || prop === 'background-image') {
-              cloned.style.setProperty(prop, 'none', 'important');
-            } else {
-              const rgb = convertToRgb(val);
-              cloned.style.setProperty(prop, rgb, 'important');
-            }
-          }
-        });
-      };
-
-      sanitizeNode(clone);
-      allClones.forEach(node => sanitizeNode(node as HTMLElement));
-
-      const canvas = await html2canvas(clone, {
-        scale: 2,
-        useCORS: true,
-        logging: false,
-        backgroundColor: '#ffffff',
-        onclone: (clonedDoc: Document) => {
-          const styleTags = clonedDoc.getElementsByTagName('style');
-          for (let i = 0; i < styleTags.length; i++) {
-            if (styleTags[i].innerHTML.includes('oklch') || styleTags[i].innerHTML.includes('oklab')) {
-              styleTags[i].innerHTML = styleTags[i].innerHTML
-                .replace(/oklch\([^)]+\)/g, '#000000')
-                .replace(/oklab\([^)]+\)/g, '#000000');
-            }
-          }
-        }
-      } as any);
-      
-      const image = canvas.toDataURL('image/jpeg', 0.9);
-      const link = document.createElement('a');
-      link.href = image;
-      link.download = `Offering_Quotation_${selectedDate || 'Draft'}.jpg`;
-      link.click();
-    } catch (error) {
-      console.error('Offering generation failed:', error);
-      alert('Failed to generate offering. Please try again.');
-    } finally {
-      document.body.removeChild(clone);
-      setIsGeneratingOffering(false);
-    }
-  };
-
-  const handleDownloadOfferingPdf = async () => {
-    if (!offeringRef.current) return;
-    setIsGeneratingOffering(true);
-    
-    const original = offeringRef.current;
-    const clone = original.cloneNode(true) as HTMLElement;
-    clone.style.position = 'fixed';
-    clone.style.left = '-9999px';
-    clone.style.top = '0';
-    clone.style.width = '210mm';
-    document.body.appendChild(clone);
-
-    try {
-      const convertToRgb = (color: string) => {
-        if (!color || (!color.includes('oklch') && !color.includes('oklab'))) return color;
-        const canvas = document.createElement('canvas');
-        canvas.width = 1;
-        canvas.height = 1;
-        const ctx = canvas.getContext('2d');
-        if (!ctx) return '#000000';
-        try {
-          ctx.fillStyle = color;
-          const result = ctx.fillStyle;
-          if (result.includes('oklch') || result.includes('oklab')) return '#000000';
-          return result;
-        } catch (e) {
-          return '#000000';
-        }
-      };
-
-      const allClones = clone.querySelectorAll('*');
-      const sanitizeNode = (cloned: HTMLElement) => {
-        const computed = window.getComputedStyle(cloned);
-        const propsToCheck = [
-          'color', 'background-color', 'border-color', 
-          'border-top-color', 'border-right-color', 'border-bottom-color', 'border-left-color',
-          'outline-color', 'text-decoration-color', 
-          'fill', 'stroke', 'stop-color', 'flood-color', 'lighting-color',
-          'caret-color', 'column-rule-color',
-          'box-shadow', 'filter', 'backdrop-filter', 'background-image'
-        ];
-
-        propsToCheck.forEach(prop => {
-          const val = computed.getPropertyValue(prop);
-          if (val && (val.includes('oklch') || val.includes('oklab'))) {
-            if (prop === 'box-shadow' || prop === 'filter' || prop === 'backdrop-filter' || prop === 'background-image') {
-              cloned.style.setProperty(prop, 'none', 'important');
-            } else {
-              const rgb = convertToRgb(val);
-              cloned.style.setProperty(prop, rgb, 'important');
-            }
-          }
-        });
-      };
-
-      sanitizeNode(clone);
-      allClones.forEach(node => sanitizeNode(node as HTMLElement));
-
-      const opt = {
-        margin: 0,
-        filename: `Offering_Quotation_${selectedDate || 'Draft'}.pdf`,
-        image: { type: 'jpeg', quality: 0.98 },
-        html2canvas: { 
-          scale: 2, 
-          useCORS: true,
-          logging: false,
-          letterRendering: true,
-          onclone: (clonedDoc: Document) => {
-            const styleTags = clonedDoc.getElementsByTagName('style');
-            for (let i = 0; i < styleTags.length; i++) {
-              if (styleTags[i].innerHTML.includes('oklch') || styleTags[i].innerHTML.includes('oklab')) {
-                styleTags[i].innerHTML = styleTags[i].innerHTML
-                  .replace(/oklch\([^)]+\)/g, '#000000')
-                  .replace(/oklab\([^)]+\)/g, '#000000');
-              }
-            }
-          }
-        },
-        jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
-        pagebreak: { mode: ['css', 'legacy'] }
-      };
-
-      await html2pdf().set(opt).from(clone).save();
-    } catch (error) {
-      console.error('Offering PDF generation failed:', error);
-      alert('Failed to generate offering PDF. Please try again.');
-    } finally {
-      document.body.removeChild(clone);
-      setIsGeneratingOffering(false);
-    }
-  };
-
   const madinahHotels = useMemo(() => {
     return hotels.filter(h => h.city === 'Madinah');
   }, [selectedDate]);
@@ -825,49 +640,6 @@ export const QuotationView: React.FC = () => {
   const makkahHotels = useMemo(() => {
     return hotels.filter(h => h.city === 'Makkah');
   }, [selectedDate]);
-
-  const offeringData = useMemo(() => {
-    const firstRow = rows[0] || {};
-    const priceQuad = typeof firstRow.priceQuad === 'string' ? parseInt(firstRow.priceQuad.replace(/[^0-9]/g, '')) : (firstRow.priceQuad || 0);
-    const priceTriple = typeof firstRow.priceTriple === 'string' ? parseInt(firstRow.priceTriple.replace(/[^0-9]/g, '')) : (firstRow.priceTriple || 0);
-    const priceDouble = typeof firstRow.priceDouble === 'string' ? parseInt(firstRow.priceDouble.replace(/[^0-9]/g, '')) : (firstRow.priceDouble || 0);
-
-    return {
-      tanggalPembuatan: new Date(),
-      namaTravel: '-',
-      namaMitra: '-',
-      emberkasi: '-',
-      jumlahPax: paxCount,
-      tourLeaderCount: 0,
-      jadwalKeberangkatan: selectedDate ? format(new Date(selectedDate), 'MMMM yyyy', { locale: id }) : '-',
-      program: 'Quotation Package',
-      prices: {
-        maskapai: 0,
-        hotelMadinah: 0,
-        hotelMakkah: 0,
-        handlingSaudi: includeHandling ? 1500000 : 0,
-        mutawif: includeMutawif ? 500000 : 0,
-        aksesoris: 0,
-        addOn: 0,
-        visa: includeVisa ? 2500000 : 0,
-        asuransi: 0,
-        handlingDomestik: 0,
-        tl: 0,
-        hargaHpp: priceQuad,
-        komisiMitra: 0,
-        komisiUmaroh: 0,
-        hargaQuad: priceQuad,
-        hargaTriple: priceTriple || (priceQuad + 1500000),
-        hargaDouble: priceDouble || (priceQuad + 2500000),
-      },
-      details: {
-        hotelMadinahName: firstRow.madinah?.name || '-',
-        hotelMakkahName: firstRow.makkah?.name || '-',
-        maskapaiName: '-',
-        maskapaiSeats: '-',
-      }
-    };
-  }, [rows, paxCount, selectedDate, includeHandling, includeMutawif, includeVisa]);
 
   return (
     <div className="min-h-screen bg-gray-100 p-4 flex flex-col items-center gap-6 print:p-0 print:bg-white print:block">
@@ -886,148 +658,117 @@ export const QuotationView: React.FC = () => {
         />
       </div>
 
-      {/* Hidden Offering Template */}
-      <div style={{ position: 'absolute', left: '-9999px', top: '-9999px' }}>
-        <div ref={offeringRef}>
-          <ProfessionalOffering data={offeringData} />
-        </div>
-      </div>
-
       {/* Controls */}
-      <div className="bg-white p-4 rounded-xl shadow-sm border border-gray-200 w-full max-w-[210mm] flex flex-col lg:flex-row items-center justify-between gap-4 print:hidden">
-        <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4 w-full lg:w-auto">
-          <div className="flex items-center gap-2">
-            <Calendar className="text-gray-500 w-5 h-5 flex-shrink-0" />
-            <span className="font-medium text-gray-700 whitespace-nowrap">Period:</span>
+      <div className="bg-white p-4 rounded-xl shadow-sm border border-gray-200 w-full max-w-[210mm] flex flex-col gap-4 print:hidden">
+        <div className="flex flex-wrap items-center gap-4 w-full">
+          <div className="flex items-center gap-2 flex-1 min-w-[200px]">
+            <Calendar className="text-gray-500 w-4 h-4 flex-shrink-0" />
+            <span className="font-medium text-gray-700 whitespace-nowrap text-sm">Period:</span>
             <input
               type="date"
               value={selectedDate}
               onChange={(e) => setSelectedDate(e.target.value)}
-              className="border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-emerald-500 outline-none w-full"
+              className="border border-gray-300 rounded-md px-2 py-1.5 focus:ring-2 focus:ring-emerald-500 outline-none w-full text-sm"
             />
           </div>
 
-          <div className="flex items-center gap-2">
-            <Users className="text-gray-500 w-5 h-5 flex-shrink-0" />
-            <span className="font-medium text-gray-700 whitespace-nowrap">Pax:</span>
+          <div className="flex items-center gap-2 flex-1 min-w-[120px]">
+            <Users className="text-gray-500 w-4 h-4 flex-shrink-0" />
+            <span className="font-medium text-gray-700 whitespace-nowrap text-sm">Pax:</span>
             <input
               type="number"
               min="1"
               max="50"
               value={paxCount}
               onChange={(e) => setPaxCount(Number(e.target.value))}
-              className="border border-gray-300 rounded-lg px-3 py-2 w-full focus:ring-2 focus:ring-emerald-500 outline-none"
+              className="border border-gray-300 rounded-md px-2 py-1.5 w-full focus:ring-2 focus:ring-emerald-500 outline-none text-sm"
             />
           </div>
 
-          <div className="flex items-center gap-2">
-            <RefreshCw className="text-gray-500 w-5 h-5 flex-shrink-0" />
-            <span className="font-medium text-gray-700 whitespace-nowrap">Currency:</span>
+          <div className="flex items-center gap-2 flex-1 min-w-[150px]">
+            <RefreshCw className="text-gray-500 w-4 h-4 flex-shrink-0" />
+            <span className="font-medium text-gray-700 whitespace-nowrap text-sm">Currency:</span>
             <select
               value={currency}
               onChange={(e) => setCurrency(e.target.value as 'SAR' | 'USD' | 'IDR')}
-              className="border border-gray-300 rounded-lg px-3 py-2 w-full focus:ring-2 focus:ring-emerald-500 outline-none"
+              className="border border-gray-300 rounded-md px-2 py-1.5 w-full focus:ring-2 focus:ring-emerald-500 outline-none text-sm"
             >
-              <option value="IDR">IDR (Rupiah)</option>
-              <option value="SAR">SAR (Real)</option>
-              <option value="USD">USD (Dollar)</option>
+              <option value="IDR">IDR</option>
+              <option value="SAR">SAR</option>
+              <option value="USD">USD</option>
             </select>
           </div>
+        </div>
 
-          <div className="flex items-center gap-2">
-            <RefreshCw className="text-gray-500 w-5 h-5 flex-shrink-0" />
-            <span className="font-medium text-gray-700 whitespace-nowrap">Kurs SAR:</span>
-            <input
-              type="number"
-              value={kurs}
-              onChange={(e) => setKurs(Number(e.target.value))}
-              className="border border-gray-300 rounded-lg px-3 py-2 w-full focus:ring-2 focus:ring-emerald-500 outline-none"
-            />
-          </div>
+        <div className="flex flex-wrap items-center justify-between gap-4 w-full">
+          <div className="flex flex-wrap items-center gap-4">
+            <div className="flex items-center gap-2 w-[160px]">
+              <RefreshCw className="text-gray-500 w-4 h-4 flex-shrink-0" />
+              <span className="font-medium text-gray-700 whitespace-nowrap text-sm">Kurs SAR:</span>
+              <input
+                type="number"
+                value={kurs}
+                onChange={(e) => setKurs(Number(e.target.value))}
+                className="border border-gray-300 rounded-md px-2 py-1.5 w-full focus:ring-2 focus:ring-emerald-500 outline-none text-sm"
+              />
+            </div>
 
-          <div className="flex items-center gap-2">
-            <RefreshCw className="text-gray-500 w-5 h-5 flex-shrink-0" />
-            <span className="font-medium text-gray-700 whitespace-nowrap">Kurs USD:</span>
-            <input
-              type="number"
-              value={kursUsd}
-              onChange={(e) => setKursUsd(Number(e.target.value))}
-              className="border border-gray-300 rounded-lg px-3 py-2 w-full focus:ring-2 focus:ring-emerald-500 outline-none"
-            />
-          </div>
+            <div className="flex items-center gap-2 w-[160px]">
+              <RefreshCw className="text-gray-500 w-4 h-4 flex-shrink-0" />
+              <span className="font-medium text-gray-700 whitespace-nowrap text-sm">Kurs USD:</span>
+              <input
+                type="number"
+                value={kursUsd}
+                onChange={(e) => setKursUsd(Number(e.target.value))}
+                className="border border-gray-300 rounded-md px-2 py-1.5 w-full focus:ring-2 focus:ring-emerald-500 outline-none text-sm"
+              />
+            </div>
 
-          <div className="flex items-center gap-2 sm:col-span-2 xl:col-span-1">
-            <Briefcase className="text-gray-500 w-5 h-5 flex-shrink-0" />
-            <div className="flex items-center gap-4 flex-wrap">
-              <label className="flex items-center gap-2 cursor-pointer select-none">
-                <input
-                  type="checkbox"
-                  checked={includeHandling}
-                  onChange={(e) => setIncludeHandling(e.target.checked)}
-                  className="w-4 h-4 text-emerald-600 rounded focus:ring-emerald-500"
-                />
-                <span className="font-medium text-gray-700 text-sm">Handling</span>
-              </label>
-              <label className="flex items-center gap-2 cursor-pointer select-none">
-                <input
-                  type="checkbox"
-                  checked={includeMutawif}
-                  onChange={(e) => setIncludeMutawif(e.target.checked)}
-                  className="w-4 h-4 text-emerald-600 rounded focus:ring-emerald-500"
-                />
-                <span className="font-medium text-gray-700 text-sm">Mutawif</span>
-              </label>
-              <label className="flex items-center gap-2 cursor-pointer select-none">
-                <input
-                  type="checkbox"
-                  checked={includeVisa}
-                  onChange={(e) => setIncludeVisa(e.target.checked)}
-                  className="w-4 h-4 text-emerald-600 rounded focus:ring-emerald-500"
-                />
-                <span className="font-medium text-gray-700 text-sm">Visa</span>
-              </label>
+            <div className="flex items-center gap-2">
+              <Briefcase className="text-gray-500 w-4 h-4 flex-shrink-0" />
+              <div className="flex items-center gap-3 flex-wrap">
+                <label className="flex items-center gap-1.5 cursor-pointer select-none">
+                  <input
+                    type="checkbox"
+                    checked={includeHandling}
+                    onChange={(e) => setIncludeHandling(e.target.checked)}
+                    className="w-3.5 h-3.5 text-emerald-600 rounded focus:ring-emerald-500"
+                  />
+                  <span className="font-medium text-gray-700 text-sm">Handling</span>
+                </label>
+                <label className="flex items-center gap-1.5 cursor-pointer select-none">
+                  <input
+                    type="checkbox"
+                    checked={includeMutawif}
+                    onChange={(e) => setIncludeMutawif(e.target.checked)}
+                    className="w-3.5 h-3.5 text-emerald-600 rounded focus:ring-emerald-500"
+                  />
+                  <span className="font-medium text-gray-700 text-sm">Mutawif</span>
+                </label>
+                <label className="flex items-center gap-1.5 cursor-pointer select-none">
+                  <input
+                    type="checkbox"
+                    checked={includeVisa}
+                    onChange={(e) => setIncludeVisa(e.target.checked)}
+                    className="w-3.5 h-3.5 text-emerald-600 rounded focus:ring-emerald-500"
+                  />
+                  <span className="font-medium text-gray-700 text-sm">Visa</span>
+                </label>
+              </div>
             </div>
           </div>
-        </div>
-        
-        <div className="flex flex-col sm:flex-row items-center gap-3 w-full lg:w-auto">
-          <button 
-            onClick={handleDownloadOfferingJpg}
-            disabled={isGeneratingOffering}
-            className="flex items-center justify-center gap-2 bg-emerald-600 text-white px-4 py-2 rounded-lg hover:bg-emerald-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed w-full sm:w-auto"
-          >
-            {isGeneratingOffering ? (
-              <RefreshCw className="w-4 h-4 animate-spin" />
-            ) : (
-              <FileText className="w-4 h-4" />
-            )}
-            <span className="whitespace-nowrap">{isGeneratingOffering ? 'Generating...' : 'Offering (JPG)'}</span>
-          </button>
-
-          <button 
-            onClick={handleDownloadOfferingPdf}
-            disabled={isGeneratingOffering}
-            className="flex items-center justify-center gap-2 bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed w-full sm:w-auto"
-          >
-            {isGeneratingOffering ? (
-              <RefreshCw className="w-4 h-4 animate-spin" />
-            ) : (
-              <FileText className="w-4 h-4" />
-            )}
-            <span className="whitespace-nowrap">{isGeneratingOffering ? 'Generating...' : 'Offering (PDF)'}</span>
-          </button>
 
           <button 
             onClick={handleDownloadImage}
             disabled={isGeneratingImage}
-            className="flex items-center justify-center gap-2 bg-gray-900 text-white px-4 py-2 rounded-lg hover:bg-gray-800 transition-colors disabled:opacity-50 disabled:cursor-not-allowed w-full sm:w-auto"
+            className="flex items-center justify-center gap-2 bg-gray-900 text-white px-4 py-2 rounded-lg hover:bg-gray-800 transition-colors disabled:opacity-50 disabled:cursor-not-allowed w-full sm:w-auto ml-auto"
           >
             {isGeneratingImage ? (
               <RefreshCw className="w-4 h-4 animate-spin" />
             ) : (
               <Download className="w-4 h-4" />
             )}
-            <span className="whitespace-nowrap">{isGeneratingImage ? 'Generating...' : 'Download JPG'}</span>
+            <span className="whitespace-nowrap text-sm font-medium">{isGeneratingImage ? 'Generating...' : 'Download JPG'}</span>
           </button>
         </div>
       </div>

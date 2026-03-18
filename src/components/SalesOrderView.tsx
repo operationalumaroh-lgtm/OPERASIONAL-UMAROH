@@ -11,13 +11,9 @@ import { ziarahData } from '../data/ziarah';
 import { keretaCepatData } from '../data/keretaCepat';
 import { umrahAirports } from '../data/airports';
 import { Download, FileSpreadsheet, Image as ImageIcon, FileText } from 'lucide-react';
-import html2canvas from 'html2canvas';
 import * as XLSX from 'xlsx';
-// @ts-ignore
-import html2pdf from 'html2pdf.js';
 import { format } from 'date-fns';
 import { id } from 'date-fns/locale';
-import { ProfessionalOffering } from './ProfessionalOffering';
 import { AIPromptInput } from './AIPromptInput';
 import { Type } from '@google/genai';
 
@@ -76,14 +72,13 @@ export const SalesOrderView: React.FC = () => {
   const [pic, setPic] = useState('');
   const [hargaVisaUpdate, setHargaVisaUpdate] = useState(135);
   const [hargaTransportasiUpdate, setHargaTransportasiUpdate] = useState(2500);
-  const [hargaMutawwifUpdate, setHargaMutawwifUpdate] = useState(250);
+  const [hargaMutawwifUpdate, setHargaMutawwifUpdate] = useState(300);
+  const [pakaiMutawif, setPakaiMutawif] = useState(true);
   const [kursSaudi, setKursSaudi] = useState(4700);
   const [kursUsd, setKursUsd] = useState(17000);
   const [malamMadinah, setMalamMadinah] = useState(3);
   const [malamMakkah, setMalamMakkah] = useState(4);
   const tableRef = useRef<HTMLDivElement>(null);
-  const professionalOfferingRef = useRef<HTMLDivElement>(null);
-  const [isGenerating, setIsGenerating] = useState(false);
 
   const salesOrderSchema = {
     type: Type.OBJECT,
@@ -350,6 +345,12 @@ export const SalesOrderView: React.FC = () => {
   const handlingHargaApk = handlingHargaVendor * (1 + HANDLING_CONSTANTS.defaultMarginPercent / 100);
   const handling = calculateRow(handlingHargaApk, handlingHargaVendor, jamaahBayar, jamaahBeli);
 
+  // Mutawif
+  const mutawifHari = programHari ? (parseInt(programHari) || 9) - 1 : 8;
+  const mutawifHargaVendor = (pakaiMutawif && jumlahPax > 0) ? (hargaMutawwifUpdate * mutawifHari * kursSaudi) / jumlahPax : 0;
+  const mutawifHargaApk = mutawifHargaVendor * 1.80; // 80% margin
+  const mutawifRow = calculateRow(mutawifHargaApk, mutawifHargaVendor, jamaahBayar, jamaahBeli);
+
   // Equipment
   const equipmentObj = equipmentData.find(e => e.id === selectedEquipment);
   const equipmentHargaVendor = equipmentObj ? equipmentObj.basePrice : 0;
@@ -377,120 +378,22 @@ export const SalesOrderView: React.FC = () => {
   const handlingDomestik = calculateRow(handlingDomestikHargaApk, handlingDomestikHargaVendor, jamaahBayar, jamaahBeli);
 
   // Tour Leader
-  const subtotalHargaVendor = maskapaiHargaVendor + hotelMadinahHargaVendor + hotelMakkahHargaVendor + handlingHargaVendor + equipmentHargaVendor + visaHargaVendor + transportHargaVendor + asuransiHargaVendor + manasikHargaVendor + ziarahHargaVendor + keretaCepatHargaVendor + handlingDomestikHargaVendor;
+  const subtotalHargaVendor = maskapaiHargaVendor + hotelMadinahHargaVendor + hotelMakkahHargaVendor + handlingHargaVendor + mutawifHargaVendor + equipmentHargaVendor + visaHargaVendor + transportHargaVendor + asuransiHargaVendor + manasikHargaVendor + ziarahHargaVendor + keretaCepatHargaVendor + handlingDomestikHargaVendor;
   const tlHargaApk = (jumlahPax > 0 && tl > 0) ? (subtotalHargaVendor * tl) / jumlahPax : 0;
   const tlHargaVendor = 0;
   const tlRow = calculateRow(tlHargaApk, tlHargaVendor, jamaahBayar, 0); // TL doesn't have jamaah beli cost here usually, or it's distributed
 
   // Totals
-  const totalHargaApk = maskapaiHargaApk + hotelMadinahHargaApk + hotelMakkahHargaApk + handlingHargaApk + equipmentHargaApk + visaHargaApk + transportHargaApk + asuransiHargaApk + manasikHargaApk + ziarahHargaApk + keretaCepatHargaApk + handlingDomestikHargaApk + tlHargaApk;
+  const totalHargaApk = maskapaiHargaApk + hotelMadinahHargaApk + hotelMakkahHargaApk + handlingHargaApk + mutawifHargaApk + equipmentHargaApk + visaHargaApk + transportHargaApk + asuransiHargaApk + manasikHargaApk + ziarahHargaApk + keretaCepatHargaApk + handlingDomestikHargaApk + tlHargaApk;
   const totalHargaVendor = subtotalHargaVendor + tlHargaVendor;
   const totalEstMargin = totalHargaApk - totalHargaVendor;
-  const totalHrgJual = maskapai.totalHrgJual + hotelMadinah.totalHrgJual + hotelMakkah.totalHrgJual + handling.totalHrgJual + perlengkapan.totalHrgJual + visaRow.totalHrgJual + transportRow.totalHrgJual + asuransi.totalHrgJual + manasik.totalHrgJual + ziarah.totalHrgJual + keretaCepat.totalHrgJual + handlingDomestik.totalHrgJual + tlRow.totalHrgJual;
-  const totalHargaBeliAll = maskapai.totalHargaBeli + hotelMadinah.totalHargaBeli + hotelMakkah.totalHargaBeli + handling.totalHargaBeli + perlengkapan.totalHargaBeli + visaRow.totalHargaBeli + transportRow.totalHargaBeli + asuransi.totalHargaBeli + manasik.totalHargaBeli + ziarah.totalHargaBeli + keretaCepat.totalHargaBeli + handlingDomestik.totalHargaBeli + tlRow.totalHargaBeli;
+  const totalHrgJual = maskapai.totalHrgJual + hotelMadinah.totalHrgJual + hotelMakkah.totalHrgJual + handling.totalHrgJual + mutawifRow.totalHrgJual + perlengkapan.totalHrgJual + visaRow.totalHrgJual + transportRow.totalHrgJual + asuransi.totalHrgJual + manasik.totalHrgJual + ziarah.totalHrgJual + keretaCepat.totalHrgJual + handlingDomestik.totalHrgJual + tlRow.totalHrgJual;
+  const totalHargaBeliAll = maskapai.totalHargaBeli + hotelMadinah.totalHargaBeli + hotelMakkah.totalHargaBeli + handling.totalHargaBeli + mutawifRow.totalHargaBeli + perlengkapan.totalHargaBeli + visaRow.totalHargaBeli + transportRow.totalHargaBeli + asuransi.totalHargaBeli + manasik.totalHargaBeli + ziarah.totalHargaBeli + keretaCepat.totalHargaBeli + handlingDomestik.totalHargaBeli + tlRow.totalHargaBeli;
   const totalMarginAll = totalHrgJual - totalHargaBeliAll;
 
   const hargaQuadDewasa = totalHargaApk + komisiMitra + komisiUmaroh;
   const hargaTripleDewasa = 32500000;
   const hargaDoubleDewasa = 34000000;
-
-  const handleDownloadJpg = async () => {
-    if (!professionalOfferingRef.current) return;
-    setIsGenerating(true);
-    
-    // Create a clone of the element to sanitize colors for html2canvas
-    const original = professionalOfferingRef.current;
-    const clone = original.cloneNode(true) as HTMLElement;
-    
-    // Position clone off-screen
-    clone.style.position = 'fixed';
-    clone.style.left = '-9999px';
-    clone.style.top = '0';
-    clone.style.width = original.offsetWidth + 'px';
-    document.body.appendChild(clone);
-
-    try {
-      // Helper to convert modern color spaces (oklch, oklab) to RGB/HEX
-      const convertToRgb = (color: string) => {
-        if (!color || (!color.includes('oklch') && !color.includes('oklab'))) return color;
-        
-        const canvas = document.createElement('canvas');
-        canvas.width = 1;
-        canvas.height = 1;
-        const ctx = canvas.getContext('2d');
-        if (!ctx) return '#000000';
-        
-        try {
-          ctx.fillStyle = color;
-          const result = ctx.fillStyle;
-          if (result.includes('oklch') || result.includes('oklab')) {
-            return '#000000'; // Safe fallback
-          }
-          return result;
-        } catch (e) {
-          return '#000000';
-        }
-      };
-
-      // Sanitize all elements in the clone
-      const allClones = clone.querySelectorAll('*');
-      const sanitizeNode = (cloned: HTMLElement) => {
-        const computed = window.getComputedStyle(cloned);
-        const propsToCheck = [
-          'color', 'background-color', 'border-color', 
-          'border-top-color', 'border-right-color', 'border-bottom-color', 'border-left-color',
-          'outline-color', 'text-decoration-color', 
-          'fill', 'stroke', 'stop-color', 'flood-color', 'lighting-color',
-          'caret-color', 'column-rule-color',
-          'box-shadow', 'filter', 'backdrop-filter', 'background-image'
-        ];
-
-        propsToCheck.forEach(prop => {
-          const val = computed.getPropertyValue(prop);
-          if (val && (val.includes('oklch') || val.includes('oklab'))) {
-            if (prop === 'box-shadow' || prop === 'filter' || prop === 'backdrop-filter' || prop === 'background-image') {
-              cloned.style.setProperty(prop, 'none', 'important');
-            } else {
-              const rgb = convertToRgb(val);
-              cloned.style.setProperty(prop, rgb, 'important');
-            }
-          }
-        });
-      };
-
-      sanitizeNode(clone);
-      allClones.forEach(node => sanitizeNode(node as HTMLElement));
-
-      const canvas = await html2canvas(clone, {
-        scale: 2,
-        useCORS: true,
-        logging: false,
-        backgroundColor: '#ffffff',
-        onclone: (clonedDoc: Document) => {
-          const styleTags = clonedDoc.getElementsByTagName('style');
-          for (let i = 0; i < styleTags.length; i++) {
-            if (styleTags[i].innerHTML.includes('oklch') || styleTags[i].innerHTML.includes('oklab')) {
-              styleTags[i].innerHTML = styleTags[i].innerHTML
-                .replace(/oklch\([^)]+\)/g, '#000000')
-                .replace(/oklab\([^)]+\)/g, '#000000');
-            }
-          }
-        }
-      } as any);
-      
-      const image = canvas.toDataURL('image/jpeg', 0.9);
-      const link = document.createElement('a');
-      link.href = image;
-      link.download = `Offering_${namaPaket || 'SalesOrder'}_${tglKeberangkatan || 'Draft'}.jpg`;
-      link.click();
-    } catch (error) {
-      console.error('JPG generation failed:', error);
-      alert('Failed to generate image. Please try again.');
-    } finally {
-      document.body.removeChild(clone);
-      setIsGenerating(false);
-    }
-  };
 
   const handleDownloadExcel = () => {
     const data = [
@@ -505,6 +408,7 @@ export const SalesOrderView: React.FC = () => {
       [`HOTEL MADINAH: ${hotelMadinahObj?.name || "-"}`, hotelMadinahObj?.vendor || "-", hotelMadinahHargaApk, hotelMadinahHargaVendor, hotelMadinah.estMargin, formatPercent(hotelMadinah.pctMargin), jamaahBayar, hotelMadinah.totalHrgJual, jamaahBeli, hotelMadinah.totalHargaBeli, hotelMadinah.totalMargin, "UPDATE RATE"],
       [`HOTEL MAKKAH: ${hotelMakkahObj?.name || "-"}`, hotelMakkahObj?.vendor || "-", hotelMakkahHargaApk, hotelMakkahHargaVendor, hotelMakkah.estMargin, formatPercent(hotelMakkah.pctMargin), jamaahBayar, hotelMakkah.totalHrgJual, jamaahBeli, hotelMakkah.totalHargaBeli, hotelMakkah.totalMargin, "UPDATE RATE"],
       [`HANDLING: ${handlingObj ? `${handlingObj.minPax}-${handlingObj.maxPax} Pax` : "-"}`, "TFA", handlingHargaApk, handlingHargaVendor, handling.estMargin, formatPercent(handling.pctMargin), jamaahBayar, handling.totalHrgJual, jamaahBeli, handling.totalHargaBeli, handling.totalMargin, "UPDATE"],
+      [`MUTAWIF: ${mutawifHari} Hari${!pakaiMutawif ? ' (Tidak Dipakai)' : ''}`, "TFA", mutawifHargaApk, mutawifHargaVendor, mutawifRow.estMargin, formatPercent(mutawifRow.pctMargin), jamaahBayar, mutawifRow.totalHrgJual, jamaahBeli, mutawifRow.totalHargaBeli, mutawifRow.totalMargin, "UPDATE"],
       [`PERLENGKAPAN: ${equipmentObj?.name || "-"}`, "UMAROH", equipmentHargaApk, equipmentHargaVendor, perlengkapan.estMargin, formatPercent(perlengkapan.pctMargin), jamaahBayar, perlengkapan.totalHrgJual, jamaahBeli, perlengkapan.totalHargaBeli, perlengkapan.totalMargin, "GUDANG OK"],
       [`VISA: ${visaObj?.paxRange || "-"}`, "TFA", visaHargaApk, visaHargaVendor, visaRow.estMargin, formatPercent(visaRow.pctMargin), jamaahBayar, visaRow.totalHrgJual, jamaahBeli, visaRow.totalHargaBeli, visaRow.totalMargin, "UPDATE"],
       [`TRANSPORT: ${transportObj?.name || "-"} ${transportRoute?.route || ""}`, transportObj?.namaVendor || "-", transportHargaApk, transportHargaVendor, transportRow.estMargin, formatPercent(transportRow.pctMargin), jamaahBayar, transportRow.totalHrgJual, jamaahBeli, transportRow.totalHargaBeli, transportRow.totalMargin, ""],
@@ -529,143 +433,6 @@ export const SalesOrderView: React.FC = () => {
     XLSX.writeFile(wb, `SalesOrder_${namaPaket || 'Draft'}_${tglKeberangkatan || ''}.xlsx`);
   };
 
-  const handleDownloadPdf = async () => {
-    if (!professionalOfferingRef.current) return;
-    setIsGenerating(true);
-    
-    // Create a clone of the element to sanitize colors for html2pdf
-    const original = professionalOfferingRef.current;
-    const clone = original.cloneNode(true) as HTMLElement;
-    
-    // Position clone off-screen
-    clone.style.position = 'fixed';
-    clone.style.left = '-9999px';
-    clone.style.top = '0';
-    clone.style.width = original.offsetWidth + 'px';
-    document.body.appendChild(clone);
-
-    try {
-      // Helper to convert modern color spaces (oklch, oklab) to RGB/HEX
-      const convertToRgb = (color: string) => {
-        if (!color || (!color.includes('oklch') && !color.includes('oklab'))) return color;
-        
-        const canvas = document.createElement('canvas');
-        canvas.width = 1;
-        canvas.height = 1;
-        const ctx = canvas.getContext('2d');
-        if (!ctx) return '#000000';
-        
-        try {
-          ctx.fillStyle = color;
-          const result = ctx.fillStyle;
-          if (result.includes('oklch') || result.includes('oklab')) {
-            return '#000000'; // Safe fallback
-          }
-          return result;
-        } catch (e) {
-          return '#000000';
-        }
-      };
-
-      // Sanitize all elements in the clone
-      const allClones = clone.querySelectorAll('*');
-      const sanitizeNode = (cloned: HTMLElement) => {
-        const computed = window.getComputedStyle(cloned);
-        const propsToCheck = [
-          'color', 'background-color', 'border-color', 
-          'border-top-color', 'border-right-color', 'border-bottom-color', 'border-left-color',
-          'outline-color', 'text-decoration-color', 
-          'fill', 'stroke', 'stop-color', 'flood-color', 'lighting-color',
-          'caret-color', 'column-rule-color',
-          'box-shadow', 'filter', 'backdrop-filter', 'background-image'
-        ];
-
-        propsToCheck.forEach(prop => {
-          const val = computed.getPropertyValue(prop);
-          if (val && (val.includes('oklch') || val.includes('oklab'))) {
-            if (prop === 'box-shadow' || prop === 'filter' || prop === 'backdrop-filter' || prop === 'background-image') {
-              cloned.style.setProperty(prop, 'none', 'important');
-            } else {
-              const rgb = convertToRgb(val);
-              cloned.style.setProperty(prop, rgb, 'important');
-            }
-          }
-        });
-      };
-
-      sanitizeNode(clone);
-      allClones.forEach(node => sanitizeNode(node as HTMLElement));
-
-      const opt = {
-        margin: 0,
-        filename: `Offering_${namaPaket || 'Draft'}_${tglKeberangkatan || ''}.pdf`,
-        image: { type: 'jpeg', quality: 0.98 },
-        html2canvas: { 
-          scale: 2, 
-          useCORS: true,
-          logging: false,
-          letterRendering: true,
-          onclone: (clonedDoc: Document) => {
-            const styleTags = clonedDoc.getElementsByTagName('style');
-            for (let i = 0; i < styleTags.length; i++) {
-              if (styleTags[i].innerHTML.includes('oklch') || styleTags[i].innerHTML.includes('oklab')) {
-                styleTags[i].innerHTML = styleTags[i].innerHTML
-                  .replace(/oklch\([^)]+\)/g, '#000000')
-                  .replace(/oklab\([^)]+\)/g, '#000000');
-              }
-            }
-          }
-        },
-        jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
-        pagebreak: { mode: ['css', 'legacy'] }
-      };
-
-      await html2pdf().set(opt).from(clone).save();
-    } catch (error) {
-      console.error('PDF generation failed:', error);
-      alert('Failed to generate PDF. Please try again.');
-    } finally {
-      document.body.removeChild(clone);
-      setIsGenerating(false);
-    }
-  };
-
-  const offeringData = {
-    tanggalPembuatan: new Date(),
-    namaTravel: namaTravel,
-    namaMitra: namaMitra,
-    emberkasi: emberkasi,
-    jumlahPax: jumlahPax,
-    tourLeaderCount: tl,
-    jadwalKeberangkatan: tglKeberangkatan ? format(new Date(tglKeberangkatan), 'MMMM yyyy', { locale: id }) : '-',
-    program: namaPaket,
-    prices: {
-      maskapai: maskapaiHargaApk,
-      hotelMadinah: hotelMadinahHargaApk,
-      hotelMakkah: hotelMakkahHargaApk,
-      handlingSaudi: handlingHargaApk,
-      mutawif: 0, // Not explicitly tracked as separate state yet
-      aksesoris: equipmentHargaApk,
-      addOn: 0, // Not explicitly tracked as separate state yet
-      visa: visaHargaApk + transportHargaApk,
-      asuransi: asuransiHargaApk,
-      handlingDomestik: handlingDomestikHargaApk,
-      tl: tlHargaApk,
-      hargaHpp: totalHargaApk,
-      komisiMitra: komisiMitra,
-      komisiUmaroh: komisiUmaroh,
-      hargaQuad: hargaQuadDewasa,
-      hargaTriple: hargaQuadDewasa + 2500000, 
-      hargaDouble: hargaQuadDewasa + 4000000, 
-    },
-    details: {
-      hotelMadinahName: hotelMadinahObj?.name || '-',
-      hotelMakkahName: hotelMakkahObj?.name || '-',
-      maskapaiName: maskapaiObj?.name || '-',
-      maskapaiSeats: maskapaiObj ? `${maskapaiObj.availableSeats}/${maskapaiObj.totalSeats}` : '-',
-    }
-  };
-
   return (
     <div className="container mx-auto px-4 py-8 max-w-full overflow-x-auto">
       <AIPromptInput 
@@ -688,38 +455,16 @@ export const SalesOrderView: React.FC = () => {
         }}
       />
 
-      {/* Hidden PDF Template */}
-      <div style={{ position: 'absolute', left: '-9999px', top: '-9999px' }}>
-        <div ref={professionalOfferingRef}>
-          <ProfessionalOffering data={offeringData} />
-        </div>
-      </div>
-
       <div className="bg-white rounded-xl shadow-md border border-gray-200 overflow-hidden">
         <div className="p-4 border-b border-gray-200 bg-gray-50 flex justify-between items-center">
           <h2 className="text-xl font-bold text-gray-800">Sales Order / Quotation</h2>
           <div className="flex gap-4 items-center">
-            <button 
-              onClick={handleDownloadJpg}
-              disabled={isGenerating}
-              className="flex items-center gap-2 bg-emerald-600 text-white px-3 py-1.5 rounded-lg hover:bg-emerald-700 transition-colors text-sm disabled:opacity-50"
-            >
-              <ImageIcon className="w-4 h-4" />
-              {isGenerating ? 'Generating...' : 'Offering (JPG)'}
-            </button>
             <button 
               onClick={handleDownloadExcel}
               className="flex items-center gap-2 bg-blue-600 text-white px-3 py-1.5 rounded-lg hover:bg-blue-700 transition-colors text-sm"
             >
               <FileSpreadsheet className="w-4 h-4" />
               Excel
-            </button>
-            <button 
-              onClick={handleDownloadPdf}
-              className="flex items-center gap-2 bg-red-600 text-white px-3 py-1.5 rounded-lg hover:bg-red-700 transition-colors text-sm"
-            >
-              <FileText className="w-4 h-4" />
-              PDF
             </button>
             <div className="h-6 w-px bg-gray-300 mx-2"></div>
             <div className="flex items-center gap-2">
@@ -751,7 +496,9 @@ export const SalesOrderView: React.FC = () => {
                   <input type="text" value={pic} onChange={e => setPic(e.target.value)} className="w-full bg-white border border-gray-300 rounded px-2 py-1 text-center" />
                 </td>
                 <td colSpan={3} className="border-r border-gray-300 p-2 font-bold text-right italic text-gray-600">HARGA VISA UPDATE</td>
-                <td className="p-2 font-bold text-gray-600 italic">${hargaVisaUpdate}/pax</td>
+                <td className="p-2 font-bold text-gray-600 italic flex items-center">
+                  $<input type="number" value={hargaVisaUpdate} onChange={e => setHargaVisaUpdate(Number(e.target.value))} className="w-16 bg-transparent border-b border-gray-400 outline-none text-right ml-1" />/pax
+                </td>
               </tr>
               <tr className="bg-gray-100 border-b border-gray-300">
                 <td colSpan={2} className="border-r border-gray-300 p-2 font-bold text-center">TGL DAN BULAN KEBERANGKATAN</td>
@@ -765,7 +512,9 @@ export const SalesOrderView: React.FC = () => {
                 <td className="border-r border-gray-300 p-2"></td>
                 <td className="border-r border-gray-300 p-2"></td>
                 <td colSpan={3} className="border-r border-gray-300 p-2 font-bold text-right italic text-gray-600">HARGA TRANSPORTASI UPDATE</td>
-                <td className="p-2 font-bold text-gray-600 italic">SAR{hargaTransportasiUpdate}</td>
+                <td className="p-2 font-bold text-gray-600 italic flex items-center">
+                  SAR<input type="number" value={hargaTransportasiUpdate} onChange={e => setHargaTransportasiUpdate(Number(e.target.value))} className="w-16 bg-transparent border-b border-gray-400 outline-none text-right ml-1" />
+                </td>
               </tr>
               <tr className="bg-gray-100 border-b border-gray-300">
                 <td colSpan={2} className="border-r border-gray-300 p-2 font-bold text-center">PROGRAM HARI</td>
@@ -786,7 +535,9 @@ export const SalesOrderView: React.FC = () => {
                   <input type="text" value={namaTravel} onChange={e => setNamaTravel(e.target.value)} className="w-full bg-white border border-gray-300 rounded px-2 py-1" />
                 </td>
                 <td colSpan={3} className="border-r border-gray-300 p-2 font-bold text-right italic text-gray-600">HARGA MUTAWWIF UPDATE</td>
-                <td className="p-2 font-bold text-gray-600 italic">SAR{hargaMutawwifUpdate}</td>
+                <td className="p-2 font-bold text-gray-600 italic flex items-center">
+                  SAR<input type="number" value={hargaMutawwifUpdate} onChange={e => setHargaMutawwifUpdate(Number(e.target.value))} className="w-16 bg-transparent border-b border-gray-400 outline-none text-right ml-1" />
+                </td>
               </tr>
               <tr className="bg-gray-100 border-b border-gray-400">
                 <td colSpan={2} className="border-r border-gray-300 p-2 font-bold text-center">NAMA MITRA</td>
@@ -929,6 +680,33 @@ export const SalesOrderView: React.FC = () => {
                 <td className="border-r border-gray-300 p-2 text-center">{jamaahBeli}</td>
                 <td className="border-r border-gray-300 p-2 text-right">{formatCurrency(handling.totalHargaBeli)}</td>
                 <td className="border-r border-gray-300 p-2 text-right">{formatCurrency(handling.totalMargin)}</td>
+                <td className="p-2 text-center text-xs">UPDATE</td>
+              </tr>
+
+              <tr className="border-b border-gray-300 hover:bg-gray-50">
+                <td className="border-r border-gray-300 p-2 font-medium">
+                  <div className="flex items-center justify-between">
+                    <span>Mutawif ({mutawifHari} Hari)</span>
+                    <select 
+                      value={pakaiMutawif ? "ya" : "tidak"} 
+                      onChange={e => setPakaiMutawif(e.target.value === "ya")}
+                      className="ml-2 bg-white border border-gray-300 rounded px-1 py-0.5 text-xs"
+                    >
+                      <option value="ya">Pakai</option>
+                      <option value="tidak">Tidak</option>
+                    </select>
+                  </div>
+                </td>
+                <td className="border-r border-gray-300 p-2 text-center">TFA</td>
+                <td className="border-r border-gray-300 p-2 text-right">{formatCurrency(mutawifHargaApk)}</td>
+                <td className="border-r border-gray-300 p-2 text-right">{formatCurrency(mutawifHargaVendor)}</td>
+                <td className="border-r border-gray-300 p-2 text-right">{formatCurrency(mutawifRow.estMargin)}</td>
+                <td className="border-r border-gray-300 p-2 text-center">{formatPercent(mutawifRow.pctMargin)}</td>
+                <td className="border-r border-gray-300 p-2 text-center">{jamaahBayar}</td>
+                <td className="border-r border-gray-300 p-2 text-right">{formatCurrency(mutawifRow.totalHrgJual)}</td>
+                <td className="border-r border-gray-300 p-2 text-center">{jamaahBeli}</td>
+                <td className="border-r border-gray-300 p-2 text-right">{formatCurrency(mutawifRow.totalHargaBeli)}</td>
+                <td className="border-r border-gray-300 p-2 text-right">{formatCurrency(mutawifRow.totalMargin)}</td>
                 <td className="p-2 text-center text-xs">UPDATE</td>
               </tr>
 
