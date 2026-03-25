@@ -12,6 +12,8 @@ import { MappingPaketJadiView } from './components/MappingPaketJadiView';
 import { TemplatesView } from './components/TemplatesView';
 import { SalesOrderView } from './components/SalesOrderView';
 import { FlightMonitoringView } from './components/FlightMonitoringView';
+import { TrackerView } from './components/TrackerView';
+import { ManifestPage } from './components/manifest/ManifestPage';
 import { LoginView, Role } from './components/LoginView';
 import { logoBase64 } from './utils/logoBase64';
 import { LogOut, User } from 'lucide-react';
@@ -69,6 +71,10 @@ function App() {
         return <SalesOrderView />;
       case 'flights':
         return <FlightMonitoringView />;
+      case 'tracker':
+        return <TrackerView />;
+      case 'manifest':
+        return <ManifestPage />;
       default:
         return <DashboardView onNavigate={handleTabChange} />;
     }

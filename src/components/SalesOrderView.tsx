@@ -16,6 +16,10 @@ import { format } from 'date-fns';
 import { id } from 'date-fns/locale';
 import { AIPromptInput } from './AIPromptInput';
 import { Type } from '@google/genai';
+import html2canvas from 'html2canvas';
+import jsPDF from 'jspdf';
+import { formatCurrency, formatPercent } from '../utils/format';
+import { OfferingTemplate } from './OfferingTemplate';
 
 import { isDateInRange, parseDateRange } from '../utils/dateUtils';
 
@@ -79,6 +83,7 @@ export const SalesOrderView: React.FC = () => {
   const [malamMadinah, setMalamMadinah] = useState(3);
   const [malamMakkah, setMalamMakkah] = useState(4);
   const tableRef = useRef<HTMLDivElement>(null);
+  const offeringRef = useRef<HTMLDivElement>(null);
 
   const salesOrderSchema = {
     type: Type.OBJECT,
@@ -177,23 +182,6 @@ export const SalesOrderView: React.FC = () => {
   const [komisiMitra, setKomisiMitra] = useState(3000000);
   const komisiUmarohPercent = 10;
   const komisiUmaroh = komisiMitra * (komisiUmarohPercent / 100);
-
-  const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat('id-ID', {
-      style: 'currency',
-      currency: 'IDR',
-      minimumFractionDigits: 0,
-      maximumFractionDigits: 0,
-    }).format(amount);
-  };
-
-  const formatPercent = (amount: number) => {
-    return new Intl.NumberFormat('id-ID', {
-      style: 'percent',
-      minimumFractionDigits: 0,
-      maximumFractionDigits: 0,
-    }).format(amount);
-  };
 
   // Helper to calculate row values
   const calculateRow = (hargaApk: number, hargaVendor: number, jamaahBayar: number, jamaahBeli: number) => {
@@ -433,6 +421,51 @@ export const SalesOrderView: React.FC = () => {
     XLSX.writeFile(wb, `SalesOrder_${namaPaket || 'Draft'}_${tglKeberangkatan || ''}.xlsx`);
   };
 
+  const handleGenerateJPG = async () => {
+    if (offeringRef.current) {
+      try {
+        const canvas = await html2canvas(offeringRef.current, { 
+          scale: 2,
+          useCORS: true,
+          allowTaint: true,
+          backgroundColor: '#ffffff'
+        });
+        const imgData = canvas.toDataURL('image/jpeg', 0.95);
+        const link = document.createElement('a');
+        link.download = `Offering_${namaPaket || 'Draft'}.jpg`;
+        link.href = imgData;
+        link.click();
+      } catch (error) {
+        console.error("Error generating JPG:", error);
+        alert("Gagal membuat JPG. Pastikan semua data terisi.");
+      }
+    }
+  };
+
+  const handleGeneratePDF = async () => {
+    if (offeringRef.current) {
+      try {
+        const canvas = await html2canvas(offeringRef.current, { 
+          scale: 2,
+          useCORS: true,
+          allowTaint: true,
+          backgroundColor: '#ffffff'
+        });
+        const imgData = canvas.toDataURL('image/jpeg', 0.95);
+        const pdf = new jsPDF({
+          orientation: 'portrait',
+          unit: 'px',
+          format: [canvas.width, canvas.height]
+        });
+        pdf.addImage(imgData, 'JPEG', 0, 0, canvas.width, canvas.height);
+        pdf.save(`Offering_${namaPaket || 'Draft'}.pdf`);
+      } catch (error) {
+        console.error("Error generating PDF:", error);
+        alert("Gagal membuat PDF. Pastikan semua data terisi.");
+      }
+    }
+  };
+
   return (
     <div className="container mx-auto px-4 py-8 max-w-full overflow-x-auto">
       <AIPromptInput 
@@ -459,6 +492,22 @@ export const SalesOrderView: React.FC = () => {
         <div className="p-4 border-b border-gray-200 bg-gray-50 flex justify-between items-center">
           <h2 className="text-xl font-bold text-gray-800">Sales Order / Quotation</h2>
           <div className="flex gap-4 items-center">
+            <button 
+              onClick={handleGenerateJPG}
+              className="flex items-center gap-2 bg-amber-600 text-white px-3 py-1.5 rounded-lg hover:bg-amber-700 transition-colors text-sm"
+              title="Generate Offering JPG"
+            >
+              <ImageIcon className="w-4 h-4" />
+              JPG
+            </button>
+            <button 
+              onClick={handleGeneratePDF}
+              className="flex items-center gap-2 bg-rose-600 text-white px-3 py-1.5 rounded-lg hover:bg-rose-700 transition-colors text-sm"
+              title="Generate Offering PDF"
+            >
+              <FileText className="w-4 h-4" />
+              PDF
+            </button>
             <button 
               onClick={handleDownloadExcel}
               className="flex items-center gap-2 bg-blue-600 text-white px-3 py-1.5 rounded-lg hover:bg-blue-700 transition-colors text-sm"
@@ -994,6 +1043,41 @@ export const SalesOrderView: React.FC = () => {
             </tbody>
           </table>
         </div>
+      </div>
+
+      {/* Hidden Offering Template for Capture */}
+      <div className="absolute -left-[9999px] top-0">
+        <OfferingTemplate 
+          ref={offeringRef}
+          namaPaket={namaPaket}
+          namaTravel={namaTravel}
+          namaMitra={namaMitra}
+          emberkasi={emberkasi}
+          tglKeberangkatan={tglKeberangkatan}
+          programHari={programHari}
+          jumlahPax={jumlahPax}
+          tl={tl}
+          hotelMadinah={hotelMadinahObj?.name || '-'}
+          hotelMakkah={hotelMakkahObj?.name || '-'}
+          mealPlanMadinah={hotelMadinahObj?.mealPlan}
+          mealPlanMakkah={hotelMakkahObj?.mealPlan}
+          maskapai={maskapaiObj?.name || '-'}
+          hargaQuad={hargaQuadDewasa}
+          hargaTriple={hargaTripleDewasa}
+          hargaDouble={hargaDoubleDewasa}
+          maskapaiHarga={maskapaiHargaApk}
+          hotelMadinahHarga={hotelMadinahHargaApk}
+          hotelMakkahHarga={hotelMakkahHargaApk}
+          handlingSaudiHarga={handlingHargaApk}
+          visaTransportHarga={visaHargaApk + transportHargaApk}
+          asuransiHarga={asuransiHargaApk}
+          handlingDomestikHarga={handlingDomestikHargaApk}
+          perlengkapanHarga={equipmentHargaApk}
+          tlHarga={tlHargaApk}
+          hargaDewasaSebelumKomisi={totalHargaApk}
+          komisiMitra={komisiMitra}
+          komisiUmaroh={komisiUmaroh}
+        />
       </div>
     </div>
   );
