@@ -53,7 +53,7 @@ export const DatabaseView: React.FC = () => {
       {/* Sub-navigation */}
       <div className="bg-white border-b border-gray-200 px-4 py-3 print:hidden shadow-sm sticky top-0 z-10">
         <div className="container mx-auto">
-          <div className="flex overflow-x-auto no-scrollbar gap-2 pb-1 -mb-1 md:justify-center">
+          <div className="flex overflow-x-auto md:overflow-x-visible md:flex-wrap no-scrollbar gap-2 pb-1 -mb-1 md:justify-center">
             {tabs.map(tab => {
               const Icon = tab.icon;
               const isActive = activeTab === tab.id;

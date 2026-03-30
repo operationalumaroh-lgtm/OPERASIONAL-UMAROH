@@ -473,6 +473,34 @@ export const DashboardView: React.FC<DashboardViewProps> = ({ onNavigate }) => {
         </div>
       </div>
 
+      <div className="bg-white p-8 rounded-2xl shadow-sm border border-gray-100 mb-8">
+        <div className="flex items-center justify-between mb-6">
+          <div className="flex items-center gap-2">
+            <div className="p-2 bg-emerald-500 rounded-lg">
+              <MessageCircle className="w-5 h-5 text-white" />
+            </div>
+            <h2 className="text-lg font-bold text-gray-900">AI Tools</h2>
+          </div>
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="p-5 rounded-2xl border border-gray-100 bg-gray-50/50 hover:bg-white hover:shadow-md transition-all group cursor-pointer">
+            <div className="flex items-center justify-between mb-4">
+              <p className="font-bold text-gray-900 group-hover:text-emerald-600 transition-colors">WhatsApp AI Bot</p>
+              <span className="px-2 py-1 rounded-full bg-emerald-100 text-emerald-700 text-[10px] font-bold">
+                Beta
+              </span>
+            </div>
+            <p className="text-sm text-gray-600 mb-4">
+              Bot belajar dari pertanyaan user WhatsApp
+            </p>
+            <div className="pt-3 border-t border-gray-100 flex items-center justify-between">
+              <code className="text-[10px] text-gray-500 bg-gray-100 px-2 py-1 rounded">/api/whatsapp-bot</code>
+              <ArrowRight className="w-4 h-4 text-emerald-600 opacity-0 group-hover:opacity-100 transition-opacity" />
+            </div>
+          </div>
+        </div>
+      </div>
+
       <div className="bg-white p-8 rounded-2xl shadow-sm border border-gray-100">
         <h2 className="text-lg font-bold text-gray-900 mb-6">Recent Activity</h2>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">

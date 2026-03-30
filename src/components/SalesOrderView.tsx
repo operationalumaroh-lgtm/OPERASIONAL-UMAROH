@@ -63,10 +63,77 @@ const getQuadPrice = (hotel: Hotel, dateStr: string) => {
   return quadPriceEntry ? quadPriceEntry.price : null;
 };
 
+const getTriplePrice = (hotel: Hotel, dateStr: string) => {
+  let targetSeason = hotel.seasons[0];
+  if (dateStr) {
+    const checkDate = new Date(dateStr);
+    const exactSeason = hotel.seasons.find(s => isDateInRange(checkDate, s.range));
+    if (exactSeason) {
+      targetSeason = exactSeason;
+    } else {
+      let closestSeason = null;
+      let minDiff = Infinity;
+      for (const season of hotel.seasons) {
+        const { start, end } = parseDateRange(season.range);
+        if (start && end) {
+          const diffStart = Math.abs(checkDate.getTime() - start.getTime());
+          const diffEnd = Math.abs(checkDate.getTime() - end.getTime());
+          const diff = Math.min(diffStart, diffEnd);
+          if (diff < minDiff) {
+            minDiff = diff;
+            closestSeason = season;
+          }
+        }
+      }
+      if (closestSeason) {
+        targetSeason = closestSeason;
+      } else {
+        return null;
+      }
+    }
+  }
+  const triplePriceEntry = targetSeason?.prices.find(p => p.roomType.toLowerCase() === 'triple');
+  return triplePriceEntry ? triplePriceEntry.price : null;
+};
+
+const getDoublePrice = (hotel: Hotel, dateStr: string) => {
+  let targetSeason = hotel.seasons[0];
+  if (dateStr) {
+    const checkDate = new Date(dateStr);
+    const exactSeason = hotel.seasons.find(s => isDateInRange(checkDate, s.range));
+    if (exactSeason) {
+      targetSeason = exactSeason;
+    } else {
+      let closestSeason = null;
+      let minDiff = Infinity;
+      for (const season of hotel.seasons) {
+        const { start, end } = parseDateRange(season.range);
+        if (start && end) {
+          const diffStart = Math.abs(checkDate.getTime() - start.getTime());
+          const diffEnd = Math.abs(checkDate.getTime() - end.getTime());
+          const diff = Math.min(diffStart, diffEnd);
+          if (diff < minDiff) {
+            minDiff = diff;
+            closestSeason = season;
+          }
+        }
+      }
+      if (closestSeason) {
+        targetSeason = closestSeason;
+      } else {
+        return null;
+      }
+    }
+  }
+  const doublePriceEntry = targetSeason?.prices.find(p => p.roomType.toLowerCase() === 'double');
+  return doublePriceEntry ? doublePriceEntry.price : null;
+};
+
 export const SalesOrderView: React.FC = () => {
   const [namaPaket, setNamaPaket] = useState('');
-  const [namaTravel, setNamaTravel] = useState('ANUGRAH TOUR & TRAVEL');
-  const [namaMitra, setNamaMitra] = useState('IQBAL HAKIM');
+  const [namaTravel, setNamaTravel] = useState('');
+  const [namaMitra, setNamaMitra] = useState('');
+  const [jenisPaket, setJenisPaket] = useState('Reguler');
   const [emberkasi, setEmberkasi] = useState('Soekarno-Hatta (CGK) - Jakarta');
   const [tglKeberangkatan, setTglKeberangkatan] = useState('');
   const [programHari, setProgramHari] = useState('');
@@ -164,6 +231,10 @@ export const SalesOrderView: React.FC = () => {
   const [maskapaiHargaApk, setMaskapaiHargaApk] = useState(16000000);
   const [maskapaiHargaVendor, setMaskapaiHargaVendor] = useState(15200000);
   
+  const [namaWisata, setNamaWisata] = useState('');
+  const [hargaWisataApk, setHargaWisataApk] = useState(0);
+  const [hargaWisataVendor, setHargaWisataVendor] = useState(0);
+
   const [asuransiHargaApk, setAsuransiHargaApk] = useState(65000);
   const [asuransiHargaVendor, setAsuransiHargaVendor] = useState(65000);
   
@@ -312,9 +383,13 @@ export const SalesOrderView: React.FC = () => {
   }, [selectedKeretaCepat]);
 
   // Row calculations
+  const effectiveMaskapaiHargaApk = jenisPaket === 'Paket L.A.' ? 0 : maskapaiHargaApk;
+  const effectiveMaskapaiHargaVendor = jenisPaket === 'Paket L.A.' ? 0 : maskapaiHargaVendor;
   const maskapaiObj = maskapaiData.find(m => m.id === selectedMaskapai);
-  const maskapai = calculateRow(maskapaiHargaApk, maskapaiHargaVendor, jamaahBayar, jamaahBeli);
+  const maskapai = calculateRow(effectiveMaskapaiHargaApk, effectiveMaskapaiHargaVendor, jamaahBayar, jamaahBeli);
   
+  const wisataRow = calculateRow(hargaWisataApk, hargaWisataVendor, jamaahBayar, jamaahBeli);
+
   // Hotel Madinah
   const hotelMadinahObj = hotels.find(h => h.id === selectedHotelMadinah);
   const hotelMadinahHargaVendor = hotelMadinahObj ? ((getQuadPrice(hotelMadinahObj, tglKeberangkatan) || 0) * kursSaudi * malamMadinah) / 4 : 0;
@@ -366,22 +441,28 @@ export const SalesOrderView: React.FC = () => {
   const handlingDomestik = calculateRow(handlingDomestikHargaApk, handlingDomestikHargaVendor, jamaahBayar, jamaahBeli);
 
   // Tour Leader
-  const subtotalHargaVendor = maskapaiHargaVendor + hotelMadinahHargaVendor + hotelMakkahHargaVendor + handlingHargaVendor + mutawifHargaVendor + equipmentHargaVendor + visaHargaVendor + transportHargaVendor + asuransiHargaVendor + manasikHargaVendor + ziarahHargaVendor + keretaCepatHargaVendor + handlingDomestikHargaVendor;
+  const subtotalHargaVendor = effectiveMaskapaiHargaVendor + hotelMadinahHargaVendor + hotelMakkahHargaVendor + handlingHargaVendor + mutawifHargaVendor + equipmentHargaVendor + visaHargaVendor + transportHargaVendor + asuransiHargaVendor + manasikHargaVendor + ziarahHargaVendor + keretaCepatHargaVendor + handlingDomestikHargaVendor + (jenisPaket === 'Plus Wisata' ? hargaWisataVendor : 0);
   const tlHargaApk = (jumlahPax > 0 && tl > 0) ? (subtotalHargaVendor * tl) / jumlahPax : 0;
   const tlHargaVendor = 0;
   const tlRow = calculateRow(tlHargaApk, tlHargaVendor, jamaahBayar, 0); // TL doesn't have jamaah beli cost here usually, or it's distributed
 
   // Totals
-  const totalHargaApk = maskapaiHargaApk + hotelMadinahHargaApk + hotelMakkahHargaApk + handlingHargaApk + mutawifHargaApk + equipmentHargaApk + visaHargaApk + transportHargaApk + asuransiHargaApk + manasikHargaApk + ziarahHargaApk + keretaCepatHargaApk + handlingDomestikHargaApk + tlHargaApk;
+  const totalHargaApk = effectiveMaskapaiHargaApk + hotelMadinahHargaApk + hotelMakkahHargaApk + handlingHargaApk + mutawifHargaApk + equipmentHargaApk + visaHargaApk + transportHargaApk + asuransiHargaApk + manasikHargaApk + ziarahHargaApk + keretaCepatHargaApk + handlingDomestikHargaApk + tlHargaApk + (jenisPaket === 'Plus Wisata' ? hargaWisataApk : 0);
   const totalHargaVendor = subtotalHargaVendor + tlHargaVendor;
   const totalEstMargin = totalHargaApk - totalHargaVendor;
-  const totalHrgJual = maskapai.totalHrgJual + hotelMadinah.totalHrgJual + hotelMakkah.totalHrgJual + handling.totalHrgJual + mutawifRow.totalHrgJual + perlengkapan.totalHrgJual + visaRow.totalHrgJual + transportRow.totalHrgJual + asuransi.totalHrgJual + manasik.totalHrgJual + ziarah.totalHrgJual + keretaCepat.totalHrgJual + handlingDomestik.totalHrgJual + tlRow.totalHrgJual;
-  const totalHargaBeliAll = maskapai.totalHargaBeli + hotelMadinah.totalHargaBeli + hotelMakkah.totalHargaBeli + handling.totalHargaBeli + mutawifRow.totalHargaBeli + perlengkapan.totalHargaBeli + visaRow.totalHargaBeli + transportRow.totalHargaBeli + asuransi.totalHargaBeli + manasik.totalHargaBeli + ziarah.totalHargaBeli + keretaCepat.totalHargaBeli + handlingDomestik.totalHargaBeli + tlRow.totalHargaBeli;
+  const totalHrgJual = maskapai.totalHrgJual + hotelMadinah.totalHrgJual + hotelMakkah.totalHrgJual + handling.totalHrgJual + mutawifRow.totalHrgJual + perlengkapan.totalHrgJual + visaRow.totalHrgJual + transportRow.totalHrgJual + asuransi.totalHrgJual + manasik.totalHrgJual + ziarah.totalHrgJual + keretaCepat.totalHrgJual + handlingDomestik.totalHrgJual + tlRow.totalHrgJual + (jenisPaket === 'Plus Wisata' ? wisataRow.totalHrgJual : 0);
+  const totalHargaBeliAll = maskapai.totalHargaBeli + hotelMadinah.totalHargaBeli + hotelMakkah.totalHargaBeli + handling.totalHargaBeli + mutawifRow.totalHargaBeli + perlengkapan.totalHargaBeli + visaRow.totalHargaBeli + transportRow.totalHargaBeli + asuransi.totalHargaBeli + manasik.totalHargaBeli + ziarah.totalHargaBeli + keretaCepat.totalHargaBeli + handlingDomestik.totalHargaBeli + tlRow.totalHargaBeli + (jenisPaket === 'Plus Wisata' ? wisataRow.totalHargaBeli : 0);
   const totalMarginAll = totalHrgJual - totalHargaBeliAll;
 
+  const hotelMadinahTriple = hotelMadinahObj ? ((getTriplePrice(hotelMadinahObj, tglKeberangkatan) || 0) * kursSaudi * malamMadinah) / 3 : 0;
+  const hotelMakkahTriple = hotelMakkahObj ? ((getTriplePrice(hotelMakkahObj, tglKeberangkatan) || 0) * kursSaudi * malamMakkah) / 3 : 0;
+
+  const hotelMadinahDouble = hotelMadinahObj ? ((getDoublePrice(hotelMadinahObj, tglKeberangkatan) || 0) * kursSaudi * malamMadinah) / 2 : 0;
+  const hotelMakkahDouble = hotelMakkahObj ? ((getDoublePrice(hotelMakkahObj, tglKeberangkatan) || 0) * kursSaudi * malamMakkah) / 2 : 0;
+
   const hargaQuadDewasa = totalHargaApk + komisiMitra + komisiUmaroh;
-  const hargaTripleDewasa = 32500000;
-  const hargaDoubleDewasa = 34000000;
+  const hargaTripleDewasa = totalHargaApk - (hotelMadinahHargaApk + hotelMakkahHargaApk) + hotelMadinahTriple + hotelMakkahTriple + komisiMitra + komisiUmaroh;
+  const hargaDoubleDewasa = totalHargaApk - (hotelMadinahHargaApk + hotelMakkahHargaApk) + hotelMadinahDouble + hotelMakkahDouble + komisiMitra + komisiUmaroh;
 
   const handleDownloadExcel = () => {
     const data = [
@@ -392,7 +473,10 @@ export const SalesOrderView: React.FC = () => {
       ["NAMA MITRA", namaMitra, "", "", "", "", "", "", "", "", "", ""],
       [],
       ["DESK", "VENDOR", "HARGA APK", "HARGA VENDOR", "EST. MARGIN", "% MARGIN", "JAMAAH BAYAR", "TOTAL HRG JUAL", "JAMAAH BELI", "TOTAL HARGA BELI", "TOTAL MARGIN", "REFF."],
-      [`MASKAPAI: ${maskapaiObj?.name || "-"}`, maskapaiObj?.namaVendor || "-", maskapaiHargaApk, maskapaiHargaVendor, maskapai.estMargin, formatPercent(maskapai.pctMargin), jamaahBayar, maskapai.totalHrgJual, jamaahBeli, maskapai.totalHargaBeli, maskapai.totalMargin, "CONFIRMED"],
+      [`MASKAPAI: ${maskapaiObj?.name || "-"}`, maskapaiObj?.namaVendor || "-", effectiveMaskapaiHargaApk, effectiveMaskapaiHargaVendor, maskapai.estMargin, formatPercent(maskapai.pctMargin), jamaahBayar, maskapai.totalHrgJual, jamaahBeli, maskapai.totalHargaBeli, maskapai.totalMargin, "CONFIRMED"],
+      ...(jenisPaket === 'Plus Wisata' ? [
+        [`WISATA: ${namaWisata || "-"}`, "-", hargaWisataApk, hargaWisataVendor, wisataRow.estMargin, formatPercent(wisataRow.pctMargin), jamaahBayar, wisataRow.totalHrgJual, jamaahBeli, wisataRow.totalHargaBeli, wisataRow.totalMargin, "UPDATE"]
+      ] : []),
       [`HOTEL MADINAH: ${hotelMadinahObj?.name || "-"}`, hotelMadinahObj?.vendor || "-", hotelMadinahHargaApk, hotelMadinahHargaVendor, hotelMadinah.estMargin, formatPercent(hotelMadinah.pctMargin), jamaahBayar, hotelMadinah.totalHrgJual, jamaahBeli, hotelMadinah.totalHargaBeli, hotelMadinah.totalMargin, "UPDATE RATE"],
       [`HOTEL MAKKAH: ${hotelMakkahObj?.name || "-"}`, hotelMakkahObj?.vendor || "-", hotelMakkahHargaApk, hotelMakkahHargaVendor, hotelMakkah.estMargin, formatPercent(hotelMakkah.pctMargin), jamaahBayar, hotelMakkah.totalHrgJual, jamaahBeli, hotelMakkah.totalHargaBeli, hotelMakkah.totalMargin, "UPDATE RATE"],
       [`HANDLING: ${handlingObj ? `${handlingObj.minPax}-${handlingObj.maxPax} Pax` : "-"}`, "TFA", handlingHargaApk, handlingHargaVendor, handling.estMargin, formatPercent(handling.pctMargin), jamaahBayar, handling.totalHrgJual, jamaahBeli, handling.totalHargaBeli, handling.totalMargin, "UPDATE"],
@@ -558,8 +642,14 @@ export const SalesOrderView: React.FC = () => {
                 <td className="border-r border-gray-300 p-2 text-center bg-gray-200">
                   <input type="number" value={tl} onChange={e => setTl(Number(e.target.value))} className="w-16 bg-white border border-gray-300 rounded px-1 py-1 text-center" />
                 </td>
-                <td className="border-r border-gray-300 p-2"></td>
-                <td className="border-r border-gray-300 p-2"></td>
+                <td className="border-r border-gray-300 p-2 font-bold">JENIS PAKET</td>
+                <td className="border-r border-gray-300 p-2">
+                  <select value={jenisPaket} onChange={e => setJenisPaket(e.target.value)} className="w-full bg-white border border-gray-300 rounded px-2 py-1">
+                    <option value="Reguler">Reguler</option>
+                    <option value="Plus Wisata">Plus Wisata</option>
+                    <option value="Paket L.A.">Paket L.A.</option>
+                  </select>
+                </td>
                 <td colSpan={3} className="border-r border-gray-300 p-2 font-bold text-right italic text-gray-600">HARGA TRANSPORTASI UPDATE</td>
                 <td className="p-2 font-bold text-gray-600 italic flex items-center">
                   SAR<input type="number" value={hargaTransportasiUpdate} onChange={e => setHargaTransportasiUpdate(Number(e.target.value))} className="w-16 bg-transparent border-b border-gray-400 outline-none text-right ml-1" />
@@ -625,9 +715,9 @@ export const SalesOrderView: React.FC = () => {
               </tr>
 
               {/* Data Rows */}
-              <tr className="border-b border-gray-300 hover:bg-gray-50">
+              <tr className={`border-b border-gray-300 hover:bg-gray-50 ${jenisPaket === 'Paket L.A.' ? 'opacity-50' : ''}`}>
                 <td className="border-r border-gray-300 p-2 font-medium italic">
-                  <select value={selectedMaskapai} onChange={e => setSelectedMaskapai(e.target.value)} className="w-full bg-transparent font-medium italic outline-none">
+                  <select disabled={jenisPaket === 'Paket L.A.'} value={selectedMaskapai} onChange={e => setSelectedMaskapai(e.target.value)} className="w-full bg-transparent font-medium italic outline-none">
                     <option value="">Pilih Maskapai...</option>
                     {availableMaskapai.map(m => (
                       <option key={m.id} value={m.id}>
@@ -638,8 +728,12 @@ export const SalesOrderView: React.FC = () => {
                   </select>
                 </td>
                 <td className="border-r border-gray-300 p-2 text-center">{maskapaiObj?.namaVendor || ''}</td>
-                <td className="border-r border-gray-300 p-2 text-right">{formatCurrency(maskapaiHargaApk)}</td>
-                <td className="border-r border-gray-300 p-2 text-right">{formatCurrency(maskapaiHargaVendor)}</td>
+                <td className="border-r border-gray-300 p-2 text-right">
+                  <input disabled={jenisPaket === 'Paket L.A.'} type="number" value={effectiveMaskapaiHargaApk} onChange={e => setMaskapaiHargaApk(Number(e.target.value))} className="w-full bg-transparent text-right outline-none" />
+                </td>
+                <td className="border-r border-gray-300 p-2 text-right">
+                  <input disabled={jenisPaket === 'Paket L.A.'} type="number" value={effectiveMaskapaiHargaVendor} onChange={e => setMaskapaiHargaVendor(Number(e.target.value))} className="w-full bg-transparent text-right outline-none" />
+                </td>
                 <td className="border-r border-gray-300 p-2 text-right">{formatCurrency(maskapai.estMargin)}</td>
                 <td className="border-r border-gray-300 p-2 text-center">{formatPercent(maskapai.pctMargin)}</td>
                 <td className="border-r border-gray-300 p-2 text-center">{jamaahBayar}</td>
@@ -649,6 +743,29 @@ export const SalesOrderView: React.FC = () => {
                 <td className="border-r border-gray-300 p-2 text-right">{formatCurrency(maskapai.totalMargin)}</td>
                 <td className="p-2 text-center text-xs">CONFIRMED</td>
               </tr>
+              
+              {jenisPaket === 'Plus Wisata' && (
+                <tr className="border-b border-gray-300 hover:bg-gray-50">
+                  <td className="border-r border-gray-300 p-2 font-medium italic">
+                    <input type="text" placeholder="Nama Wisata..." value={namaWisata} onChange={e => setNamaWisata(e.target.value)} className="w-full bg-transparent font-medium italic outline-none" />
+                  </td>
+                  <td className="border-r border-gray-300 p-2 text-center">-</td>
+                  <td className="border-r border-gray-300 p-2 text-right">
+                    <input type="number" value={hargaWisataApk} onChange={e => setHargaWisataApk(Number(e.target.value))} className="w-full bg-transparent text-right outline-none" />
+                  </td>
+                  <td className="border-r border-gray-300 p-2 text-right">
+                    <input type="number" value={hargaWisataVendor} onChange={e => setHargaWisataVendor(Number(e.target.value))} className="w-full bg-transparent text-right outline-none" />
+                  </td>
+                  <td className="border-r border-gray-300 p-2 text-right">{formatCurrency(wisataRow.estMargin)}</td>
+                  <td className="border-r border-gray-300 p-2 text-center">{formatPercent(wisataRow.pctMargin)}</td>
+                  <td className="border-r border-gray-300 p-2 text-center">{jamaahBayar}</td>
+                  <td className="border-r border-gray-300 p-2 text-right">{formatCurrency(wisataRow.totalHrgJual)}</td>
+                  <td className="border-r border-gray-300 p-2 text-center">{jamaahBeli}</td>
+                  <td className="border-r border-gray-300 p-2 text-right">{formatCurrency(wisataRow.totalHargaBeli)}</td>
+                  <td className="border-r border-gray-300 p-2 text-right">{formatCurrency(wisataRow.totalMargin)}</td>
+                  <td className="p-2 text-center text-xs">UPDATE</td>
+                </tr>
+              )}
 
               <tr className="border-b border-gray-300 hover:bg-gray-50">
                 <td className="border-r border-gray-300 p-2 font-medium italic">
@@ -1065,7 +1182,7 @@ export const SalesOrderView: React.FC = () => {
           hargaQuad={hargaQuadDewasa}
           hargaTriple={hargaTripleDewasa}
           hargaDouble={hargaDoubleDewasa}
-          maskapaiHarga={maskapaiHargaApk}
+          maskapaiHarga={effectiveMaskapaiHargaApk}
           hotelMadinahHarga={hotelMadinahHargaApk}
           hotelMakkahHarga={hotelMakkahHargaApk}
           handlingSaudiHarga={handlingHargaApk}
@@ -1074,6 +1191,8 @@ export const SalesOrderView: React.FC = () => {
           handlingDomestikHarga={handlingDomestikHargaApk}
           perlengkapanHarga={equipmentHargaApk}
           tlHarga={tlHargaApk}
+          wisataHarga={jenisPaket === 'Plus Wisata' ? hargaWisataApk : undefined}
+          namaWisata={namaWisata}
           hargaDewasaSebelumKomisi={totalHargaApk}
           komisiMitra={komisiMitra}
           komisiUmaroh={komisiUmaroh}

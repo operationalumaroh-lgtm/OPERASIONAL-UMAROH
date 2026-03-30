@@ -29,6 +29,8 @@ interface OfferingProps {
   handlingDomestikHarga: number;
   perlengkapanHarga: number;
   tlHarga: number;
+  wisataHarga?: number;
+  namaWisata?: string;
   hargaDewasaSebelumKomisi: number;
   komisiMitra: number;
   komisiUmaroh: number;
@@ -60,6 +62,8 @@ export const OfferingTemplate = forwardRef<HTMLDivElement, OfferingProps>(({
   handlingDomestikHarga,
   perlengkapanHarga,
   tlHarga,
+  wisataHarga,
+  namaWisata,
   hargaDewasaSebelumKomisi,
   komisiMitra,
   komisiUmaroh
@@ -162,6 +166,12 @@ export const OfferingTemplate = forwardRef<HTMLDivElement, OfferingProps>(({
             <div>TOUR LEADER (TL)</div>
             <div>{formatCurrency(tlHarga)}</div>
           </div>
+          {wisataHarga !== undefined && wisataHarga > 0 && (
+            <div className="flex justify-between py-2 px-4 border-b border-gray-100">
+              <div>WISATA: {namaWisata || '-'}</div>
+              <div>{formatCurrency(wisataHarga)}</div>
+            </div>
+          )}
           <div className="flex justify-between py-2 px-4 border-b border-gray-100">
             <div>HARGA DEWASA SEBELUM KOMISI</div>
             <div>{formatCurrency(hargaDewasaSebelumKomisi)}</div>

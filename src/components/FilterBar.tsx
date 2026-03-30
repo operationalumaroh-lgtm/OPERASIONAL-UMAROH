@@ -32,8 +32,8 @@ export const FilterBar: React.FC<FilterBarProps> = ({
 }) => {
   return (
     <div className="bg-white p-3 md:p-4 rounded-xl shadow-sm border border-gray-200 mb-6 md:mb-8">
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:flex lg:flex-row gap-3 md:gap-4 items-center">
-        <div className="relative flex-grow lg:min-w-[200px] w-full">
+      <div className="flex flex-wrap gap-3 md:gap-4 items-center">
+        <div className="relative flex-grow min-w-[250px] w-full md:w-auto">
           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4 md:w-5 md:h-5" />
           <input
             type="text"
@@ -44,7 +44,7 @@ export const FilterBar: React.FC<FilterBarProps> = ({
           />
         </div>
         
-        <div className="flex items-center gap-2 w-full lg:w-auto">
+        <div className="flex items-center gap-2 w-full sm:w-auto flex-1 min-w-[160px]">
           <Calendar className="text-gray-400 w-4 h-4 md:w-5 md:h-5 flex-shrink-0" />
           <input
             type="date"
@@ -54,7 +54,7 @@ export const FilterBar: React.FC<FilterBarProps> = ({
           />
         </div>
 
-        <div className="flex items-center gap-2 w-full lg:w-auto">
+        <div className="flex items-center gap-2 w-full sm:w-auto flex-1 min-w-[160px]">
           <Filter className="text-gray-400 w-4 h-4 md:w-5 md:h-5 flex-shrink-0" />
           <select
             value={mealFilter}
@@ -68,7 +68,7 @@ export const FilterBar: React.FC<FilterBarProps> = ({
           </select>
         </div>
 
-        <div className="flex items-center gap-2 w-full lg:w-auto">
+        <div className="flex items-center gap-2 w-full sm:w-auto flex-1 min-w-[160px]">
           <MapPin className="text-gray-400 w-4 h-4 md:w-5 md:h-5 flex-shrink-0" />
           <select
             value={cityFilter}
@@ -81,7 +81,7 @@ export const FilterBar: React.FC<FilterBarProps> = ({
           </select>
         </div>
 
-        <div className="flex items-center gap-2 w-full lg:w-auto">
+        <div className="flex items-center gap-2 w-full sm:w-auto flex-1 min-w-[160px]">
           <Building className="text-gray-400 w-4 h-4 md:w-5 md:h-5 flex-shrink-0" />
           <select
             value={vendorFilter}
@@ -99,11 +99,11 @@ export const FilterBar: React.FC<FilterBarProps> = ({
 
         <button
           onClick={onResetFilters}
-          className="flex items-center justify-center gap-2 px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-600 rounded-lg transition-colors w-full lg:w-auto"
+          className="flex items-center justify-center gap-2 px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-600 rounded-lg transition-colors w-full sm:w-auto"
           title="Reset Filters"
         >
           <RotateCcw className="w-4 h-4" />
-          <span className="lg:hidden">Reset Filters</span>
+          <span className="sm:hidden lg:inline">Reset</span>
         </button>
       </div>
     </div>
