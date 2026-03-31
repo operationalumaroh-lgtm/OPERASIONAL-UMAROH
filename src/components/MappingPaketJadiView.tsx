@@ -975,8 +975,8 @@ export const MappingPaketJadiView: React.FC = () => {
       {/* Add Manual Modal */}
       {showAddModal && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-2xl shadow-xl w-full max-w-2xl overflow-hidden">
-            <div className="flex items-center justify-between p-6 border-b border-gray-100">
+          <div className="bg-white rounded-2xl shadow-xl w-full max-w-2xl max-h-[90vh] flex flex-col overflow-hidden">
+            <div className="flex items-center justify-between p-6 border-b border-gray-100 shrink-0">
               <h2 className="text-lg font-bold text-gray-900">Tambah Paket & Layanan Manual</h2>
               <button 
                 onClick={() => setShowAddModal(false)}
@@ -986,7 +986,7 @@ export const MappingPaketJadiView: React.FC = () => {
               </button>
             </div>
             
-            <div className="p-6 space-y-4">
+            <div className="p-6 space-y-4 overflow-y-auto">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-xs font-bold text-gray-700 mb-1">Nama Paket</label>
@@ -1190,7 +1190,7 @@ export const MappingPaketJadiView: React.FC = () => {
               </div>
             </div>
             
-            <div className="p-6 border-t border-gray-100 bg-gray-50 flex justify-end gap-3">
+            <div className="p-6 border-t border-gray-100 bg-gray-50 flex justify-end gap-3 shrink-0">
               <button 
                 onClick={() => setShowAddModal(false)}
                 className="px-4 py-2 text-sm font-bold text-gray-700 hover:bg-gray-200 rounded-lg transition-colors"

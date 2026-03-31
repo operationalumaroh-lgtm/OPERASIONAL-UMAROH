@@ -95,5 +95,21 @@ export const transportData: TransportVehicle[] = [
       { route: 'Full Trip (Jed - Mak - CT Mak - CT Mad - Airport Mad)', price: 3650 },
       { route: 'Full Trip (Jed - Mak - CT Mak - CT Mad - Airport Jed)', price: 4250 },
     ]
+  },
+  {
+    id: 'kang-asep',
+    name: 'KANG ASEP',
+    namaVendor: 'Kang Asep',
+    routes: [
+      { route: 'Full Trip (Jed - Mak - CT Mak - CT Mad - Airport Mad)', price: 2500 },
+    ]
+  },
+  {
+    id: 'dharmawisata',
+    name: 'DHARMAWISATA',
+    namaVendor: 'Dharmawisata',
+    routes: [
+      { route: 'Full Trip (Jed - Mak - CT Mak - CT Mad - Airport Mad)', price: 2600 },
+    ]
   }
 ];
