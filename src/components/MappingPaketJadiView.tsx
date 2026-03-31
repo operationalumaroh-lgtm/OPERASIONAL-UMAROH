@@ -23,6 +23,12 @@ interface VendorService {
   catatan: string;
   isManualDate?: boolean;
   manualPelunasanDate?: string;
+  paymentPerItems?: string;
+  dpAmount?: number;
+  payment1?: number;
+  payment2?: number;
+  payment3?: number;
+  totalPembelian?: number;
 }
 
 const initialData: VendorService[] = [
@@ -115,6 +121,12 @@ export const MappingPaketJadiView: React.FC = () => {
   const [editBiaya, setEditBiaya] = useState<number>(0);
   const [editIsManualDate, setEditIsManualDate] = useState<boolean>(false);
   const [editManualDate, setEditManualDate] = useState<string>('');
+  const [editPaymentPerItems, setEditPaymentPerItems] = useState<string>('');
+  const [editDpAmount, setEditDpAmount] = useState<number>(0);
+  const [editPayment1, setEditPayment1] = useState<number>(0);
+  const [editPayment2, setEditPayment2] = useState<number>(0);
+  const [editPayment3, setEditPayment3] = useState<number>(0);
+  const [editTotalPembelian, setEditTotalPembelian] = useState<number>(0);
   const [showAddModal, setShowAddModal] = useState(false);
 
   useEffect(() => {
@@ -154,7 +166,13 @@ export const MappingPaketJadiView: React.FC = () => {
     statusPembayaran: 'Belum Bayar',
     pic: 'Rinaldi',
     catatan: '',
-    isManualDate: false
+    isManualDate: false,
+    paymentPerItems: '',
+    dpAmount: 0,
+    payment1: 0,
+    payment2: 0,
+    payment3: 0,
+    totalPembelian: 0
   });
 
   const today = startOfDay(new Date());
@@ -209,6 +227,12 @@ export const MappingPaketJadiView: React.FC = () => {
     setEditBiaya(service.estimasiBiaya);
     setEditIsManualDate(service.isManualDate || false);
     setEditManualDate(service.manualPelunasanDate || '');
+    setEditPaymentPerItems(service.paymentPerItems || '');
+    setEditDpAmount(service.dpAmount || 0);
+    setEditPayment1(service.payment1 || 0);
+    setEditPayment2(service.payment2 || 0);
+    setEditPayment3(service.payment3 || 0);
+    setEditTotalPembelian(service.totalPembelian || 0);
   };
 
   const handleSaveEdit = async (id: string) => {
@@ -219,7 +243,13 @@ export const MappingPaketJadiView: React.FC = () => {
         pic: editPic,
         estimasiBiaya: editBiaya,
         isManualDate: editIsManualDate,
-        manualPelunasanDate: editIsManualDate ? editManualDate : null
+        manualPelunasanDate: editIsManualDate ? editManualDate : null,
+        paymentPerItems: editPaymentPerItems,
+        dpAmount: editDpAmount,
+        payment1: editPayment1,
+        payment2: editPayment2,
+        payment3: editPayment3,
+        totalPembelian: editTotalPembelian
       });
       setEditingId(null);
     } catch (error) {
@@ -251,7 +281,13 @@ export const MappingPaketJadiView: React.FC = () => {
         statusPembayaran: 'Belum Bayar',
         pic: 'Rinaldi',
         catatan: '',
-        isManualDate: false
+        isManualDate: false,
+        paymentPerItems: '',
+        dpAmount: 0,
+        payment1: 0,
+        payment2: 0,
+        payment3: 0,
+        totalPembelian: 0
       });
     } catch (error) {
       console.error("Error adding document: ", error);
@@ -408,21 +444,44 @@ export const MappingPaketJadiView: React.FC = () => {
               <table className="w-full border-collapse">
                 <thead className="bg-gray-900 text-[#FDB913] text-[10px] uppercase tracking-wider font-bold">
                   <tr>
-                    <th className="px-4 py-4 border-r border-gray-700 text-left">Paket & Layanan</th>
-                    <th className="px-4 py-4 border-r border-gray-700 text-left">Vendor</th>
-                    <th className="px-4 py-4 border-r border-gray-700 text-left">Jadwal (CI/CO)</th>
-                    <th className="px-4 py-4 border-r border-gray-700 text-left">Reminder DP</th>
-                    <th className="px-4 py-4 border-r border-gray-700 text-left">Pembayaran Selanjutnya</th>
-                    <th className="px-4 py-4 border-r border-gray-700 text-right">Estimasi Biaya</th>
-                    <th className="px-4 py-4 border-r border-gray-700 text-center">Status</th>
-                    <th className="px-4 py-4 border-r border-gray-700 text-left">PIC</th>
-                    <th className="px-4 py-4 text-center">Aksi</th>
+                    <th rowSpan={2} className="px-4 py-4 border-r border-b border-gray-700 text-left align-middle">Paket & Layanan</th>
+                    <th rowSpan={2} className="px-4 py-4 border-r border-b border-gray-700 text-left align-middle">Vendor</th>
+                    <th rowSpan={2} className="px-4 py-4 border-r border-b border-gray-700 text-left align-middle">Jadwal (CI/CO)</th>
+                    <th rowSpan={2} className="px-4 py-4 border-r border-b border-gray-700 text-left align-middle">Reminder DP</th>
+                    <th rowSpan={2} className="px-4 py-4 border-r border-b border-gray-700 text-left align-middle">Pembayaran Selanjutnya</th>
+                    <th className="px-4 py-2 border-r border-b border-gray-700 text-center bg-yellow-400 text-black">PAYMENT PER ITEMS</th>
+                    <th className="px-4 py-2 border-r border-b border-gray-700 text-center bg-yellow-400 text-black">DP</th>
+                    <th className="px-4 py-2 border-r border-b border-gray-700 text-center bg-yellow-400 text-black">PAYMENT 1</th>
+                    <th className="px-4 py-2 border-r border-b border-gray-700 text-center bg-yellow-400 text-black">PAYMENT 2</th>
+                    <th className="px-4 py-2 border-r border-b border-gray-700 text-center bg-yellow-400 text-black">PAYMENT 3</th>
+                    <th className="px-4 py-2 border-r border-b border-gray-700 text-center bg-yellow-400 text-black">PELUNASAN</th>
+                    <th className="px-4 py-2 border-r border-b border-gray-700 text-center bg-yellow-400 text-black">SISA PEMBAYARAN KESELURUHAN PKT</th>
+                    <th className="px-4 py-2 border-r border-b border-gray-700 text-center bg-yellow-400 text-black">TOTAL PEMBELIAN PERPAKET</th>
+                    <th rowSpan={2} className="px-4 py-4 border-r border-b border-gray-700 text-right align-middle">Estimasi Biaya</th>
+                    <th rowSpan={2} className="px-4 py-4 border-r border-b border-gray-700 text-center align-middle">Status</th>
+                    <th rowSpan={2} className="px-4 py-4 border-r border-b border-gray-700 text-left align-middle">PIC</th>
+                    <th rowSpan={2} className="px-4 py-4 border-b text-center align-middle">Aksi</th>
+                  </tr>
+                  <tr>
+                    <th colSpan={5} className="px-4 py-1 border-r border-b border-gray-700 text-center text-blue-700 italic font-bold bg-purple-200">Diisi FINANCE / OPS</th>
+                    <th className="px-4 py-1 border-r border-b border-gray-700 text-center text-blue-700 italic font-bold bg-purple-200">AUTOMATIC</th>
+                    <th className="px-4 py-1 border-r border-b border-gray-700 text-center bg-yellow-400"></th>
+                    <th className="px-4 py-1 border-r border-b border-gray-700 text-center bg-yellow-400"></th>
                   </tr>
                 </thead>
                 <tbody className="text-sm">
                   {filteredServices.map((service) => {
                     const dpInfo = getDueDateInfo(service.tanggalKeberangkatan, service.reminderDPHMinus, service.statusPembayaran, true);
                     const pelunasanInfo = getDueDateInfo(service.tanggalKeberangkatan, service.reminderPelunasanHMinus, service.statusPembayaran, false, service.isManualDate, service.manualPelunasanDate);
+
+                    const total = service.totalPembelian || 0;
+                    const paid = (service.dpAmount || 0) + (service.payment1 || 0) + (service.payment2 || 0) + (service.payment3 || 0);
+                    const pelunasanAmount = total - paid;
+                    
+                    const packageServices = services.filter(s => s.paketId === service.paketId);
+                    const packageTotal = packageServices.reduce((sum, s) => sum + (s.totalPembelian || 0), 0);
+                    const packagePaid = packageServices.reduce((sum, s) => sum + (s.dpAmount || 0) + (s.payment1 || 0) + (s.payment2 || 0) + (s.payment3 || 0), 0);
+                    const sisaPembayaranKeseluruhan = packageTotal - packagePaid;
 
                     return (
                       <tr key={service.id} className="hover:bg-gray-50 border-b border-gray-100 transition-colors">
@@ -479,6 +538,89 @@ export const MappingPaketJadiView: React.FC = () => {
                                 {service.isManualDate ? 'Manual' : `Otomatis (H-${service.reminderPelunasanHMinus})`}
                               </div>
                             </>
+                          )}
+                        </td>
+                        <td className="px-4 py-4 border-r border-gray-100">
+                          {editingId === service.id ? (
+                            <input 
+                              type="text"
+                              className="w-full px-2 py-1 border border-amber-300 rounded text-xs focus:outline-none focus:ring-2 focus:ring-amber-500"
+                              value={editPaymentPerItems}
+                              onChange={(e) => setEditPaymentPerItems(e.target.value)}
+                              placeholder="Payment per item..."
+                            />
+                          ) : (
+                            <div className="text-xs text-gray-700">{service.paymentPerItems || '-'}</div>
+                          )}
+                        </td>
+                        <td className="px-4 py-4 border-r border-gray-100 text-right font-medium">
+                          {editingId === service.id ? (
+                            <input 
+                              type="number"
+                              className="w-full px-2 py-1 border border-amber-300 rounded text-xs text-right focus:outline-none focus:ring-2 focus:ring-amber-500"
+                              value={editDpAmount}
+                              onChange={(e) => setEditDpAmount(Number(e.target.value))}
+                            />
+                          ) : (
+                            <div className="text-xs text-gray-700">{service.dpAmount ? formatCurrency(service.dpAmount) : '-'}</div>
+                          )}
+                        </td>
+                        <td className="px-4 py-4 border-r border-gray-100 text-right font-medium">
+                          {editingId === service.id ? (
+                            <input 
+                              type="number"
+                              className="w-full px-2 py-1 border border-amber-300 rounded text-xs text-right focus:outline-none focus:ring-2 focus:ring-amber-500"
+                              value={editPayment1}
+                              onChange={(e) => setEditPayment1(Number(e.target.value))}
+                            />
+                          ) : (
+                            <div className="text-xs text-gray-700">{service.payment1 ? formatCurrency(service.payment1) : '-'}</div>
+                          )}
+                        </td>
+                        <td className="px-4 py-4 border-r border-gray-100 text-right font-medium">
+                          {editingId === service.id ? (
+                            <input 
+                              type="number"
+                              className="w-full px-2 py-1 border border-amber-300 rounded text-xs text-right focus:outline-none focus:ring-2 focus:ring-amber-500"
+                              value={editPayment2}
+                              onChange={(e) => setEditPayment2(Number(e.target.value))}
+                            />
+                          ) : (
+                            <div className="text-xs text-gray-700">{service.payment2 ? formatCurrency(service.payment2) : '-'}</div>
+                          )}
+                        </td>
+                        <td className="px-4 py-4 border-r border-gray-100 text-right font-medium">
+                          {editingId === service.id ? (
+                            <input 
+                              type="number"
+                              className="w-full px-2 py-1 border border-amber-300 rounded text-xs text-right focus:outline-none focus:ring-2 focus:ring-amber-500"
+                              value={editPayment3}
+                              onChange={(e) => setEditPayment3(Number(e.target.value))}
+                            />
+                          ) : (
+                            <div className="text-xs text-gray-700">{service.payment3 ? formatCurrency(service.payment3) : '-'}</div>
+                          )}
+                        </td>
+                        <td className="px-4 py-4 border-r border-gray-100 text-right font-medium bg-purple-50">
+                          <div className="text-xs text-gray-700 font-bold">
+                            {formatCurrency(pelunasanAmount)}
+                          </div>
+                        </td>
+                        <td className="px-4 py-4 border-r border-gray-100 text-right font-medium bg-gray-50">
+                          <div className="text-xs text-gray-700 font-bold">
+                            {formatCurrency(sisaPembayaranKeseluruhan)}
+                          </div>
+                        </td>
+                        <td className="px-4 py-4 border-r border-gray-100 text-right font-medium bg-gray-50">
+                          {editingId === service.id ? (
+                            <input 
+                              type="number"
+                              className="w-full px-2 py-1 border border-amber-300 rounded text-xs text-right focus:outline-none focus:ring-2 focus:ring-amber-500"
+                              value={editTotalPembelian}
+                              onChange={(e) => setEditTotalPembelian(Number(e.target.value))}
+                            />
+                          ) : (
+                            <div className="text-xs text-gray-700 font-bold">{service.totalPembelian ? formatCurrency(service.totalPembelian) : '-'}</div>
                           )}
                         </td>
                         <td className="px-4 py-4 text-right font-bold text-gray-700">
@@ -571,6 +713,15 @@ export const MappingPaketJadiView: React.FC = () => {
                 const dpInfo = getDueDateInfo(service.tanggalKeberangkatan, service.reminderDPHMinus, service.statusPembayaran, true);
                 const pelunasanInfo = getDueDateInfo(service.tanggalKeberangkatan, service.reminderPelunasanHMinus, service.statusPembayaran, false, service.isManualDate, service.manualPelunasanDate);
                 const isEditing = editingId === service.id;
+
+                const total = service.totalPembelian || 0;
+                const paid = (service.dpAmount || 0) + (service.payment1 || 0) + (service.payment2 || 0) + (service.payment3 || 0);
+                const pelunasanAmount = total - paid;
+                
+                const packageServices = services.filter(s => s.paketId === service.paketId);
+                const packageTotal = packageServices.reduce((sum, s) => sum + (s.totalPembelian || 0), 0);
+                const packagePaid = packageServices.reduce((sum, s) => sum + (s.dpAmount || 0) + (s.payment1 || 0) + (s.payment2 || 0) + (s.payment3 || 0), 0);
+                const sisaPembayaranKeseluruhan = packageTotal - packagePaid;
 
                 return (
                   <div key={service.id} className={`p-4 md:p-6 ${isEditing ? 'bg-amber-50/30' : 'bg-white'}`}>
@@ -714,6 +865,105 @@ export const MappingPaketJadiView: React.FC = () => {
                         )}
                       </div>
                     </div>
+
+                    {/* New Payment Fields */}
+                    <div className="mt-4 pt-4 border-t border-gray-50 space-y-3">
+                      <div className="grid grid-cols-2 gap-4">
+                        <div className="space-y-1">
+                          <p className="text-[10px] font-bold text-gray-400 uppercase">Payment Per Items</p>
+                          {isEditing ? (
+                            <input 
+                              type="text"
+                              className="w-full px-2 py-1 border border-amber-300 rounded text-xs"
+                              value={editPaymentPerItems}
+                              onChange={(e) => setEditPaymentPerItems(e.target.value)}
+                              placeholder="Payment per item..."
+                            />
+                          ) : (
+                            <p className="text-xs font-medium text-gray-900">{service.paymentPerItems || '-'}</p>
+                          )}
+                        </div>
+                        <div className="space-y-1">
+                          <p className="text-[10px] font-bold text-gray-400 uppercase">Total Pembelian</p>
+                          {isEditing ? (
+                            <input 
+                              type="number"
+                              className="w-full px-2 py-1 border border-amber-300 rounded text-xs"
+                              value={editTotalPembelian}
+                              onChange={(e) => setEditTotalPembelian(Number(e.target.value))}
+                            />
+                          ) : (
+                            <p className="text-xs font-bold text-gray-900">{service.totalPembelian ? formatCurrency(service.totalPembelian) : '-'}</p>
+                          )}
+                        </div>
+                      </div>
+
+                      <div className="grid grid-cols-2 gap-4">
+                        <div className="space-y-1">
+                          <p className="text-[10px] font-bold text-gray-400 uppercase">DP</p>
+                          {isEditing ? (
+                            <input 
+                              type="number"
+                              className="w-full px-2 py-1 border border-amber-300 rounded text-xs"
+                              value={editDpAmount}
+                              onChange={(e) => setEditDpAmount(Number(e.target.value))}
+                            />
+                          ) : (
+                            <p className="text-xs font-medium text-gray-900">{service.dpAmount ? formatCurrency(service.dpAmount) : '-'}</p>
+                          )}
+                        </div>
+                        <div className="space-y-1">
+                          <p className="text-[10px] font-bold text-gray-400 uppercase">Payment 1</p>
+                          {isEditing ? (
+                            <input 
+                              type="number"
+                              className="w-full px-2 py-1 border border-amber-300 rounded text-xs"
+                              value={editPayment1}
+                              onChange={(e) => setEditPayment1(Number(e.target.value))}
+                            />
+                          ) : (
+                            <p className="text-xs font-medium text-gray-900">{service.payment1 ? formatCurrency(service.payment1) : '-'}</p>
+                          )}
+                        </div>
+                        <div className="space-y-1">
+                          <p className="text-[10px] font-bold text-gray-400 uppercase">Payment 2</p>
+                          {isEditing ? (
+                            <input 
+                              type="number"
+                              className="w-full px-2 py-1 border border-amber-300 rounded text-xs"
+                              value={editPayment2}
+                              onChange={(e) => setEditPayment2(Number(e.target.value))}
+                            />
+                          ) : (
+                            <p className="text-xs font-medium text-gray-900">{service.payment2 ? formatCurrency(service.payment2) : '-'}</p>
+                          )}
+                        </div>
+                        <div className="space-y-1">
+                          <p className="text-[10px] font-bold text-gray-400 uppercase">Payment 3</p>
+                          {isEditing ? (
+                            <input 
+                              type="number"
+                              className="w-full px-2 py-1 border border-amber-300 rounded text-xs"
+                              value={editPayment3}
+                              onChange={(e) => setEditPayment3(Number(e.target.value))}
+                            />
+                          ) : (
+                            <p className="text-xs font-medium text-gray-900">{service.payment3 ? formatCurrency(service.payment3) : '-'}</p>
+                          )}
+                        </div>
+                      </div>
+
+                      <div className="grid grid-cols-2 gap-4 bg-gray-50 p-3 rounded-lg">
+                        <div className="space-y-1">
+                          <p className="text-[10px] font-bold text-gray-500 uppercase">Pelunasan</p>
+                          <p className="text-xs font-bold text-gray-900">{formatCurrency(pelunasanAmount)}</p>
+                        </div>
+                        <div className="space-y-1">
+                          <p className="text-[10px] font-bold text-gray-500 uppercase">Sisa Pembayaran Pkt</p>
+                          <p className="text-xs font-bold text-gray-900">{formatCurrency(sisaPembayaranKeseluruhan)}</p>
+                        </div>
+                      </div>
+                    </div>
                   </div>
                 );
               })}
@@ -827,6 +1077,66 @@ export const MappingPaketJadiView: React.FC = () => {
                   />
                 </div>
                 
+                <div className="md:col-span-2 p-4 bg-gray-50 rounded-lg border border-gray-200">
+                  <h4 className="text-sm font-bold text-gray-900 mb-3">Detail Pembayaran</h4>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-xs font-bold text-gray-700 mb-1">Payment Per Items</label>
+                      <input 
+                        type="text" 
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-amber-500"
+                        value={newService.paymentPerItems}
+                        onChange={(e) => setNewService({...newService, paymentPerItems: e.target.value})}
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-bold text-gray-700 mb-1">DP Amount</label>
+                      <input 
+                        type="number" 
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-amber-500"
+                        value={newService.dpAmount}
+                        onChange={(e) => setNewService({...newService, dpAmount: Number(e.target.value)})}
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-bold text-gray-700 mb-1">Payment 1</label>
+                      <input 
+                        type="number" 
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-amber-500"
+                        value={newService.payment1}
+                        onChange={(e) => setNewService({...newService, payment1: Number(e.target.value)})}
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-bold text-gray-700 mb-1">Payment 2</label>
+                      <input 
+                        type="number" 
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-amber-500"
+                        value={newService.payment2}
+                        onChange={(e) => setNewService({...newService, payment2: Number(e.target.value)})}
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-bold text-gray-700 mb-1">Payment 3</label>
+                      <input 
+                        type="number" 
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-amber-500"
+                        value={newService.payment3}
+                        onChange={(e) => setNewService({...newService, payment3: Number(e.target.value)})}
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-bold text-gray-700 mb-1">Total Pembelian</label>
+                      <input 
+                        type="number" 
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-amber-500"
+                        value={newService.totalPembelian}
+                        onChange={(e) => setNewService({...newService, totalPembelian: Number(e.target.value)})}
+                      />
+                    </div>
+                  </div>
+                </div>
+
                 <div className="md:col-span-2 p-4 bg-gray-50 rounded-lg border border-gray-200">
                   <h4 className="text-sm font-bold text-gray-900 mb-3">Pengaturan Pembayaran Selanjutnya</h4>
                   <div className="space-y-3">
