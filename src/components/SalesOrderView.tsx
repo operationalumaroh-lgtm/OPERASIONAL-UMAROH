@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import Select from 'react-select';
 import { hotels, Hotel } from '../data/hotels';
 import { HANDLING_TIERS, HANDLING_CONSTANTS } from '../data/handlingSaudi';
 import { transportData } from '../data/transport';
@@ -24,41 +25,12 @@ import { OfferingTemplate } from './OfferingTemplate';
 import { isDateInRange, parseDateRange } from '../utils/dateUtils';
 
 const getTargetSeason = (hotel: Hotel, dateStr: string) => {
-  let targetSeason = hotel.seasons[0];
-  if (dateStr) {
-    const checkDate = new Date(dateStr);
-    
-    // First try exact match
-    const exactSeason = hotel.seasons.find(s => isDateInRange(checkDate, s.range));
-    
-    if (exactSeason) {
-      targetSeason = exactSeason;
-    } else {
-      // If no exact match, find the closest season
-      let closestSeason = null;
-      let minDiff = Infinity;
-
-      for (const season of hotel.seasons) {
-        const { start, end } = parseDateRange(season.range);
-        if (start && end) {
-          const diffStart = Math.abs(checkDate.getTime() - start.getTime());
-          const diffEnd = Math.abs(checkDate.getTime() - end.getTime());
-          const diff = Math.min(diffStart, diffEnd);
-          if (diff < minDiff) {
-            minDiff = diff;
-            closestSeason = season;
-          }
-        }
-      }
-      
-      if (closestSeason) {
-        targetSeason = closestSeason;
-      } else {
-        return null;
-      }
-    }
-  }
-  return targetSeason;
+  if (!dateStr) return hotel.seasons[0];
+  
+  const checkDate = new Date(dateStr);
+  const exactSeason = hotel.seasons.find(s => isDateInRange(checkDate, s.range));
+  
+  return exactSeason || null;
 };
 
 const getQuadPrice = (hotel: Hotel, dateStr: string) => {
@@ -299,6 +271,50 @@ export const SalesOrderView: React.FC = () => {
     handlingDomestikHargaApk, handlingDomestikHargaVendor, ziarahHargaApk,
     ziarahHargaVendor, keretaCepatHargaApk, keretaCepatHargaVendor, komisiMitra
   ]);
+
+  const customSelectStyles = {
+    control: (provided: any) => ({
+      ...provided,
+      backgroundColor: 'transparent',
+      border: 'none',
+      boxShadow: 'none',
+      fontStyle: 'italic',
+      fontWeight: '500',
+      minHeight: 'auto',
+      padding: 0,
+      cursor: 'text',
+    }),
+    valueContainer: (provided: any) => ({
+      ...provided,
+      padding: 0,
+    }),
+    input: (provided: any) => ({
+      ...provided,
+      margin: 0,
+      padding: 0,
+    }),
+    indicatorSeparator: () => ({
+      display: 'none',
+    }),
+    dropdownIndicator: (provided: any) => ({
+      ...provided,
+      padding: '0 4px',
+    }),
+    menu: (provided: any) => ({
+      ...provided,
+      fontStyle: 'normal',
+      fontWeight: 'normal',
+      zIndex: 50,
+      width: 'max-content',
+      minWidth: '100%',
+    }),
+    option: (provided: any, state: any) => ({
+      ...provided,
+      fontSize: '0.875rem',
+      backgroundColor: state.isSelected ? '#3b82f6' : state.isFocused ? '#eff6ff' : 'white',
+      color: state.isSelected ? 'white' : '#1f2937',
+    })
+  };
 
   // Helper to calculate row values
   const calculateRow = (hargaApk: number, hargaVendor: number, jamaahBayar: number, jamaahBeli: number) => {
@@ -826,12 +842,26 @@ export const SalesOrderView: React.FC = () => {
               <tr className="border-b border-gray-300 hover:bg-gray-50">
                 <td className="border-r border-gray-300 p-2 font-medium italic">
                   <div className="flex items-center gap-2">
-                    <select value={selectedHotelMadinah} onChange={e => setSelectedHotelMadinah(e.target.value)} className="w-full bg-transparent font-medium italic outline-none">
-                      <option value="">Pilih Hotel Madinah...</option>
-                      {availableMadinahHotels.map(h => (
-                        <option key={h.id} value={h.id}>HOTEL MADINAH: {h.name} {h.mealPlan} {h.stars ? `- ${h.stars} Bintang ` : ''}({getHotelSeasonRange(h, tglKeberangkatan)}) (SAR {getQuadPrice(h, tglKeberangkatan)})</option>
-                      ))}
-                    </select>
+                    <div className="flex-grow min-w-[250px]">
+                      <Select
+                        value={
+                          availableMadinahHotels.find(h => h.id === selectedHotelMadinah)
+                            ? {
+                                value: selectedHotelMadinah,
+                                label: `HOTEL MADINAH: ${availableMadinahHotels.find(h => h.id === selectedHotelMadinah)?.name} ${availableMadinahHotels.find(h => h.id === selectedHotelMadinah)?.mealPlan} ${availableMadinahHotels.find(h => h.id === selectedHotelMadinah)?.stars ? `- ${availableMadinahHotels.find(h => h.id === selectedHotelMadinah)?.stars} Bintang ` : ''}(${getHotelSeasonRange(availableMadinahHotels.find(h => h.id === selectedHotelMadinah)!, tglKeberangkatan)}) (SAR ${getQuadPrice(availableMadinahHotels.find(h => h.id === selectedHotelMadinah)!, tglKeberangkatan)})`
+                              }
+                            : null
+                        }
+                        onChange={(selected: any) => setSelectedHotelMadinah(selected ? selected.value : '')}
+                        options={availableMadinahHotels.map(h => ({
+                          value: h.id,
+                          label: `HOTEL MADINAH: ${h.name} ${h.mealPlan} ${h.stars ? `- ${h.stars} Bintang ` : ''}(${getHotelSeasonRange(h, tglKeberangkatan)}) (SAR ${getQuadPrice(h, tglKeberangkatan)})`
+                        }))}
+                        styles={customSelectStyles}
+                        placeholder="Pilih Hotel Madinah..."
+                        isClearable
+                      />
+                    </div>
                     {selectedHotelMadinah && (
                       <div className="flex items-center gap-1 shrink-0 bg-white border border-gray-300 rounded px-1">
                         <input type="number" value={malamMadinah} onChange={e => setMalamMadinah(Number(e.target.value))} className="w-10 text-center outline-none bg-transparent" min="1" title="Jumlah Malam" />
@@ -856,12 +886,26 @@ export const SalesOrderView: React.FC = () => {
               <tr className="border-b border-gray-300 hover:bg-gray-50">
                 <td className="border-r border-gray-300 p-2 font-medium italic">
                   <div className="flex items-center gap-2">
-                    <select value={selectedHotelMakkah} onChange={e => setSelectedHotelMakkah(e.target.value)} className="w-full bg-transparent font-medium italic outline-none">
-                      <option value="">Pilih Hotel Makkah...</option>
-                      {availableMakkahHotels.map(h => (
-                        <option key={h.id} value={h.id}>HOTEL MAKKAH: {h.name} {h.mealPlan} {h.stars ? `- ${h.stars} Bintang ` : ''}({getHotelSeasonRange(h, tglKeberangkatan)}) (SAR {getQuadPrice(h, tglKeberangkatan)})</option>
-                      ))}
-                    </select>
+                    <div className="flex-grow min-w-[250px]">
+                      <Select
+                        value={
+                          availableMakkahHotels.find(h => h.id === selectedHotelMakkah)
+                            ? {
+                                value: selectedHotelMakkah,
+                                label: `HOTEL MAKKAH: ${availableMakkahHotels.find(h => h.id === selectedHotelMakkah)?.name} ${availableMakkahHotels.find(h => h.id === selectedHotelMakkah)?.mealPlan} ${availableMakkahHotels.find(h => h.id === selectedHotelMakkah)?.stars ? `- ${availableMakkahHotels.find(h => h.id === selectedHotelMakkah)?.stars} Bintang ` : ''}(${getHotelSeasonRange(availableMakkahHotels.find(h => h.id === selectedHotelMakkah)!, tglKeberangkatan)}) (SAR ${getQuadPrice(availableMakkahHotels.find(h => h.id === selectedHotelMakkah)!, tglKeberangkatan)})`
+                              }
+                            : null
+                        }
+                        onChange={(selected: any) => setSelectedHotelMakkah(selected ? selected.value : '')}
+                        options={availableMakkahHotels.map(h => ({
+                          value: h.id,
+                          label: `HOTEL MAKKAH: ${h.name} ${h.mealPlan} ${h.stars ? `- ${h.stars} Bintang ` : ''}(${getHotelSeasonRange(h, tglKeberangkatan)}) (SAR ${getQuadPrice(h, tglKeberangkatan)})`
+                        }))}
+                        styles={customSelectStyles}
+                        placeholder="Pilih Hotel Makkah..."
+                        isClearable
+                      />
+                    </div>
                     {selectedHotelMakkah && (
                       <div className="flex items-center gap-1 shrink-0 bg-white border border-gray-300 rounded px-1">
                         <input type="number" value={malamMakkah} onChange={e => setMalamMakkah(Number(e.target.value))} className="w-10 text-center outline-none bg-transparent" min="1" title="Jumlah Malam" />
