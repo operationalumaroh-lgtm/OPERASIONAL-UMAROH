@@ -23,7 +23,7 @@ import { OfferingTemplate } from './OfferingTemplate';
 
 import { isDateInRange, parseDateRange } from '../utils/dateUtils';
 
-const getQuadPrice = (hotel: Hotel, dateStr: string) => {
+const getTargetSeason = (hotel: Hotel, dateStr: string) => {
   let targetSeason = hotel.seasons[0];
   if (dateStr) {
     const checkDate = new Date(dateStr);
@@ -58,75 +58,30 @@ const getQuadPrice = (hotel: Hotel, dateStr: string) => {
       }
     }
   }
-  
+  return targetSeason;
+};
+
+const getQuadPrice = (hotel: Hotel, dateStr: string) => {
+  const targetSeason = getTargetSeason(hotel, dateStr);
   const quadPriceEntry = targetSeason?.prices.find(p => p.roomType.toLowerCase() === 'quad');
   return quadPriceEntry ? quadPriceEntry.price : null;
 };
 
 const getTriplePrice = (hotel: Hotel, dateStr: string) => {
-  let targetSeason = hotel.seasons[0];
-  if (dateStr) {
-    const checkDate = new Date(dateStr);
-    const exactSeason = hotel.seasons.find(s => isDateInRange(checkDate, s.range));
-    if (exactSeason) {
-      targetSeason = exactSeason;
-    } else {
-      let closestSeason = null;
-      let minDiff = Infinity;
-      for (const season of hotel.seasons) {
-        const { start, end } = parseDateRange(season.range);
-        if (start && end) {
-          const diffStart = Math.abs(checkDate.getTime() - start.getTime());
-          const diffEnd = Math.abs(checkDate.getTime() - end.getTime());
-          const diff = Math.min(diffStart, diffEnd);
-          if (diff < minDiff) {
-            minDiff = diff;
-            closestSeason = season;
-          }
-        }
-      }
-      if (closestSeason) {
-        targetSeason = closestSeason;
-      } else {
-        return null;
-      }
-    }
-  }
+  const targetSeason = getTargetSeason(hotel, dateStr);
   const triplePriceEntry = targetSeason?.prices.find(p => p.roomType.toLowerCase() === 'triple');
   return triplePriceEntry ? triplePriceEntry.price : null;
 };
 
 const getDoublePrice = (hotel: Hotel, dateStr: string) => {
-  let targetSeason = hotel.seasons[0];
-  if (dateStr) {
-    const checkDate = new Date(dateStr);
-    const exactSeason = hotel.seasons.find(s => isDateInRange(checkDate, s.range));
-    if (exactSeason) {
-      targetSeason = exactSeason;
-    } else {
-      let closestSeason = null;
-      let minDiff = Infinity;
-      for (const season of hotel.seasons) {
-        const { start, end } = parseDateRange(season.range);
-        if (start && end) {
-          const diffStart = Math.abs(checkDate.getTime() - start.getTime());
-          const diffEnd = Math.abs(checkDate.getTime() - end.getTime());
-          const diff = Math.min(diffStart, diffEnd);
-          if (diff < minDiff) {
-            minDiff = diff;
-            closestSeason = season;
-          }
-        }
-      }
-      if (closestSeason) {
-        targetSeason = closestSeason;
-      } else {
-        return null;
-      }
-    }
-  }
+  const targetSeason = getTargetSeason(hotel, dateStr);
   const doublePriceEntry = targetSeason?.prices.find(p => p.roomType.toLowerCase() === 'double');
   return doublePriceEntry ? doublePriceEntry.price : null;
+};
+
+const getHotelSeasonRange = (hotel: Hotel, dateStr: string) => {
+  const targetSeason = getTargetSeason(hotel, dateStr);
+  return targetSeason ? targetSeason.range : '';
 };
 
 export const SalesOrderView: React.FC = () => {
@@ -472,32 +427,38 @@ export const SalesOrderView: React.FC = () => {
       ["PROGRAM HARI", programHari, "ROOM", room, "NAMA TRAVEL", namaTravel, "", "", "HARGA MUTAWWIF UPDATE", "", "", `SAR${hargaMutawwifUpdate}`],
       ["NAMA MITRA", namaMitra, "", "", "", "", "", "", "", "", "", ""],
       [],
-      ["DESK", "VENDOR", "HARGA APK", "HARGA VENDOR", "EST. MARGIN", "% MARGIN", "JAMAAH BAYAR", "TOTAL HRG JUAL", "JAMAAH BELI", "TOTAL HARGA BELI", "TOTAL MARGIN", "REFF."],
-      [`MASKAPAI: ${maskapaiObj?.name || "-"}`, maskapaiObj?.namaVendor || "-", effectiveMaskapaiHargaApk, effectiveMaskapaiHargaVendor, maskapai.estMargin, formatPercent(maskapai.pctMargin), jamaahBayar, maskapai.totalHrgJual, jamaahBeli, maskapai.totalHargaBeli, maskapai.totalMargin, "CONFIRMED"],
-      ...(jenisPaket === 'Plus Wisata' ? [
-        [`WISATA: ${namaWisata || "-"}`, "-", hargaWisataApk, hargaWisataVendor, wisataRow.estMargin, formatPercent(wisataRow.pctMargin), jamaahBayar, wisataRow.totalHrgJual, jamaahBeli, wisataRow.totalHargaBeli, wisataRow.totalMargin, "UPDATE"]
-      ] : []),
-      [`HOTEL MADINAH: ${hotelMadinahObj?.name || "-"}`, hotelMadinahObj?.vendor || "-", hotelMadinahHargaApk, hotelMadinahHargaVendor, hotelMadinah.estMargin, formatPercent(hotelMadinah.pctMargin), jamaahBayar, hotelMadinah.totalHrgJual, jamaahBeli, hotelMadinah.totalHargaBeli, hotelMadinah.totalMargin, "UPDATE RATE"],
-      [`HOTEL MAKKAH: ${hotelMakkahObj?.name || "-"}`, hotelMakkahObj?.vendor || "-", hotelMakkahHargaApk, hotelMakkahHargaVendor, hotelMakkah.estMargin, formatPercent(hotelMakkah.pctMargin), jamaahBayar, hotelMakkah.totalHrgJual, jamaahBeli, hotelMakkah.totalHargaBeli, hotelMakkah.totalMargin, "UPDATE RATE"],
-      [`HANDLING: ${handlingObj ? `${handlingObj.minPax}-${handlingObj.maxPax} Pax` : "-"}`, "TFA", handlingHargaApk, handlingHargaVendor, handling.estMargin, formatPercent(handling.pctMargin), jamaahBayar, handling.totalHrgJual, jamaahBeli, handling.totalHargaBeli, handling.totalMargin, "UPDATE"],
-      [`MUTAWIF: ${mutawifHari} Hari${!pakaiMutawif ? ' (Tidak Dipakai)' : ''}`, "TFA", mutawifHargaApk, mutawifHargaVendor, mutawifRow.estMargin, formatPercent(mutawifRow.pctMargin), jamaahBayar, mutawifRow.totalHrgJual, jamaahBeli, mutawifRow.totalHargaBeli, mutawifRow.totalMargin, "UPDATE"],
-      [`PERLENGKAPAN: ${equipmentObj?.name || "-"}`, "UMAROH", equipmentHargaApk, equipmentHargaVendor, perlengkapan.estMargin, formatPercent(perlengkapan.pctMargin), jamaahBayar, perlengkapan.totalHrgJual, jamaahBeli, perlengkapan.totalHargaBeli, perlengkapan.totalMargin, "GUDANG OK"],
-      [`VISA: ${visaObj?.paxRange || "-"}`, "TFA", visaHargaApk, visaHargaVendor, visaRow.estMargin, formatPercent(visaRow.pctMargin), jamaahBayar, visaRow.totalHrgJual, jamaahBeli, visaRow.totalHargaBeli, visaRow.totalMargin, "UPDATE"],
-      [`TRANSPORT: ${transportObj?.name || "-"} ${transportRoute?.route || ""}`, transportObj?.namaVendor || "-", transportHargaApk, transportHargaVendor, transportRow.estMargin, formatPercent(transportRow.pctMargin), jamaahBayar, transportRow.totalHrgJual, jamaahBeli, transportRow.totalHargaBeli, transportRow.totalMargin, ""],
-      ["ASURANSI ZURICH BASIC", "ZURICH", asuransiHargaApk, asuransiHargaVendor, asuransi.estMargin, formatPercent(asuransi.pctMargin), jamaahBayar, asuransi.totalHrgJual, jamaahBeli, asuransi.totalHargaBeli, asuransi.totalMargin, "UPDATE"],
-      [`MANASIK: ${manasikData.find(m => m.id === selectedManasik)?.item || "-"}`, "-", manasikHargaApk, manasikHargaVendor, manasik.estMargin, formatPercent(manasik.pctMargin), jamaahBayar, manasik.totalHrgJual, jamaahBeli, manasik.totalHargaBeli, manasik.totalMargin, ""],
-      [`ZIARAH: ${ziarahData.find(z => z.id === selectedZiarah)?.item || "-"}`, "-", ziarahHargaApk, ziarahHargaVendor, ziarah.estMargin, formatPercent(ziarah.pctMargin), jamaahBayar, ziarah.totalHrgJual, jamaahBeli, ziarah.totalHargaBeli, ziarah.totalMargin, ""],
-      [`KERETA CEPAT: ${keretaCepatData.find(k => k.id === selectedKeretaCepat)?.item || "-"}`, "-", keretaCepatHargaApk, keretaCepatHargaVendor, keretaCepat.estMargin, formatPercent(keretaCepat.pctMargin), jamaahBayar, keretaCepat.totalHrgJual, jamaahBeli, keretaCepat.totalHargaBeli, keretaCepat.totalMargin, ""],
-      [`HANDLING DOMESTIK: ${handlingDomestikData.find(h => h.id === selectedHandlingDomestik)?.item || "-"}`, "BOWO", handlingDomestikHargaApk, handlingDomestikHargaVendor, handlingDomestik.estMargin, formatPercent(handlingDomestik.pctMargin), jamaahBayar, handlingDomestik.totalHrgJual, jamaahBeli, handlingDomestik.totalHargaBeli, handlingDomestik.totalMargin, "UPDATE"],
-      ["TOUR LEADER (TL)", "", tlHargaApk, tlHargaVendor, tlRow.estMargin, "0%", jamaahBayar, tlRow.totalHrgJual, "", "", tlRow.totalMargin, ""],
+      ["DESK", "VENDOR", "HARGA APK", "HARGA VENDOR", "EST. MARGIN", "% MARGIN", "JAMAAH BAYAR", "TOTAL HRG JUAL", "JAMAAH BELI", "TOTAL HARGA BELI", "TOTAL MARGIN", "REFF."]
+    ];
+
+    if (effectiveMaskapaiHargaApk > 0) data.push([`MASKAPAI: ${maskapaiObj?.name || "-"}`, maskapaiObj?.namaVendor || "-", effectiveMaskapaiHargaApk, effectiveMaskapaiHargaVendor, maskapai.estMargin, formatPercent(maskapai.pctMargin), jamaahBayar, maskapai.totalHrgJual, jamaahBeli, maskapai.totalHargaBeli, maskapai.totalMargin, "CONFIRMED"]);
+    if (jenisPaket === 'Plus Wisata' && hargaWisataApk > 0) data.push([`WISATA: ${namaWisata || "-"}`, "-", hargaWisataApk, hargaWisataVendor, wisataRow.estMargin, formatPercent(wisataRow.pctMargin), jamaahBayar, wisataRow.totalHrgJual, jamaahBeli, wisataRow.totalHargaBeli, wisataRow.totalMargin, "UPDATE"]);
+    if (hotelMadinahHargaApk > 0) data.push([`HOTEL MADINAH: ${hotelMadinahObj?.name || "-"}`, hotelMadinahObj?.vendor || "-", hotelMadinahHargaApk, hotelMadinahHargaVendor, hotelMadinah.estMargin, formatPercent(hotelMadinah.pctMargin), jamaahBayar, hotelMadinah.totalHrgJual, jamaahBeli, hotelMadinah.totalHargaBeli, hotelMadinah.totalMargin, "UPDATE RATE"]);
+    if (hotelMakkahHargaApk > 0) data.push([`HOTEL MAKKAH: ${hotelMakkahObj?.name || "-"}`, hotelMakkahObj?.vendor || "-", hotelMakkahHargaApk, hotelMakkahHargaVendor, hotelMakkah.estMargin, formatPercent(hotelMakkah.pctMargin), jamaahBayar, hotelMakkah.totalHrgJual, jamaahBeli, hotelMakkah.totalHargaBeli, hotelMakkah.totalMargin, "UPDATE RATE"]);
+    if (handlingHargaApk > 0) data.push([`HANDLING: ${handlingObj ? `${handlingObj.minPax}-${handlingObj.maxPax} Pax` : "-"}`, "TFA", handlingHargaApk, handlingHargaVendor, handling.estMargin, formatPercent(handling.pctMargin), jamaahBayar, handling.totalHrgJual, jamaahBeli, handling.totalHargaBeli, handling.totalMargin, "UPDATE"]);
+    if (mutawifHargaApk > 0) data.push([`MUTAWIF: ${mutawifHari} Hari${!pakaiMutawif ? ' (Tidak Dipakai)' : ''}`, "TFA", mutawifHargaApk, mutawifHargaVendor, mutawifRow.estMargin, formatPercent(mutawifRow.pctMargin), jamaahBayar, mutawifRow.totalHrgJual, jamaahBeli, mutawifRow.totalHargaBeli, mutawifRow.totalMargin, "UPDATE"]);
+    if (equipmentHargaApk > 0) data.push([`PERLENGKAPAN: ${equipmentObj?.name || "-"}`, "UMAROH", equipmentHargaApk, equipmentHargaVendor, perlengkapan.estMargin, formatPercent(perlengkapan.pctMargin), jamaahBayar, perlengkapan.totalHrgJual, jamaahBeli, perlengkapan.totalHargaBeli, perlengkapan.totalMargin, "GUDANG OK"]);
+    if (visaHargaApk > 0) data.push([`VISA: ${visaObj?.paxRange || "-"}`, "TFA", visaHargaApk, visaHargaVendor, visaRow.estMargin, formatPercent(visaRow.pctMargin), jamaahBayar, visaRow.totalHrgJual, jamaahBeli, visaRow.totalHargaBeli, visaRow.totalMargin, "UPDATE"]);
+    if (transportHargaApk > 0) data.push([`TRANSPORT: ${transportObj?.name || "-"} ${transportRoute?.route || ""}`, transportObj?.namaVendor || "-", transportHargaApk, transportHargaVendor, transportRow.estMargin, formatPercent(transportRow.pctMargin), jamaahBayar, transportRow.totalHrgJual, jamaahBeli, transportRow.totalHargaBeli, transportRow.totalMargin, ""]);
+    if (asuransiHargaApk > 0) data.push(["ASURANSI ZURICH BASIC", "ZURICH", asuransiHargaApk, asuransiHargaVendor, asuransi.estMargin, formatPercent(asuransi.pctMargin), jamaahBayar, asuransi.totalHrgJual, jamaahBeli, asuransi.totalHargaBeli, asuransi.totalMargin, "UPDATE"]);
+    if (manasikHargaApk > 0) data.push([`MANASIK: ${manasikData.find(m => m.id === selectedManasik)?.item || "-"}`, "-", manasikHargaApk, manasikHargaVendor, manasik.estMargin, formatPercent(manasik.pctMargin), jamaahBayar, manasik.totalHrgJual, jamaahBeli, manasik.totalHargaBeli, manasik.totalMargin, ""]);
+    if (ziarahHargaApk > 0) data.push([`ZIARAH: ${ziarahData.find(z => z.id === selectedZiarah)?.item || "-"}`, "-", ziarahHargaApk, ziarahHargaVendor, ziarah.estMargin, formatPercent(ziarah.pctMargin), jamaahBayar, ziarah.totalHrgJual, jamaahBeli, ziarah.totalHargaBeli, ziarah.totalMargin, ""]);
+    if (keretaCepatHargaApk > 0) data.push([`KERETA CEPAT: ${keretaCepatData.find(k => k.id === selectedKeretaCepat)?.item || "-"}`, "-", keretaCepatHargaApk, keretaCepatHargaVendor, keretaCepat.estMargin, formatPercent(keretaCepat.pctMargin), jamaahBayar, keretaCepat.totalHrgJual, jamaahBeli, keretaCepat.totalHargaBeli, keretaCepat.totalMargin, ""]);
+    if (handlingDomestikHargaApk > 0) data.push([`HANDLING DOMESTIK: ${handlingDomestikData.find(h => h.id === selectedHandlingDomestik)?.item || "-"}`, "BOWO", handlingDomestikHargaApk, handlingDomestikHargaVendor, handlingDomestik.estMargin, formatPercent(handlingDomestik.pctMargin), jamaahBayar, handlingDomestik.totalHrgJual, jamaahBeli, handlingDomestik.totalHargaBeli, handlingDomestik.totalMargin, "UPDATE"]);
+    if (tlHargaApk > 0) data.push(["TOUR LEADER (TL)", "", tlHargaApk, tlHargaVendor, tlRow.estMargin, "0%", jamaahBayar, tlRow.totalHrgJual, "", "", tlRow.totalMargin, ""]);
+
+    data.push(
       [],
-      ["HARGA DEWASA SEBELUM ADA KOMISI", "", totalHargaApk, totalHargaVendor, totalEstMargin, formatPercent(totalEstMargin / totalHargaApk), "", totalHrgJual, "", totalHargaBeliAll, totalMarginAll, ""],
-      ["KOMISI MITRA", "", komisiMitra, "", "", "", "", "", "", "", "", ""],
-      ["KOMISI UMAROH", "", komisiUmaroh, "", "", "", "", "", "", "", "", ""],
+      ["HARGA DEWASA SEBELUM ADA KOMISI", "", totalHargaApk, totalHargaVendor, totalEstMargin, formatPercent(totalEstMargin / totalHargaApk), "", totalHrgJual, "", totalHargaBeliAll, totalMarginAll, ""]
+    );
+
+    if (komisiMitra > 0) data.push(["KOMISI MITRA", "", komisiMitra, "", "", "", "", "", "", "", "", ""]);
+    if (komisiUmaroh > 0) data.push(["KOMISI UMAROH", "", komisiUmaroh, "", "", "", "", "", "", "", "", ""]);
+
+    data.push(
       ["HARGA QUAD DEWASA SETELAH ADA KOMISI", "", hargaQuadDewasa, "", "", "", "", "", "", "", "", ""],
       ["HARGA TRIPLE DEWASA SETELAH ADA KOMISI", "", hargaTripleDewasa, "", "", "", "", "", "", "", "", ""],
       ["HARGA DOUBLE DEWASA SETELAH ADA KOMISI", "", hargaDoubleDewasa, "", "", "", "", "", "", "", "", ""]
-    ];
+    );
 
     const ws = XLSX.utils.aoa_to_sheet(data);
     const wb = XLSX.utils.book_new();
@@ -512,7 +473,9 @@ export const SalesOrderView: React.FC = () => {
           scale: 2,
           useCORS: true,
           allowTaint: true,
-          backgroundColor: '#ffffff'
+          backgroundColor: '#ffffff',
+          windowWidth: offeringRef.current.scrollWidth,
+          windowHeight: offeringRef.current.scrollHeight
         });
         const imgData = canvas.toDataURL('image/jpeg', 0.95);
         const link = document.createElement('a');
@@ -533,7 +496,9 @@ export const SalesOrderView: React.FC = () => {
           scale: 2,
           useCORS: true,
           allowTaint: true,
-          backgroundColor: '#ffffff'
+          backgroundColor: '#ffffff',
+          windowWidth: offeringRef.current.scrollWidth,
+          windowHeight: offeringRef.current.scrollHeight
         });
         const imgData = canvas.toDataURL('image/jpeg', 0.95);
         const pdf = new jsPDF({
@@ -773,7 +738,7 @@ export const SalesOrderView: React.FC = () => {
                     <select value={selectedHotelMadinah} onChange={e => setSelectedHotelMadinah(e.target.value)} className="w-full bg-transparent font-medium italic outline-none">
                       <option value="">Pilih Hotel Madinah...</option>
                       {availableMadinahHotels.map(h => (
-                        <option key={h.id} value={h.id}>HOTEL MADINAH: {h.name} {h.mealPlan} (SAR {getQuadPrice(h, tglKeberangkatan)})</option>
+                        <option key={h.id} value={h.id}>HOTEL MADINAH: {h.name} {h.mealPlan} {h.stars ? `- ${h.stars} Bintang ` : ''}({getHotelSeasonRange(h, tglKeberangkatan)}) (SAR {getQuadPrice(h, tglKeberangkatan)})</option>
                       ))}
                     </select>
                     {selectedHotelMadinah && (
@@ -803,7 +768,7 @@ export const SalesOrderView: React.FC = () => {
                     <select value={selectedHotelMakkah} onChange={e => setSelectedHotelMakkah(e.target.value)} className="w-full bg-transparent font-medium italic outline-none">
                       <option value="">Pilih Hotel Makkah...</option>
                       {availableMakkahHotels.map(h => (
-                        <option key={h.id} value={h.id}>HOTEL MAKKAH: {h.name} {h.mealPlan} (SAR {getQuadPrice(h, tglKeberangkatan)})</option>
+                        <option key={h.id} value={h.id}>HOTEL MAKKAH: {h.name} {h.mealPlan} {h.stars ? `- ${h.stars} Bintang ` : ''}({getHotelSeasonRange(h, tglKeberangkatan)}) (SAR {getQuadPrice(h, tglKeberangkatan)})</option>
                       ))}
                     </select>
                     {selectedHotelMakkah && (
@@ -1186,13 +1151,18 @@ export const SalesOrderView: React.FC = () => {
           hotelMadinahHarga={hotelMadinahHargaApk}
           hotelMakkahHarga={hotelMakkahHargaApk}
           handlingSaudiHarga={handlingHargaApk}
-          visaTransportHarga={visaHargaApk + transportHargaApk}
+          visaHarga={visaHargaApk}
+          transportHarga={transportHargaApk}
           asuransiHarga={asuransiHargaApk}
           handlingDomestikHarga={handlingDomestikHargaApk}
           perlengkapanHarga={equipmentHargaApk}
           tlHarga={tlHargaApk}
           wisataHarga={jenisPaket === 'Plus Wisata' ? hargaWisataApk : undefined}
           namaWisata={namaWisata}
+          manasikHarga={manasikHargaApk}
+          ziarahHarga={ziarahHargaApk}
+          mutawwifHarga={mutawifHargaApk}
+          keretaCepatHarga={keretaCepatHargaApk}
           hargaDewasaSebelumKomisi={totalHargaApk}
           komisiMitra={komisiMitra}
           komisiUmaroh={komisiUmaroh}

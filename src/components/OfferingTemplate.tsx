@@ -24,13 +24,18 @@ interface OfferingProps {
   hotelMadinahHarga: number;
   hotelMakkahHarga: number;
   handlingSaudiHarga: number;
-  visaTransportHarga: number;
+  visaHarga: number;
+  transportHarga: number;
   asuransiHarga: number;
   handlingDomestikHarga: number;
   perlengkapanHarga: number;
   tlHarga: number;
   wisataHarga?: number;
   namaWisata?: string;
+  manasikHarga?: number;
+  ziarahHarga?: number;
+  mutawwifHarga?: number;
+  keretaCepatHarga?: number;
   hargaDewasaSebelumKomisi: number;
   komisiMitra: number;
   komisiUmaroh: number;
@@ -57,13 +62,18 @@ export const OfferingTemplate = forwardRef<HTMLDivElement, OfferingProps>(({
   hotelMadinahHarga,
   hotelMakkahHarga,
   handlingSaudiHarga,
-  visaTransportHarga,
+  visaHarga,
+  transportHarga,
   asuransiHarga,
   handlingDomestikHarga,
   perlengkapanHarga,
   tlHarga,
   wisataHarga,
   namaWisata,
+  manasikHarga,
+  ziarahHarga,
+  mutawwifHarga,
+  keretaCepatHarga,
   hargaDewasaSebelumKomisi,
   komisiMitra,
   komisiUmaroh
@@ -130,60 +140,112 @@ export const OfferingTemplate = forwardRef<HTMLDivElement, OfferingProps>(({
           <div>NILAI (ESTIMASI)</div>
         </div>
         <div className="bg-white text-xs font-bold">
-          <div className="flex justify-between py-2 px-4 border-b border-gray-100">
-            <div>MASKAPAI: {maskapai}</div>
-            <div>{formatCurrency(maskapaiHarga)}</div>
-          </div>
-          <div className="flex justify-between py-2 px-4 border-b border-gray-100">
-            <div>HOTEL MADINAH: {hotelMadinah} {mealPlanMadinah ? `(${mealPlanMadinah})` : ''}</div>
-            <div>{formatCurrency(hotelMadinahHarga)}</div>
-          </div>
-          <div className="flex justify-between py-2 px-4 border-b border-gray-100">
-            <div>HOTEL MAKKAH: {hotelMakkah} {mealPlanMakkah ? `(${mealPlanMakkah})` : ''}</div>
-            <div>{formatCurrency(hotelMakkahHarga)}</div>
-          </div>
-          <div className="flex justify-between py-2 px-4 border-b border-gray-100">
-            <div>HANDLING SAUDI FULL</div>
-            <div>{formatCurrency(handlingSaudiHarga)}</div>
-          </div>
-          <div className="flex justify-between py-2 px-4 border-b border-gray-100">
-            <div>VISA UMROH + TRANSPORTASI</div>
-            <div>{formatCurrency(visaTransportHarga)}</div>
-          </div>
-          <div className="flex justify-between py-2 px-4 border-b border-gray-100">
-            <div>ASURANSI ZURICH BASIC</div>
-            <div>{formatCurrency(asuransiHarga)}</div>
-          </div>
-          <div className="flex justify-between py-2 px-4 border-b border-gray-100">
-            <div>HANDLING DOMESTIK</div>
-            <div>{formatCurrency(handlingDomestikHarga)}</div>
-          </div>
-          <div className="flex justify-between py-2 px-4 border-b border-gray-100">
-            <div>AKSESORIS / PERLENGKAPAN</div>
-            <div>{formatCurrency(perlengkapanHarga)}</div>
-          </div>
-          <div className="flex justify-between py-2 px-4 border-b border-gray-100">
-            <div>TOUR LEADER (TL)</div>
-            <div>{formatCurrency(tlHarga)}</div>
-          </div>
+          {maskapaiHarga > 0 && (
+            <div className="flex justify-between py-2 px-4 border-b border-gray-100">
+              <div>MASKAPAI: {maskapai}</div>
+              <div>{formatCurrency(maskapaiHarga)}</div>
+            </div>
+          )}
+          {hotelMadinahHarga > 0 && (
+            <div className="flex justify-between py-2 px-4 border-b border-gray-100">
+              <div>HOTEL MADINAH: {hotelMadinah} {mealPlanMadinah ? `(${mealPlanMadinah})` : ''}</div>
+              <div>{formatCurrency(hotelMadinahHarga)}</div>
+            </div>
+          )}
+          {hotelMakkahHarga > 0 && (
+            <div className="flex justify-between py-2 px-4 border-b border-gray-100">
+              <div>HOTEL MAKKAH: {hotelMakkah} {mealPlanMakkah ? `(${mealPlanMakkah})` : ''}</div>
+              <div>{formatCurrency(hotelMakkahHarga)}</div>
+            </div>
+          )}
+          {handlingSaudiHarga > 0 && (
+            <div className="flex justify-between py-2 px-4 border-b border-gray-100">
+              <div>HANDLING SAUDI FULL</div>
+              <div>{formatCurrency(handlingSaudiHarga)}</div>
+            </div>
+          )}
+          {visaHarga > 0 && (
+            <div className="flex justify-between py-2 px-4 border-b border-gray-100">
+              <div>VISA UMROH</div>
+              <div>{formatCurrency(visaHarga)}</div>
+            </div>
+          )}
+          {transportHarga > 0 && (
+            <div className="flex justify-between py-2 px-4 border-b border-gray-100">
+              <div>TRANSPORTASI</div>
+              <div>{formatCurrency(transportHarga)}</div>
+            </div>
+          )}
+          {asuransiHarga > 0 && (
+            <div className="flex justify-between py-2 px-4 border-b border-gray-100">
+              <div>ASURANSI ZURICH BASIC</div>
+              <div>{formatCurrency(asuransiHarga)}</div>
+            </div>
+          )}
+          {handlingDomestikHarga > 0 && (
+            <div className="flex justify-between py-2 px-4 border-b border-gray-100">
+              <div>HANDLING DOMESTIK</div>
+              <div>{formatCurrency(handlingDomestikHarga)}</div>
+            </div>
+          )}
+          {perlengkapanHarga > 0 && (
+            <div className="flex justify-between py-2 px-4 border-b border-gray-100">
+              <div>AKSESORIS / PERLENGKAPAN</div>
+              <div>{formatCurrency(perlengkapanHarga)}</div>
+            </div>
+          )}
+          {tlHarga > 0 && (
+            <div className="flex justify-between py-2 px-4 border-b border-gray-100">
+              <div>TOUR LEADER (TL)</div>
+              <div>{formatCurrency(tlHarga)}</div>
+            </div>
+          )}
           {wisataHarga !== undefined && wisataHarga > 0 && (
             <div className="flex justify-between py-2 px-4 border-b border-gray-100">
               <div>WISATA: {namaWisata || '-'}</div>
               <div>{formatCurrency(wisataHarga)}</div>
             </div>
           )}
-          <div className="flex justify-between py-2 px-4 border-b border-gray-100">
-            <div>HARGA DEWASA SEBELUM KOMISI</div>
-            <div>{formatCurrency(hargaDewasaSebelumKomisi)}</div>
+          {manasikHarga !== undefined && manasikHarga > 0 && (
+            <div className="flex justify-between py-2 px-4 border-b border-gray-100">
+              <div>MANASIK</div>
+              <div>{formatCurrency(manasikHarga)}</div>
+            </div>
+          )}
+          {ziarahHarga !== undefined && ziarahHarga > 0 && (
+            <div className="flex justify-between py-2 px-4 border-b border-gray-100">
+              <div>ZIARAH TAMBAHAN</div>
+              <div>{formatCurrency(ziarahHarga)}</div>
+            </div>
+          )}
+          {mutawwifHarga !== undefined && mutawwifHarga > 0 && (
+            <div className="flex justify-between py-2 px-4 border-b border-gray-100">
+              <div>MUTAWWIF</div>
+              <div>{formatCurrency(mutawwifHarga)}</div>
+            </div>
+          )}
+          {keretaCepatHarga !== undefined && keretaCepatHarga > 0 && (
+            <div className="flex justify-between py-2 px-4 border-b border-gray-100">
+              <div>KERETA CEPAT</div>
+              <div>{formatCurrency(keretaCepatHarga)}</div>
+            </div>
+          )}
+          <div className="flex justify-between py-2 px-4 border-b border-gray-100" style={{ backgroundColor: '#FFFF00' }}>
+            <div className="font-bold">HARGA DEWASA SEBELUM KOMISI</div>
+            <div className="font-bold">{formatCurrency(hargaDewasaSebelumKomisi)}</div>
           </div>
-          <div className="flex justify-between py-2 px-4 border-b border-gray-100">
-            <div>KOMISI MITRA</div>
-            <div>{formatCurrency(komisiMitra)}</div>
-          </div>
-          <div className="flex justify-between py-2 px-4">
-            <div>KOMISI UMAROH</div>
-            <div>{formatCurrency(komisiUmaroh)}</div>
-          </div>
+          {komisiMitra > 0 && (
+            <div className="flex justify-between py-2 px-4 border-b border-gray-100">
+              <div>KOMISI MITRA</div>
+              <div>{formatCurrency(komisiMitra)}</div>
+            </div>
+          )}
+          {komisiUmaroh > 0 && (
+            <div className="flex justify-between py-2 px-4">
+              <div>KOMISI UMAROH</div>
+              <div>{formatCurrency(komisiUmaroh)}</div>
+            </div>
+          )}
         </div>
       </div>
 
