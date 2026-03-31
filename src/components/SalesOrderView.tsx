@@ -209,6 +209,97 @@ export const SalesOrderView: React.FC = () => {
   const komisiUmarohPercent = 10;
   const komisiUmaroh = komisiMitra * (komisiUmarohPercent / 100);
 
+  const [isLoaded, setIsLoaded] = useState(false);
+
+  // Load from local storage on mount
+  useEffect(() => {
+    const savedState = localStorage.getItem('salesOrderState');
+    if (savedState) {
+      try {
+        const parsed = JSON.parse(savedState);
+        if (parsed.namaPaket !== undefined) setNamaPaket(parsed.namaPaket);
+        if (parsed.namaTravel !== undefined) setNamaTravel(parsed.namaTravel);
+        if (parsed.namaMitra !== undefined) setNamaMitra(parsed.namaMitra);
+        if (parsed.jenisPaket !== undefined) setJenisPaket(parsed.jenisPaket);
+        if (parsed.emberkasi !== undefined) setEmberkasi(parsed.emberkasi);
+        if (parsed.tglKeberangkatan !== undefined) setTglKeberangkatan(parsed.tglKeberangkatan);
+        if (parsed.programHari !== undefined) setProgramHari(parsed.programHari);
+        if (parsed.jumlahPax !== undefined) setJumlahPax(parsed.jumlahPax);
+        if (parsed.tl !== undefined) setTl(parsed.tl);
+        if (parsed.room !== undefined) setRoom(parsed.room);
+        if (parsed.pic !== undefined) setPic(parsed.pic);
+        if (parsed.hargaVisaUpdate !== undefined) setHargaVisaUpdate(parsed.hargaVisaUpdate);
+        if (parsed.hargaTransportasiUpdate !== undefined) setHargaTransportasiUpdate(parsed.hargaTransportasiUpdate);
+        if (parsed.hargaMutawwifUpdate !== undefined) setHargaMutawwifUpdate(parsed.hargaMutawwifUpdate);
+        if (parsed.pakaiMutawif !== undefined) setPakaiMutawif(parsed.pakaiMutawif);
+        if (parsed.kursSaudi !== undefined) setKursSaudi(parsed.kursSaudi);
+        if (parsed.kursUsd !== undefined) setKursUsd(parsed.kursUsd);
+        if (parsed.malamMadinah !== undefined) setMalamMadinah(parsed.malamMadinah);
+        if (parsed.malamMakkah !== undefined) setMalamMakkah(parsed.malamMakkah);
+        if (parsed.selectedHotelMadinah !== undefined) setSelectedHotelMadinah(parsed.selectedHotelMadinah);
+        if (parsed.selectedHotelMakkah !== undefined) setSelectedHotelMakkah(parsed.selectedHotelMakkah);
+        if (parsed.selectedHandling !== undefined) setSelectedHandling(parsed.selectedHandling);
+        if (parsed.selectedEquipment !== undefined) setSelectedEquipment(parsed.selectedEquipment);
+        if (parsed.selectedVisa !== undefined) setSelectedVisa(parsed.selectedVisa);
+        if (parsed.selectedTransport !== undefined) setSelectedTransport(parsed.selectedTransport);
+        if (parsed.selectedMaskapai !== undefined) setSelectedMaskapai(parsed.selectedMaskapai);
+        if (parsed.selectedHandlingDomestik !== undefined) setSelectedHandlingDomestik(parsed.selectedHandlingDomestik);
+        if (parsed.selectedManasik !== undefined) setSelectedManasik(parsed.selectedManasik);
+        if (parsed.selectedZiarah !== undefined) setSelectedZiarah(parsed.selectedZiarah);
+        if (parsed.selectedKeretaCepat !== undefined) setSelectedKeretaCepat(parsed.selectedKeretaCepat);
+        if (parsed.maskapaiHargaApk !== undefined) setMaskapaiHargaApk(parsed.maskapaiHargaApk);
+        if (parsed.maskapaiHargaVendor !== undefined) setMaskapaiHargaVendor(parsed.maskapaiHargaVendor);
+        if (parsed.namaWisata !== undefined) setNamaWisata(parsed.namaWisata);
+        if (parsed.hargaWisataApk !== undefined) setHargaWisataApk(parsed.hargaWisataApk);
+        if (parsed.hargaWisataVendor !== undefined) setHargaWisataVendor(parsed.hargaWisataVendor);
+        if (parsed.asuransiHargaApk !== undefined) setAsuransiHargaApk(parsed.asuransiHargaApk);
+        if (parsed.asuransiHargaVendor !== undefined) setAsuransiHargaVendor(parsed.asuransiHargaVendor);
+        if (parsed.manasikHargaApk !== undefined) setManasikHargaApk(parsed.manasikHargaApk);
+        if (parsed.manasikHargaVendor !== undefined) setManasikHargaVendor(parsed.manasikHargaVendor);
+        if (parsed.handlingDomestikHargaApk !== undefined) setHandlingDomestikHargaApk(parsed.handlingDomestikHargaApk);
+        if (parsed.handlingDomestikHargaVendor !== undefined) setHandlingDomestikHargaVendor(parsed.handlingDomestikHargaVendor);
+        if (parsed.ziarahHargaApk !== undefined) setZiarahHargaApk(parsed.ziarahHargaApk);
+        if (parsed.ziarahHargaVendor !== undefined) setZiarahHargaVendor(parsed.ziarahHargaVendor);
+        if (parsed.keretaCepatHargaApk !== undefined) setKeretaCepatHargaApk(parsed.keretaCepatHargaApk);
+        if (parsed.keretaCepatHargaVendor !== undefined) setKeretaCepatHargaVendor(parsed.keretaCepatHargaVendor);
+        if (parsed.komisiMitra !== undefined) setKomisiMitra(parsed.komisiMitra);
+      } catch (e) {
+        console.error("Failed to parse saved state", e);
+      }
+    }
+    setIsLoaded(true);
+  }, []);
+
+  // Save to local storage on change
+  useEffect(() => {
+    if (!isLoaded) return;
+    const stateToSave = {
+      namaPaket, namaTravel, namaMitra, jenisPaket, emberkasi, tglKeberangkatan,
+      programHari, jumlahPax, tl, room, pic, hargaVisaUpdate, hargaTransportasiUpdate,
+      hargaMutawwifUpdate, pakaiMutawif, kursSaudi, kursUsd, malamMadinah, malamMakkah,
+      selectedHotelMadinah, selectedHotelMakkah, selectedHandling, selectedEquipment,
+      selectedVisa, selectedTransport, selectedMaskapai, selectedHandlingDomestik,
+      selectedManasik, selectedZiarah, selectedKeretaCepat, maskapaiHargaApk,
+      maskapaiHargaVendor, namaWisata, hargaWisataApk, hargaWisataVendor,
+      asuransiHargaApk, asuransiHargaVendor, manasikHargaApk, manasikHargaVendor,
+      handlingDomestikHargaApk, handlingDomestikHargaVendor, ziarahHargaApk,
+      ziarahHargaVendor, keretaCepatHargaApk, keretaCepatHargaVendor, komisiMitra
+    };
+    localStorage.setItem('salesOrderState', JSON.stringify(stateToSave));
+  }, [
+    isLoaded,
+    namaPaket, namaTravel, namaMitra, jenisPaket, emberkasi, tglKeberangkatan,
+    programHari, jumlahPax, tl, room, pic, hargaVisaUpdate, hargaTransportasiUpdate,
+    hargaMutawwifUpdate, pakaiMutawif, kursSaudi, kursUsd, malamMadinah, malamMakkah,
+    selectedHotelMadinah, selectedHotelMakkah, selectedHandling, selectedEquipment,
+    selectedVisa, selectedTransport, selectedMaskapai, selectedHandlingDomestik,
+    selectedManasik, selectedZiarah, selectedKeretaCepat, maskapaiHargaApk,
+    maskapaiHargaVendor, namaWisata, hargaWisataApk, hargaWisataVendor,
+    asuransiHargaApk, asuransiHargaVendor, manasikHargaApk, manasikHargaVendor,
+    handlingDomestikHargaApk, handlingDomestikHargaVendor, ziarahHargaApk,
+    ziarahHargaVendor, keretaCepatHargaApk, keretaCepatHargaVendor, komisiMitra
+  ]);
+
   // Helper to calculate row values
   const calculateRow = (hargaApk: number, hargaVendor: number, jamaahBayar: number, jamaahBeli: number) => {
     const estMargin = hargaApk - hargaVendor;
