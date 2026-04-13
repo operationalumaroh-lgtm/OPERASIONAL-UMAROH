@@ -4,7 +4,17 @@ import { Maskapai, maskapaiData as initialData } from '../data/maskapai';
 
 export const MaskapaiView: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState('');
-  const [data, setData] = useState<Maskapai[]>(initialData);
+  const [data, setData] = useState<Maskapai[]>(() => {
+    const currentYear = new Date().getFullYear();
+    return initialData.filter(item => {
+      const itemYear = new Date(item.tanggalKeberangkatan).getFullYear();
+      const isOldYear = itemYear < currentYear;
+      const isLowSeat = item.availableSeats < 10;
+      
+      // Hanya simpan data yang tahunnya >= tahun ini DAN sisa seat >= 10
+      return !isOldYear && !isLowSeat;
+    });
+  });
 
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat('id-ID', {

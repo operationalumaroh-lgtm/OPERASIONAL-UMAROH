@@ -598,16 +598,27 @@ export const SalesOrderView: React.FC = () => {
   const handleGenerateSOPDF = async () => {
     if (tableRef.current) {
       try {
-        const canvas = await htmlToImage.toCanvas(tableRef.current, { 
+        const tableElement = tableRef.current.querySelector('table');
+        if (!tableElement) return;
+
+        const scrollWidth = tableElement.scrollWidth;
+        const scrollHeight = tableElement.scrollHeight;
+        
+        const canvas = await htmlToImage.toCanvas(tableElement, { 
           pixelRatio: 2,
           backgroundColor: '#ffffff',
+          width: scrollWidth,
+          height: scrollHeight
         });
         const imgData = canvas.toDataURL('image/jpeg', 0.95);
+        
+        // Calculate PDF dimensions to fit the image
         const pdf = new jsPDF({
-          orientation: 'landscape',
+          orientation: scrollWidth > scrollHeight ? 'landscape' : 'portrait',
           unit: 'px',
           format: [canvas.width, canvas.height]
         });
+        
         pdf.addImage(imgData, 'JPEG', 0, 0, canvas.width, canvas.height);
         pdf.save(`SO_${namaPaket || 'Draft'}.pdf`);
       } catch (error) {
