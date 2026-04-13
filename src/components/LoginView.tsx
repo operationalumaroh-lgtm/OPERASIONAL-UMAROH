@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import { Building2, Code2, ArrowRight, Lock, Mail } from 'lucide-react';
 import { logoBase64 } from '../utils/logoBase64';
+import { auth } from '../firebase';
+import { signInWithPopup, GoogleAuthProvider } from 'firebase/auth';
 
 export type Role = 'operasional' | 'mitra';
 
@@ -10,26 +12,21 @@ interface LoginViewProps {
 
 export const LoginView: React.FC<LoginViewProps> = ({ onLogin }) => {
   const [selectedRole, setSelectedRole] = useState<Role>('operasional');
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
   const [error, setError] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleGoogleLogin = async () => {
     setError('');
-
-    if (selectedRole === 'operasional') {
-      if (email === 'operasional@umaroh.com' && password === 'Ops12345') {
-        onLogin(selectedRole);
-      } else {
-        setError('Email atau password operasional salah.');
-      }
-    } else if (selectedRole === 'mitra') {
-      if ((email === 'md@umaroh.com' || email === 'md@umaorh.com') && password === 'Md123456') {
-        onLogin(selectedRole);
-      } else {
-        setError('Email atau password mitra dev salah.');
-      }
+    setIsLoading(true);
+    try {
+      const provider = new GoogleAuthProvider();
+      await signInWithPopup(auth, provider);
+      onLogin(selectedRole);
+    } catch (err: any) {
+      console.error(err);
+      setError('Gagal login dengan Google: ' + err.message);
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -92,79 +89,22 @@ export const LoginView: React.FC<LoginViewProps> = ({ onLogin }) => {
             </div>
           )}
 
-          <form className="space-y-6" onSubmit={handleSubmit}>
-            <div>
-              <label className="block text-sm font-medium text-gray-700">
-                Email Address
-              </label>
-              <div className="mt-1 relative rounded-md shadow-sm">
-                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                  <Mail className="h-5 w-5 text-gray-400" />
-                </div>
-                <input
-                  type="email"
-                  required
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg focus:ring-amber-500 focus:border-amber-500 sm:text-sm outline-none"
-                  placeholder={selectedRole === 'operasional' ? 'operasional@umaroh.com' : 'md@umaroh.com'}
-                />
-              </div>
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700">
-                Password
-              </label>
-              <div className="mt-1 relative rounded-md shadow-sm">
-                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                  <Lock className="h-5 w-5 text-gray-400" />
-                </div>
-                <input
-                  type="password"
-                  required
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg focus:ring-amber-500 focus:border-amber-500 sm:text-sm outline-none"
-                  placeholder="••••••••"
-                />
-              </div>
-            </div>
-
-            <div className="flex items-center justify-between">
-              <div className="flex items-center">
-                <input
-                  id="remember-me"
-                  name="remember-me"
-                  type="checkbox"
-                  className="h-4 w-4 text-amber-600 focus:ring-amber-500 border-gray-300 rounded"
-                />
-                <label htmlFor="remember-me" className="ml-2 block text-sm text-gray-900">
-                  Ingat saya
-                </label>
-              </div>
-
-              <div className="text-sm">
-                <a href="#" className="font-medium text-amber-600 hover:text-amber-500">
-                  Lupa password?
-                </a>
-              </div>
-            </div>
-
+          <div className="space-y-6">
             <div>
               <button
-                type="submit"
-                className={`w-full flex justify-center items-center py-2.5 px-4 border border-transparent rounded-lg shadow-sm text-sm font-bold text-white focus:outline-none focus:ring-2 focus:ring-offset-2 transition-colors ${
+                onClick={handleGoogleLogin}
+                disabled={isLoading}
+                className={`w-full flex justify-center items-center py-3 px-4 border border-transparent rounded-lg shadow-sm text-sm font-bold text-white focus:outline-none focus:ring-2 focus:ring-offset-2 transition-colors ${
                   selectedRole === 'operasional' 
                     ? 'bg-amber-600 hover:bg-amber-700 focus:ring-amber-500' 
                     : 'bg-blue-600 hover:bg-blue-700 focus:ring-blue-500'
-                }`}
+                } ${isLoading ? 'opacity-70 cursor-not-allowed' : ''}`}
               >
-                Masuk sebagai {selectedRole === 'operasional' ? 'Operasional' : 'Mitra Dev'}
-                <ArrowRight className="ml-2 h-4 w-4" />
+                {isLoading ? 'Memproses...' : `Login dengan Google sebagai ${selectedRole === 'operasional' ? 'Operasional' : 'Mitra Dev'}`}
+                {!isLoading && <ArrowRight className="ml-2 h-4 w-4" />}
               </button>
             </div>
-          </form>
+          </div>
         </div>
       </div>
     </div>

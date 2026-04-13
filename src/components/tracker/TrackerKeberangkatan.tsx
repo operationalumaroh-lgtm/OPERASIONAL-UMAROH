@@ -3,6 +3,7 @@ import { collection, onSnapshot, addDoc, updateDoc, deleteDoc, doc } from 'fireb
 import { db } from '../../firebase';
 import { Plus, Edit2, Trash2, Save, X } from 'lucide-react';
 import { PaketTracker, KeberangkatanTracker } from './types';
+import { handleFirestoreError, OperationType } from '../../utils/firestoreErrorHandler';
 
 export const TrackerKeberangkatan: React.FC = () => {
   const [keberangkatans, setKeberangkatans] = useState<KeberangkatanTracker[]>([]);
@@ -15,9 +16,13 @@ export const TrackerKeberangkatan: React.FC = () => {
   useEffect(() => {
     const unsubKeberangkatan = onSnapshot(collection(db, 'tracker_keberangkatan'), (snapshot) => {
       setKeberangkatans(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as KeberangkatanTracker)));
+    }, (error) => {
+      handleFirestoreError(error, OperationType.GET, 'tracker_keberangkatan');
     });
     const unsubPaket = onSnapshot(collection(db, 'tracker_paket'), (snapshot) => {
       setPakets(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as PaketTracker)));
+    }, (error) => {
+      handleFirestoreError(error, OperationType.GET, 'tracker_paket');
     });
     return () => { unsubKeberangkatan(); unsubPaket(); };
   }, []);
@@ -44,7 +49,7 @@ export const TrackerKeberangkatan: React.FC = () => {
       }
       setFormData({});
     } catch (error) {
-      console.error("Error saving keberangkatan:", error);
+      handleFirestoreError(error, OperationType.WRITE, 'tracker_keberangkatan');
     }
   };
 
@@ -53,7 +58,7 @@ export const TrackerKeberangkatan: React.FC = () => {
       await deleteDoc(doc(db, 'tracker_keberangkatan', id));
       setDeleteConfirm(null);
     } catch (error) {
-      console.error("Error deleting keberangkatan:", error);
+      handleFirestoreError(error, OperationType.DELETE, 'tracker_keberangkatan');
     }
   };
 

@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Footer } from './components/Footer';
 import { Navbar, TabType } from './components/Navbar';
 import { DatabaseView } from './components/DatabaseView';
@@ -15,13 +15,15 @@ import { FlightMonitoringView } from './components/FlightMonitoringView';
 import { TrackerView } from './components/TrackerView';
 import { ManifestPage } from './components/manifest/ManifestPage';
 import { LoginView, Role } from './components/LoginView';
+import { ErrorBoundary } from './components/ErrorBoundary';
 import { logoBase64 } from './utils/logoBase64';
 import { LogOut, User } from 'lucide-react';
+import { auth } from './firebase';
+import { onAuthStateChanged, signOut } from 'firebase/auth';
 
 function App() {
-  const [isLoggedIn, setIsLoggedIn] = useState(() => {
-    return localStorage.getItem('isLoggedIn') === 'true';
-  });
+  const [isAuthReady, setIsAuthReady] = useState(false);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [userRole, setUserRole] = useState<Role | null>(() => {
     return localStorage.getItem('userRole') as Role | null;
   });
@@ -29,10 +31,20 @@ function App() {
     return (localStorage.getItem('activeTab') as TabType) || 'dashboard';
   });
 
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
+      if (user) {
+        setIsLoggedIn(true);
+      } else {
+        setIsLoggedIn(false);
+      }
+      setIsAuthReady(true);
+    });
+    return () => unsubscribe();
+  }, []);
+
   const handleLogin = (role: Role) => {
     setUserRole(role);
-    setIsLoggedIn(true);
-    localStorage.setItem('isLoggedIn', 'true');
     localStorage.setItem('userRole', role);
     
     const initialTab = role === 'mitra' ? 'templates' : 'dashboard';
@@ -40,18 +52,29 @@ function App() {
     localStorage.setItem('activeTab', initialTab);
   };
 
-  const handleLogout = () => {
-    setIsLoggedIn(false);
-    setUserRole(null);
-    localStorage.removeItem('isLoggedIn');
-    localStorage.removeItem('userRole');
-    localStorage.removeItem('activeTab');
+  const handleLogout = async () => {
+    try {
+      await signOut(auth);
+      setUserRole(null);
+      localStorage.removeItem('userRole');
+      localStorage.removeItem('activeTab');
+    } catch (error) {
+      console.error('Error signing out:', error);
+    }
   };
 
   const handleTabChange = (tab: TabType) => {
     setActiveTab(tab);
     localStorage.setItem('activeTab', tab);
   };
+
+  if (!isAuthReady) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-amber-600"></div>
+      </div>
+    );
+  }
 
   if (!isLoggedIn) {
     return <LoginView onLogin={handleLogin} />;
@@ -124,7 +147,9 @@ function App() {
 
       {/* Main Content */}
       <main className="flex-grow bg-gray-50">
-        {renderContent()}
+        <ErrorBoundary>
+          {renderContent()}
+        </ErrorBoundary>
       </main>
 
       <Footer />

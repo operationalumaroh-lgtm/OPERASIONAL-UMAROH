@@ -92,6 +92,22 @@ service cloud.firestore {
       allow write: if isAuthenticated() && isValidVendorService(request.resource.data);
     }
 
+    match /tracker_paket/{paketId} {
+      allow read, write: if isAuthenticated();
+    }
+    
+    match /tracker_jamaah/{jamaahId} {
+      allow read, write: if isAuthenticated();
+    }
+    
+    match /tracker_keberangkatan/{keberangkatanId} {
+      allow read, write: if isAuthenticated();
+    }
+
+    match /tracking_group/{groupId} {
+      allow read, write: if isAuthenticated();
+    }
+
     match /users/{userId} {
       allow read: if isAuthenticated() && request.auth.uid == userId;
       allow write: if isAuthenticated() && request.auth.uid == userId && 

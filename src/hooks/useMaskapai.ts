@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
-import { collection, onSnapshot, query, where, doc, updateDoc, getDocs, writeBatch } from 'firebase/firestore';
-import { db } from '../firebase';
+import { collection, onSnapshot, query, where, doc, updateDoc, getDocs, writeBatch, db } from '../firebase';
 import { Maskapai, maskapaiData as initialData } from '../data/maskapai';
+import { handleFirestoreError, OperationType } from '../utils/firestoreErrorHandler';
 
 export const useMaskapai = () => {
   const [maskapai, setMaskapai] = useState<Maskapai[]>([]);
@@ -32,6 +32,7 @@ export const useMaskapai = () => {
       if (maskapai.length === 0) {
         setMaskapai(initialData);
       }
+      handleFirestoreError(err, OperationType.GET, 'maskapai');
     });
 
     return () => unsubscribe();
@@ -43,16 +44,16 @@ export const useMaskapai = () => {
       const target = maskapai.find(m => m.id === maskapaiId);
       if (!target) throw new Error('Maskapai not found');
       
-      if (target.remainingSeat < count) {
+      if (target.availableSeats < count) {
         throw new Error('Not enough seats available');
       }
 
       await updateDoc(maskapaiRef, {
-        remainingSeat: target.remainingSeat - count
+        availableSeats: target.availableSeats - count
       });
       return true;
     } catch (err) {
-      console.error('Error decrementing seat:', err);
+      handleFirestoreError(err, OperationType.WRITE, 'maskapai');
       throw err;
     }
   };
@@ -72,7 +73,7 @@ export const useMaskapai = () => {
         console.log('Data seeded successfully');
       }
     } catch (err) {
-      console.error('Error seeding data:', err);
+      handleFirestoreError(err, OperationType.WRITE, 'maskapai');
     }
   };
 

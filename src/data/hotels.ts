@@ -5001,1618 +5001,6 @@ export const defaultHotels: Hotel[] = [
     ]
   },
   {
-    "id": "emaar-royal-madinah",
-    "name": "Emaar Royal",
-    "city": "Madinah",
-    "vendor": "Emaar Al Diyafa",
-    "mealPlan": "FB",
-    "stars": 5,
-    "seasons": [
-      {
-        "range": "30 JUN 2026 TO 19 AUG 2026",
-        "prices": [
-          {
-            "roomType": "Double",
-            "price": 575
-          },
-          {
-            "roomType": "Triple",
-            "price": 650
-          },
-          {
-            "roomType": "Quad",
-            "price": 725
-          }
-        ]
-      },
-      {
-        "range": "19 AUG 2026 TO 16 DEC 2026",
-        "prices": [
-          {
-            "roomType": "Double",
-            "price": 675
-          },
-          {
-            "roomType": "Triple",
-            "price": 775
-          },
-          {
-            "roomType": "Quad",
-            "price": 875
-          }
-        ]
-      },
-      {
-        "range": "16 DEC 2026 TO 09 JAN 2027",
-        "prices": [
-          {
-            "roomType": "Double",
-            "price": 1100
-          },
-          {
-            "roomType": "Triple",
-            "price": 1250
-          },
-          {
-            "roomType": "Quad",
-            "price": 1400
-          }
-        ]
-      },
-      {
-        "range": "09 JAN 2027 TO 08 FEB 2027",
-        "prices": [
-          {
-            "roomType": "Double",
-            "price": 775
-          },
-          {
-            "roomType": "Triple",
-            "price": 875
-          },
-          {
-            "roomType": "Quad",
-            "price": 975
-          }
-        ]
-      }
-    ]
-  },
-  {
-    "id": "emaar-elite-madinah",
-    "name": "Emaar Elite",
-    "city": "Madinah",
-    "vendor": "Emaar Al Diyafa",
-    "mealPlan": "FB",
-    "stars": 5,
-    "seasons": [
-      {
-        "range": "30 JUN 2026 TO 19 AUG 2026",
-        "prices": [
-          {
-            "roomType": "Double",
-            "price": 550
-          },
-          {
-            "roomType": "Triple",
-            "price": 625
-          },
-          {
-            "roomType": "Quad",
-            "price": 700
-          }
-        ]
-      },
-      {
-        "range": "19 AUG 2026 TO 16 DEC 2026",
-        "prices": [
-          {
-            "roomType": "Double",
-            "price": 650
-          },
-          {
-            "roomType": "Triple",
-            "price": 750
-          },
-          {
-            "roomType": "Quad",
-            "price": 850
-          }
-        ]
-      },
-      {
-        "range": "16 DEC 2026 TO 09 JAN 2027",
-        "prices": [
-          {
-            "roomType": "Double",
-            "price": 1075
-          },
-          {
-            "roomType": "Triple",
-            "price": 1225
-          },
-          {
-            "roomType": "Quad",
-            "price": 1375
-          }
-        ]
-      },
-      {
-        "range": "09 JAN 2027 TO 08 FEB 2027",
-        "prices": [
-          {
-            "roomType": "Double",
-            "price": 750
-          },
-          {
-            "roomType": "Triple",
-            "price": 850
-          },
-          {
-            "roomType": "Quad",
-            "price": 950
-          }
-        ]
-      }
-    ]
-  },
-  {
-    "id": "emaar-el-mektan-madinah",
-    "name": "Emaar El Mektan",
-    "city": "Madinah",
-    "vendor": "Emaar Al Diyafa",
-    "mealPlan": "FB",
-    "stars": 4,
-    "seasons": [
-      {
-        "range": "16 JUN 2026 TO 19 AUG 2026",
-        "prices": [
-          {
-            "roomType": "Double",
-            "price": 550
-          },
-          {
-            "roomType": "Triple",
-            "price": 625
-          },
-          {
-            "roomType": "Quad",
-            "price": 700
-          },
-          {
-            "roomType": "Delux Suite (04 pax)",
-            "price": 800
-          },
-          {
-            "roomType": "Family Suite (05 pax)",
-            "price": 820
-          },
-          {
-            "roomType": "Royal Suite (05 pax)",
-            "price": 890
-          }
-        ]
-      },
-      {
-        "range": "19 AUG 2026 TO 16 DEC 2026",
-        "prices": [
-          {
-            "roomType": "Double",
-            "price": 650
-          },
-          {
-            "roomType": "Triple",
-            "price": 750
-          },
-          {
-            "roomType": "Quad",
-            "price": 850
-          },
-          {
-            "roomType": "Delux Suite (04 pax)",
-            "price": 950
-          },
-          {
-            "roomType": "Family Suite (05 pax)",
-            "price": 970
-          },
-          {
-            "roomType": "Royal Suite (05 pax)",
-            "price": 1040
-          }
-        ]
-      },
-      {
-        "range": "16 DEC 2026 TO 09 JAN 2027",
-        "prices": [
-          {
-            "roomType": "Double",
-            "price": 1075
-          },
-          {
-            "roomType": "Triple",
-            "price": 1225
-          },
-          {
-            "roomType": "Quad",
-            "price": 1375
-          },
-          {
-            "roomType": "Delux Suite (04 pax)",
-            "price": 1475
-          },
-          {
-            "roomType": "Family Suite (05 pax)",
-            "price": 1495
-          },
-          {
-            "roomType": "Royal Suite (05 pax)",
-            "price": 1565
-          }
-        ]
-      },
-      {
-        "range": "09 JAN 2027 TO 08 FEB 2027",
-        "prices": [
-          {
-            "roomType": "Double",
-            "price": 750
-          },
-          {
-            "roomType": "Triple",
-            "price": 850
-          },
-          {
-            "roomType": "Quad",
-            "price": 950
-          },
-          {
-            "roomType": "Delux Suite (04 pax)",
-            "price": 1050
-          },
-          {
-            "roomType": "Family Suite (05 pax)",
-            "price": 1070
-          },
-          {
-            "roomType": "Royal Suite (05 pax)",
-            "price": 1140
-          }
-        ]
-      }
-    ]
-  },
-  {
-    "id": "emaar-taibah-madinah",
-    "name": "Emaar Taibah",
-    "city": "Madinah",
-    "vendor": "Emaar Al Diyafa",
-    "mealPlan": "FB",
-    "stars": 4,
-    "seasons": [
-      {
-        "range": "30 JUN 2026 TO 19 AUG 2026",
-        "prices": [
-          {
-            "roomType": "Double",
-            "price": 380
-          },
-          {
-            "roomType": "Triple",
-            "price": 420
-          },
-          {
-            "roomType": "Quad",
-            "price": 460
-          }
-        ]
-      },
-      {
-        "range": "19 AUG 2026 TO 16 DEC 2026",
-        "prices": [
-          {
-            "roomType": "Double",
-            "price": 425
-          },
-          {
-            "roomType": "Triple",
-            "price": 485
-          },
-          {
-            "roomType": "Quad",
-            "price": 545
-          }
-        ]
-      },
-      {
-        "range": "16 DEC 2026 TO 09 JAN 2027",
-        "prices": [
-          {
-            "roomType": "Double",
-            "price": 600
-          },
-          {
-            "roomType": "Triple",
-            "price": 660
-          },
-          {
-            "roomType": "Quad",
-            "price": 720
-          }
-        ]
-      },
-      {
-        "range": "09 JAN 2027 TO 08 FEB 2027",
-        "prices": [
-          {
-            "roomType": "Double",
-            "price": 470
-          },
-          {
-            "roomType": "Triple",
-            "price": 535
-          },
-          {
-            "roomType": "Quad",
-            "price": 600
-          }
-        ]
-      }
-    ]
-  },
-  {
-    "id": "al-shohada-makkah",
-    "name": "Al Shohada Hotel",
-    "city": "Makkah",
-    "vendor": "Palm Rich",
-    "mealPlan": "RO",
-    "stars": 5,
-    "seasons": [
-      {
-        "range": "16 JUN 2026 TO 14 JUL 2026",
-        "prices": [
-          {
-            "roomType": "Double",
-            "price": 500
-          },
-          {
-            "roomType": "Triple",
-            "price": 590
-          },
-          {
-            "roomType": "Quad",
-            "price": 680
-          }
-        ]
-      },
-      {
-        "range": "14 JUL 2026 TO 11 SEP 2026",
-        "prices": [
-          {
-            "roomType": "Double",
-            "price": 535
-          },
-          {
-            "roomType": "Triple",
-            "price": 625
-          },
-          {
-            "roomType": "Quad",
-            "price": 715
-          }
-        ]
-      },
-      {
-        "range": "11 SEP 2026 TO 10 NOV 2026",
-        "prices": [
-          {
-            "roomType": "Double",
-            "price": 660
-          },
-          {
-            "roomType": "Triple",
-            "price": 750
-          },
-          {
-            "roomType": "Quad",
-            "price": 840
-          }
-        ]
-      },
-      {
-        "range": "10 NOV 2026 TO 09 DEC 2026",
-        "prices": [
-          {
-            "roomType": "Double",
-            "price": 710
-          },
-          {
-            "roomType": "Triple",
-            "price": 800
-          },
-          {
-            "roomType": "Quad",
-            "price": 890
-          }
-        ]
-      },
-      {
-        "range": "09 DEC 2026 TO 20 JAN 2027",
-        "prices": [
-          {
-            "roomType": "Double",
-            "price": 1260
-          },
-          {
-            "roomType": "Triple",
-            "price": 1350
-          },
-          {
-            "roomType": "Quad",
-            "price": 1440
-          }
-        ]
-      },
-      {
-        "range": "20 JAN 2027 TO 07 FEB 2027",
-        "prices": [
-          {
-            "roomType": "Double",
-            "price": 710
-          },
-          {
-            "roomType": "Triple",
-            "price": 800
-          },
-          {
-            "roomType": "Quad",
-            "price": 890
-          }
-        ]
-      }
-    ]
-  },
-  {
-    "id": "emaar-grand-makkah",
-    "name": "Emaar Grand Hotel",
-    "city": "Makkah",
-    "vendor": "Emaar Al Diyafa",
-    "mealPlan": "FB",
-    "stars": 5,
-    "seasons": [
-      {
-        "range": "16 JUN 2026 TO 15 JUL 2026",
-        "prices": [
-          {
-            "roomType": "Double",
-            "price": 340
-          },
-          {
-            "roomType": "Triple",
-            "price": 410
-          },
-          {
-            "roomType": "Quad",
-            "price": 480
-          }
-        ]
-      },
-      {
-        "range": "15 JUL 2026 TO 12 SEP 2026",
-        "prices": [
-          {
-            "roomType": "Double",
-            "price": 375
-          },
-          {
-            "roomType": "Triple",
-            "price": 445
-          },
-          {
-            "roomType": "Quad",
-            "price": 515
-          }
-        ]
-      },
-      {
-        "range": "12 SEP 2026 TO 10 DEC 2026",
-        "prices": [
-          {
-            "roomType": "Double",
-            "price": 420
-          },
-          {
-            "roomType": "Triple",
-            "price": 490
-          },
-          {
-            "roomType": "Quad",
-            "price": 560
-          }
-        ]
-      },
-      {
-        "range": "10 DEC 2026 TO 21 JAN 2027",
-        "prices": [
-          {
-            "roomType": "Double",
-            "price": 745
-          },
-          {
-            "roomType": "Triple",
-            "price": 815
-          },
-          {
-            "roomType": "Quad",
-            "price": 885
-          }
-        ]
-      },
-      {
-        "range": "21 JAN 2027 TO 07 FEB 2027",
-        "prices": [
-          {
-            "roomType": "Double",
-            "price": 510
-          },
-          {
-            "roomType": "Triple",
-            "price": 580
-          },
-          {
-            "roomType": "Quad",
-            "price": 650
-          }
-        ]
-      }
-    ]
-  },
-  {
-    "id": "emaar-manar-makkah",
-    "name": "Emaar Manar Hotel",
-    "city": "Makkah",
-    "vendor": "Emaar Al Diyafa",
-    "mealPlan": "FB",
-    "stars": 4,
-    "seasons": [
-      {
-        "range": "16 JUN 2026 TO 15 JUL 2026",
-        "prices": [
-          {
-            "roomType": "Double",
-            "price": 330
-          },
-          {
-            "roomType": "Triple",
-            "price": 400
-          },
-          {
-            "roomType": "Quad",
-            "price": 470
-          }
-        ]
-      },
-      {
-        "range": "15 JUL 2026 TO 12 SEP 2026",
-        "prices": [
-          {
-            "roomType": "Double",
-            "price": 345
-          },
-          {
-            "roomType": "Triple",
-            "price": 415
-          },
-          {
-            "roomType": "Quad",
-            "price": 485
-          }
-        ]
-      },
-      {
-        "range": "12 SEP 2026 TO 10 DEC 2026",
-        "prices": [
-          {
-            "roomType": "Double",
-            "price": 390
-          },
-          {
-            "roomType": "Triple",
-            "price": 460
-          },
-          {
-            "roomType": "Quad",
-            "price": 530
-          }
-        ]
-      },
-      {
-        "range": "10 DEC 2026 TO 21 JAN 2027",
-        "prices": [
-          {
-            "roomType": "Double",
-            "price": 685
-          },
-          {
-            "roomType": "Triple",
-            "price": 755
-          },
-          {
-            "roomType": "Quad",
-            "price": 825
-          }
-        ]
-      },
-      {
-        "range": "21 JAN 2027 TO 07 FEB 2027",
-        "prices": [
-          {
-            "roomType": "Double",
-            "price": 445
-          },
-          {
-            "roomType": "Triple",
-            "price": 515
-          },
-          {
-            "roomType": "Quad",
-            "price": 585
-          }
-        ]
-      }
-    ]
-  },
-  {
-    "id": "emaar-andalusia-makkah",
-    "name": "Emaar Andalusia Hotel",
-    "city": "Makkah",
-    "vendor": "Emaar Al Diyafa",
-    "mealPlan": "FB",
-    "stars": 4,
-    "seasons": [
-      {
-        "range": "16 JUN 2026 TO 15 JUL 2026",
-        "prices": [
-          {
-            "roomType": "Double",
-            "price": 330
-          },
-          {
-            "roomType": "Triple",
-            "price": 400
-          },
-          {
-            "roomType": "Quad",
-            "price": 470
-          }
-        ]
-      },
-      {
-        "range": "15 JUL 2026 TO 12 SEP 2026",
-        "prices": [
-          {
-            "roomType": "Double",
-            "price": 345
-          },
-          {
-            "roomType": "Triple",
-            "price": 415
-          },
-          {
-            "roomType": "Quad",
-            "price": 485
-          }
-        ]
-      },
-      {
-        "range": "12 SEP 2026 TO 10 DEC 2026",
-        "prices": [
-          {
-            "roomType": "Double",
-            "price": 390
-          },
-          {
-            "roomType": "Triple",
-            "price": 460
-          },
-          {
-            "roomType": "Quad",
-            "price": 530
-          }
-        ]
-      },
-      {
-        "range": "10 DEC 2026 TO 21 JAN 2027",
-        "prices": [
-          {
-            "roomType": "Double",
-            "price": 685
-          },
-          {
-            "roomType": "Triple",
-            "price": 755
-          },
-          {
-            "roomType": "Quad",
-            "price": 825
-          }
-        ]
-      },
-      {
-        "range": "21 JAN 2027 TO 07 FEB 2027",
-        "prices": [
-          {
-            "roomType": "Double",
-            "price": 445
-          },
-          {
-            "roomType": "Triple",
-            "price": 515
-          },
-          {
-            "roomType": "Quad",
-            "price": 585
-          }
-        ]
-      }
-    ]
-  },
-  {
-    "id": "emaar-khalil-makkah",
-    "name": "Emaar Khalil Hotel",
-    "city": "Makkah",
-    "vendor": "Emaar Al Diyafa",
-    "mealPlan": "FB",
-    "stars": 3,
-    "seasons": [
-      {
-        "range": "16 JUN 2026 TO 15 JUL 2026",
-        "prices": [
-          {
-            "roomType": "Double",
-            "price": 295
-          },
-          {
-            "roomType": "Triple",
-            "price": 365
-          },
-          {
-            "roomType": "Quad",
-            "price": 435
-          }
-        ]
-      },
-      {
-        "range": "15 JUL 2026 TO 12 SEP 2026",
-        "prices": [
-          {
-            "roomType": "Double",
-            "price": 335
-          },
-          {
-            "roomType": "Triple",
-            "price": 405
-          },
-          {
-            "roomType": "Quad",
-            "price": 475
-          }
-        ]
-      },
-      {
-        "range": "12 SEP 2026 TO 10 DEC 2026",
-        "prices": [
-          {
-            "roomType": "Double",
-            "price": 355
-          },
-          {
-            "roomType": "Triple",
-            "price": 425
-          },
-          {
-            "roomType": "Quad",
-            "price": 495
-          }
-        ]
-      },
-      {
-        "range": "10 DEC 2026 TO 21 JAN 2027",
-        "prices": [
-          {
-            "roomType": "Double",
-            "price": 455
-          },
-          {
-            "roomType": "Triple",
-            "price": 525
-          },
-          {
-            "roomType": "Quad",
-            "price": 595
-          }
-        ]
-      },
-      {
-        "range": "21 JAN 2027 TO 07 FEB 2027",
-        "prices": [
-          {
-            "roomType": "Double",
-            "price": 355
-          },
-          {
-            "roomType": "Triple",
-            "price": 425
-          },
-          {
-            "roomType": "Quad",
-            "price": 495
-          }
-        ]
-      }
-    ]
-  },
-  {
-    "id": "emar-elite-makkah",
-    "name": "Emar Elite Makkah",
-    "city": "Makkah",
-    "vendor": "Emaar Al Diyafa",
-    "mealPlan": "FB",
-    "stars": 4,
-    "seasons": [
-      {
-        "range": "16 JUN 2026 TO 15 JUL 2026",
-        "prices": [
-          {
-            "roomType": "Double",
-            "price": 215
-          },
-          {
-            "roomType": "Triple",
-            "price": 280
-          },
-          {
-            "roomType": "Quad",
-            "price": 345
-          }
-        ]
-      },
-      {
-        "range": "15 JUL 2026 TO 12 SEP 2026",
-        "prices": [
-          {
-            "roomType": "Double",
-            "price": 240
-          },
-          {
-            "roomType": "Triple",
-            "price": 305
-          },
-          {
-            "roomType": "Quad",
-            "price": 370
-          }
-        ]
-      },
-      {
-        "range": "12 SEP 2026 TO 10 DEC 2026",
-        "prices": [
-          {
-            "roomType": "Double",
-            "price": 285
-          },
-          {
-            "roomType": "Triple",
-            "price": 350
-          },
-          {
-            "roomType": "Quad",
-            "price": 415
-          }
-        ]
-      },
-      {
-        "range": "10 DEC 2026 TO 21 JAN 2027",
-        "prices": [
-          {
-            "roomType": "Double",
-            "price": 390
-          },
-          {
-            "roomType": "Triple",
-            "price": 455
-          },
-          {
-            "roomType": "Quad",
-            "price": 520
-          }
-        ]
-      },
-      {
-        "range": "21 JAN 2027 TO 07 FEB 2027",
-        "prices": [
-          {
-            "roomType": "Double",
-            "price": 265
-          },
-          {
-            "roomType": "Triple",
-            "price": 330
-          },
-          {
-            "roomType": "Quad",
-            "price": 395
-          }
-        ]
-      }
-    ]
-  },
-  {
-    "id": "afaq-al-sud-makkah",
-    "name": "Afaq Al Sud Hotel",
-    "city": "Makkah",
-    "vendor": "Emaar Al Diyafa",
-    "mealPlan": "RO",
-    "stars": 3,
-    "seasons": [
-      {
-        "range": "16 JUN 2026 TO 15 JUL 2026",
-        "prices": [
-          {
-            "roomType": "Double",
-            "price": 105
-          },
-          {
-            "roomType": "Triple",
-            "price": 120
-          },
-          {
-            "roomType": "Quad",
-            "price": 135
-          }
-        ]
-      },
-      {
-        "range": "15 JUL 2026 TO 12 SEP 2026",
-        "prices": [
-          {
-            "roomType": "Double",
-            "price": 130
-          },
-          {
-            "roomType": "Triple",
-            "price": 145
-          },
-          {
-            "roomType": "Quad",
-            "price": 160
-          }
-        ]
-      },
-      {
-        "range": "12 SEP 2026 TO 10 DEC 2026",
-        "prices": [
-          {
-            "roomType": "Double",
-            "price": 160
-          },
-          {
-            "roomType": "Triple",
-            "price": 175
-          },
-          {
-            "roomType": "Quad",
-            "price": 190
-          }
-        ]
-      },
-      {
-        "range": "10 DEC 2026 TO 21 JAN 2027",
-        "prices": [
-          {
-            "roomType": "Double",
-            "price": 260
-          },
-          {
-            "roomType": "Triple",
-            "price": 275
-          },
-          {
-            "roomType": "Quad",
-            "price": 290
-          }
-        ]
-      },
-      {
-        "range": "21 JAN 2027 TO 07 FEB 2027",
-        "prices": [
-          {
-            "roomType": "Double",
-            "price": 165
-          },
-          {
-            "roomType": "Triple",
-            "price": 180
-          },
-          {
-            "roomType": "Quad",
-            "price": 195
-          }
-        ]
-      }
-    ]
-  },
-  {
-    "id": "al-dewan-makkah",
-    "name": "Al Dewan Hotel",
-    "city": "Makkah",
-    "vendor": "Emaar Al Diyafa",
-    "mealPlan": "RO",
-    "stars": 3,
-    "seasons": [
-      {
-        "range": "16 JUN 2026 TO 15 JUL 2026",
-        "prices": [
-          {
-            "roomType": "Double",
-            "price": 105
-          },
-          {
-            "roomType": "Triple",
-            "price": 120
-          },
-          {
-            "roomType": "Quad",
-            "price": 135
-          }
-        ]
-      },
-      {
-        "range": "15 JUL 2026 TO 12 SEP 2026",
-        "prices": [
-          {
-            "roomType": "Double",
-            "price": 130
-          },
-          {
-            "roomType": "Triple",
-            "price": 145
-          },
-          {
-            "roomType": "Quad",
-            "price": 160
-          }
-        ]
-      },
-      {
-        "range": "12 SEP 2026 TO 10 DEC 2026",
-        "prices": [
-          {
-            "roomType": "Double",
-            "price": 160
-          },
-          {
-            "roomType": "Triple",
-            "price": 175
-          },
-          {
-            "roomType": "Quad",
-            "price": 190
-          }
-        ]
-      },
-      {
-        "range": "10 DEC 2026 TO 21 JAN 2027",
-        "prices": [
-          {
-            "roomType": "Double",
-            "price": 260
-          },
-          {
-            "roomType": "Triple",
-            "price": 275
-          },
-          {
-            "roomType": "Quad",
-            "price": 290
-          }
-        ]
-      },
-      {
-        "range": "21 JAN 2027 TO 07 FEB 2027",
-        "prices": [
-          {
-            "roomType": "Double",
-            "price": 165
-          },
-          {
-            "roomType": "Triple",
-            "price": 180
-          },
-          {
-            "roomType": "Quad",
-            "price": 195
-          }
-        ]
-      }
-    ]
-  },
-  {
-    "id": "austorah-makkah",
-    "name": "Austorah Hotel",
-    "city": "Makkah",
-    "vendor": "Emaar Al Diyafa",
-    "mealPlan": "RO",
-    "stars": 3,
-    "seasons": [
-      {
-        "range": "16 JUN 2026 TO 15 JUL 2026",
-        "prices": [
-          {
-            "roomType": "Double",
-            "price": 65
-          },
-          {
-            "roomType": "Triple",
-            "price": 80
-          },
-          {
-            "roomType": "Quad",
-            "price": 95
-          }
-        ]
-      },
-      {
-        "range": "15 JUL 2026 TO 12 SEP 2026",
-        "prices": [
-          {
-            "roomType": "Double",
-            "price": 80
-          },
-          {
-            "roomType": "Triple",
-            "price": 95
-          },
-          {
-            "roomType": "Quad",
-            "price": 110
-          }
-        ]
-      },
-      {
-        "range": "12 SEP 2026 TO 10 DEC 2026",
-        "prices": [
-          {
-            "roomType": "Double",
-            "price": 90
-          },
-          {
-            "roomType": "Triple",
-            "price": 105
-          },
-          {
-            "roomType": "Quad",
-            "price": 120
-          }
-        ]
-      },
-      {
-        "range": "10 DEC 2026 TO 21 JAN 2027",
-        "prices": [
-          {
-            "roomType": "Double",
-            "price": 160
-          },
-          {
-            "roomType": "Triple",
-            "price": 175
-          },
-          {
-            "roomType": "Quad",
-            "price": 190
-          }
-        ]
-      },
-      {
-        "range": "21 JAN 2027 TO 07 FEB 2027",
-        "prices": [
-          {
-            "roomType": "Double",
-            "price": 90
-          },
-          {
-            "roomType": "Triple",
-            "price": 105
-          },
-          {
-            "roomType": "Quad",
-            "price": 120
-          }
-        ]
-      }
-    ]
-  },
-  {
-    "id": "emaar-al-noor-makkah",
-    "name": "Emaar Al Noor Hotel",
-    "city": "Makkah",
-    "vendor": "Emaar Al Diyafa",
-    "mealPlan": "RO",
-    "stars": 3,
-    "seasons": [
-      {
-        "range": "16 JUN 2026 TO 15 JUL 2026",
-        "prices": [
-          {
-            "roomType": "Double",
-            "price": 65
-          },
-          {
-            "roomType": "Triple",
-            "price": 80
-          },
-          {
-            "roomType": "Quad",
-            "price": 95
-          }
-        ]
-      },
-      {
-        "range": "15 JUL 2026 TO 12 SEP 2026",
-        "prices": [
-          {
-            "roomType": "Double",
-            "price": 75
-          },
-          {
-            "roomType": "Triple",
-            "price": 90
-          },
-          {
-            "roomType": "Quad",
-            "price": 105
-          }
-        ]
-      },
-      {
-        "range": "12 SEP 2026 TO 10 DEC 2026",
-        "prices": [
-          {
-            "roomType": "Double",
-            "price": 85
-          },
-          {
-            "roomType": "Triple",
-            "price": 100
-          },
-          {
-            "roomType": "Quad",
-            "price": 115
-          }
-        ]
-      },
-      {
-        "range": "10 DEC 2026 TO 21 JAN 2027",
-        "prices": [
-          {
-            "roomType": "Double",
-            "price": 150
-          },
-          {
-            "roomType": "Triple",
-            "price": 165
-          },
-          {
-            "roomType": "Quad",
-            "price": 180
-          }
-        ]
-      },
-      {
-        "range": "21 JAN 2027 TO 07 FEB 2027",
-        "prices": [
-          {
-            "roomType": "Double",
-            "price": 85
-          },
-          {
-            "roomType": "Triple",
-            "price": 100
-          },
-          {
-            "roomType": "Quad",
-            "price": 115
-          }
-        ]
-      }
-    ]
-  },
-  {
-    "id": "emaar-international-makkah",
-    "name": "Emaar International Hotel",
-    "city": "Makkah",
-    "vendor": "Emaar Al Diyafa",
-    "mealPlan": "RO",
-    "stars": 3,
-    "seasons": [
-      {
-        "range": "12 SEP 2026 TO 10 DEC 2026",
-        "prices": [
-          {
-            "roomType": "Double",
-            "price": 75
-          },
-          {
-            "roomType": "Triple",
-            "price": 90
-          },
-          {
-            "roomType": "Quad",
-            "price": 105
-          }
-        ]
-      },
-      {
-        "range": "10 DEC 2026 TO 21 JAN 2027",
-        "prices": [
-          {
-            "roomType": "Double",
-            "price": 120
-          },
-          {
-            "roomType": "Triple",
-            "price": 135
-          },
-          {
-            "roomType": "Quad",
-            "price": 150
-          }
-        ]
-      },
-      {
-        "range": "21 JAN 2027 TO 07 FEB 2027",
-        "prices": [
-          {
-            "roomType": "Double",
-            "price": 85
-          },
-          {
-            "roomType": "Triple",
-            "price": 100
-          },
-          {
-            "roomType": "Quad",
-            "price": 115
-          }
-        ]
-      }
-    ]
-  },
-  {
-    "id": "al-harithia-madinah",
-    "name": "Al Harithia",
-    "city": "Madinah",
-    "vendor": "Maysan Int. Group",
-    "mealPlan": "FB",
-    "stars": 5,
-    "seasons": [
-      {
-        "range": "30 JUN 2026 TO 20 SEP 2026",
-        "prices": [
-          {
-            "roomType": "Double",
-            "price": 750
-          },
-          {
-            "roomType": "Triple",
-            "price": 900
-          },
-          {
-            "roomType": "Quad",
-            "price": 1050
-          },
-          {
-            "roomType": "Junior suite (2 Pax)",
-            "price": 1125
-          },
-          {
-            "roomType": "Executive Suite (2 Rooms 4 Pax)",
-            "price": 2250
-          }
-        ]
-      }
-    ]
-  },
-  {
-    "id": "grand-plaza-badr-almaqam-madinah",
-    "name": "Grand Plaza Badr Almaqam",
-    "city": "Madinah",
-    "vendor": "Maysan Int. Group",
-    "mealPlan": "FB",
-    "stars": 4,
-    "seasons": [
-      {
-        "range": "30 JUN 2026 TO 20 SEP 2026",
-        "prices": [
-          {
-            "roomType": "Double",
-            "price": 520
-          },
-          {
-            "roomType": "Triple",
-            "price": 600
-          },
-          {
-            "roomType": "Quad",
-            "price": 680
-          }
-        ]
-      }
-    ]
-  },
-  {
-    "id": "shaza-regency-plaza-madinah",
-    "name": "Shaza Regency Plaza",
-    "city": "Madinah",
-    "vendor": "Maysan Int. Group",
-    "mealPlan": "FB",
-    "stars": 5,
-    "seasons": [
-      {
-        "range": "30 JUN 2026 TO 20 SEP 2026",
-        "prices": [
-          {
-            "roomType": "Double",
-            "price": 500
-          },
-          {
-            "roomType": "Triple",
-            "price": 580
-          },
-          {
-            "roomType": "Quad",
-            "price": 660
-          }
-        ]
-      }
-    ]
-  },
-  {
-    "id": "grand-plaza-almadina-madinah",
-    "name": "Grand Plaza Almadina",
-    "city": "Madinah",
-    "vendor": "Maysan Int. Group",
-    "mealPlan": "FB",
-    "stars": 4,
-    "seasons": [
-      {
-        "range": "30 JUN 2026 TO 20 SEP 2026",
-        "prices": [
-          {
-            "roomType": "Double",
-            "price": 480
-          },
-          {
-            "roomType": "Triple",
-            "price": 550
-          },
-          {
-            "roomType": "Quad",
-            "price": 620
-          }
-        ]
-      }
-    ]
-  },
-  {
-    "id": "maysan-rehab-elmysk-madinah",
-    "name": "Maysan Rehab Elmysk",
-    "city": "Madinah",
-    "vendor": "Maysan Int. Group",
-    "mealPlan": "FB",
-    "stars": 4,
-    "seasons": [
-      {
-        "range": "30 JUN 2026 TO 20 SEP 2026",
-        "prices": [
-          {
-            "roomType": "Double",
-            "price": 430
-          },
-          {
-            "roomType": "Triple",
-            "price": 490
-          },
-          {
-            "roomType": "Quad",
-            "price": 550
-          }
-        ]
-      }
-    ]
-  },
-  {
-    "id": "arkan-almanar-madinah",
-    "name": "Arkan Almanar",
-    "city": "Madinah",
-    "vendor": "Maysan Int. Group",
-    "mealPlan": "FB",
-    "stars": 4,
-    "seasons": [
-      {
-        "range": "30 JUN 2026 TO 20 SEP 2026",
-        "prices": [
-          {
-            "roomType": "Double",
-            "price": 430
-          },
-          {
-            "roomType": "Triple",
-            "price": 490
-          },
-          {
-            "roomType": "Quad",
-            "price": 550
-          }
-        ]
-      }
-    ]
-  },
-  {
-    "id": "maysan-altaqwa-madinah",
-    "name": "Maysan Altaqwa",
-    "city": "Madinah",
-    "vendor": "Maysan Int. Group",
-    "mealPlan": "FB",
-    "stars": 4,
-    "seasons": [
-      {
-        "range": "30 JUN 2026 TO 20 SEP 2026",
-        "prices": [
-          {
-            "roomType": "Double",
-            "price": 360
-          },
-          {
-            "roomType": "Triple",
-            "price": 410
-          },
-          {
-            "roomType": "Quad",
-            "price": 460
-          }
-        ]
-      }
-    ]
-  },
-  {
-    "id": "plaza-inn-ohud-madinah",
-    "name": "Plaza Inn Ohud",
-    "city": "Madinah",
-    "vendor": "Maysan Int. Group",
-    "mealPlan": "FB",
-    "stars": 3,
-    "seasons": [
-      {
-        "range": "30 JUN 2026 TO 20 SEP 2026",
-        "prices": [
-          {
-            "roomType": "Double",
-            "price": 335
-          },
-          {
-            "roomType": "Triple",
-            "price": 385
-          },
-          {
-            "roomType": "Quad",
-            "price": 435
-          }
-        ]
-      }
-    ]
-  },
-  {
     "id": "maysan-al-mashaer-makkah",
     "name": "Maysan Al Mashaer",
     "city": "Makkah",
@@ -8628,6 +7016,4460 @@ export const defaultHotels: Hotel[] = [
         ]
       }
     ]
+  },
+  {
+    "id": "maysan-rotana-elmysk-madinah",
+    "name": "Maysan Rotana Elmysk",
+    "city": "Madinah",
+    "vendor": "Maysan Int. Group",
+    "mealPlan": "FB",
+    "stars": 4,
+    "seasons": [
+      {
+        "range": "30 JUN 2026 TO 20 SEP 2026",
+        "prices": [
+          {
+            "roomType": "Double",
+            "price": 430
+          },
+          {
+            "roomType": "Triple",
+            "price": 490
+          },
+          {
+            "roomType": "Quad",
+            "price": 550
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "emaar-royal-madinah",
+    "name": "Emaar Royal",
+    "city": "Madinah",
+    "vendor": "Emaar Al Diyafa",
+    "mealPlan": "FB",
+    "stars": 5,
+    "seasons": [
+      {
+        "range": "30 JUN 2026 TO 19 AUG 2026",
+        "prices": [
+          {
+            "roomType": "Double",
+            "price": 575
+          },
+          {
+            "roomType": "Triple",
+            "price": 650
+          },
+          {
+            "roomType": "Quad",
+            "price": 725
+          }
+        ]
+      },
+      {
+        "range": "19 AUG 2026 TO 16 DEC 2026",
+        "prices": [
+          {
+            "roomType": "Double",
+            "price": 675
+          },
+          {
+            "roomType": "Triple",
+            "price": 775
+          },
+          {
+            "roomType": "Quad",
+            "price": 875
+          }
+        ]
+      },
+      {
+        "range": "16 DEC 2026 TO 09 JAN 2027",
+        "prices": [
+          {
+            "roomType": "Double",
+            "price": 1100
+          },
+          {
+            "roomType": "Triple",
+            "price": 1250
+          },
+          {
+            "roomType": "Quad",
+            "price": 1400
+          }
+        ]
+      },
+      {
+        "range": "09 JAN 2027 TO 08 FEB 2027",
+        "prices": [
+          {
+            "roomType": "Double",
+            "price": 775
+          },
+          {
+            "roomType": "Triple",
+            "price": 875
+          },
+          {
+            "roomType": "Quad",
+            "price": 975
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "emaar-elite-madinah",
+    "name": "Emaar Elite",
+    "city": "Madinah",
+    "vendor": "Emaar Al Diyafa",
+    "mealPlan": "FB",
+    "stars": 5,
+    "seasons": [
+      {
+        "range": "30 JUN 2026 TO 19 AUG 2026",
+        "prices": [
+          {
+            "roomType": "Double",
+            "price": 550
+          },
+          {
+            "roomType": "Triple",
+            "price": 625
+          },
+          {
+            "roomType": "Quad",
+            "price": 700
+          }
+        ]
+      },
+      {
+        "range": "19 AUG 2026 TO 16 DEC 2026",
+        "prices": [
+          {
+            "roomType": "Double",
+            "price": 650
+          },
+          {
+            "roomType": "Triple",
+            "price": 750
+          },
+          {
+            "roomType": "Quad",
+            "price": 850
+          }
+        ]
+      },
+      {
+        "range": "16 DEC 2026 TO 09 JAN 2027",
+        "prices": [
+          {
+            "roomType": "Double",
+            "price": 1075
+          },
+          {
+            "roomType": "Triple",
+            "price": 1225
+          },
+          {
+            "roomType": "Quad",
+            "price": 1375
+          }
+        ]
+      },
+      {
+        "range": "09 JAN 2027 TO 08 FEB 2027",
+        "prices": [
+          {
+            "roomType": "Double",
+            "price": 750
+          },
+          {
+            "roomType": "Triple",
+            "price": 850
+          },
+          {
+            "roomType": "Quad",
+            "price": 950
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "emaar-el-mektan-madinah",
+    "name": "Emaar El Mektan",
+    "city": "Madinah",
+    "vendor": "Emaar Al Diyafa",
+    "mealPlan": "FB",
+    "stars": 4,
+    "seasons": [
+      {
+        "range": "16 JUN 2026 TO 19 AUG 2026",
+        "prices": [
+          {
+            "roomType": "Double",
+            "price": 550
+          },
+          {
+            "roomType": "Triple",
+            "price": 625
+          },
+          {
+            "roomType": "Quad",
+            "price": 700
+          },
+          {
+            "roomType": "Delux Suite (04 pax)",
+            "price": 800
+          },
+          {
+            "roomType": "Family Suite (05 pax)",
+            "price": 820
+          },
+          {
+            "roomType": "Royal Suite (05 pax)",
+            "price": 890
+          }
+        ]
+      },
+      {
+        "range": "19 AUG 2026 TO 16 DEC 2026",
+        "prices": [
+          {
+            "roomType": "Double",
+            "price": 650
+          },
+          {
+            "roomType": "Triple",
+            "price": 750
+          },
+          {
+            "roomType": "Quad",
+            "price": 850
+          },
+          {
+            "roomType": "Delux Suite (04 pax)",
+            "price": 950
+          },
+          {
+            "roomType": "Family Suite (05 pax)",
+            "price": 970
+          },
+          {
+            "roomType": "Royal Suite (05 pax)",
+            "price": 1040
+          }
+        ]
+      },
+      {
+        "range": "16 DEC 2026 TO 09 JAN 2027",
+        "prices": [
+          {
+            "roomType": "Double",
+            "price": 1075
+          },
+          {
+            "roomType": "Triple",
+            "price": 1225
+          },
+          {
+            "roomType": "Quad",
+            "price": 1375
+          },
+          {
+            "roomType": "Delux Suite (04 pax)",
+            "price": 1475
+          },
+          {
+            "roomType": "Family Suite (05 pax)",
+            "price": 1495
+          },
+          {
+            "roomType": "Royal Suite (05 pax)",
+            "price": 1565
+          }
+        ]
+      },
+      {
+        "range": "09 JAN 2027 TO 08 FEB 2027",
+        "prices": [
+          {
+            "roomType": "Double",
+            "price": 750
+          },
+          {
+            "roomType": "Triple",
+            "price": 850
+          },
+          {
+            "roomType": "Quad",
+            "price": 950
+          },
+          {
+            "roomType": "Delux Suite (04 pax)",
+            "price": 1050
+          },
+          {
+            "roomType": "Family Suite (05 pax)",
+            "price": 1070
+          },
+          {
+            "roomType": "Royal Suite (05 pax)",
+            "price": 1140
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "emaar-taibah-madinah",
+    "name": "Emaar Taibah",
+    "city": "Madinah",
+    "vendor": "Emaar Al Diyafa",
+    "mealPlan": "FB",
+    "stars": 4,
+    "seasons": [
+      {
+        "range": "30 JUN 2026 TO 19 AUG 2026",
+        "prices": [
+          {
+            "roomType": "Double",
+            "price": 380
+          },
+          {
+            "roomType": "Triple",
+            "price": 420
+          },
+          {
+            "roomType": "Quad",
+            "price": 460
+          }
+        ]
+      },
+      {
+        "range": "19 AUG 2026 TO 16 DEC 2026",
+        "prices": [
+          {
+            "roomType": "Double",
+            "price": 425
+          },
+          {
+            "roomType": "Triple",
+            "price": 485
+          },
+          {
+            "roomType": "Quad",
+            "price": 545
+          }
+        ]
+      },
+      {
+        "range": "16 DEC 2026 TO 09 JAN 2027",
+        "prices": [
+          {
+            "roomType": "Double",
+            "price": 600
+          },
+          {
+            "roomType": "Triple",
+            "price": 660
+          },
+          {
+            "roomType": "Quad",
+            "price": 720
+          }
+        ]
+      },
+      {
+        "range": "09 JAN 2027 TO 08 FEB 2027",
+        "prices": [
+          {
+            "roomType": "Double",
+            "price": 470
+          },
+          {
+            "roomType": "Triple",
+            "price": 535
+          },
+          {
+            "roomType": "Quad",
+            "price": 600
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "al-shohada-makkah",
+    "name": "Al Shohada Hotel",
+    "city": "Makkah",
+    "vendor": "Palm Rich",
+    "mealPlan": "RO",
+    "stars": 5,
+    "seasons": [
+      {
+        "range": "16 JUN 2026 TO 14 JUL 2026",
+        "prices": [
+          {
+            "roomType": "Double",
+            "price": 500
+          },
+          {
+            "roomType": "Triple",
+            "price": 590
+          },
+          {
+            "roomType": "Quad",
+            "price": 680
+          }
+        ]
+      },
+      {
+        "range": "14 JUL 2026 TO 11 SEP 2026",
+        "prices": [
+          {
+            "roomType": "Double",
+            "price": 535
+          },
+          {
+            "roomType": "Triple",
+            "price": 625
+          },
+          {
+            "roomType": "Quad",
+            "price": 715
+          }
+        ]
+      },
+      {
+        "range": "11 SEP 2026 TO 10 NOV 2026",
+        "prices": [
+          {
+            "roomType": "Double",
+            "price": 660
+          },
+          {
+            "roomType": "Triple",
+            "price": 750
+          },
+          {
+            "roomType": "Quad",
+            "price": 840
+          }
+        ]
+      },
+      {
+        "range": "10 NOV 2026 TO 09 DEC 2026",
+        "prices": [
+          {
+            "roomType": "Double",
+            "price": 710
+          },
+          {
+            "roomType": "Triple",
+            "price": 800
+          },
+          {
+            "roomType": "Quad",
+            "price": 890
+          }
+        ]
+      },
+      {
+        "range": "09 DEC 2026 TO 20 JAN 2027",
+        "prices": [
+          {
+            "roomType": "Double",
+            "price": 1260
+          },
+          {
+            "roomType": "Triple",
+            "price": 1350
+          },
+          {
+            "roomType": "Quad",
+            "price": 1440
+          }
+        ]
+      },
+      {
+        "range": "20 JAN 2027 TO 07 FEB 2027",
+        "prices": [
+          {
+            "roomType": "Double",
+            "price": 710
+          },
+          {
+            "roomType": "Triple",
+            "price": 800
+          },
+          {
+            "roomType": "Quad",
+            "price": 890
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "emaar-grand-makkah",
+    "name": "Emaar Grand Hotel",
+    "city": "Makkah",
+    "vendor": "Emaar Al Diyafa",
+    "mealPlan": "FB",
+    "stars": 5,
+    "seasons": [
+      {
+        "range": "16 JUN 2026 TO 15 JUL 2026",
+        "prices": [
+          {
+            "roomType": "Double",
+            "price": 340
+          },
+          {
+            "roomType": "Triple",
+            "price": 410
+          },
+          {
+            "roomType": "Quad",
+            "price": 480
+          }
+        ]
+      },
+      {
+        "range": "15 JUL 2026 TO 12 SEP 2026",
+        "prices": [
+          {
+            "roomType": "Double",
+            "price": 375
+          },
+          {
+            "roomType": "Triple",
+            "price": 445
+          },
+          {
+            "roomType": "Quad",
+            "price": 515
+          }
+        ]
+      },
+      {
+        "range": "12 SEP 2026 TO 10 DEC 2026",
+        "prices": [
+          {
+            "roomType": "Double",
+            "price": 420
+          },
+          {
+            "roomType": "Triple",
+            "price": 490
+          },
+          {
+            "roomType": "Quad",
+            "price": 560
+          }
+        ]
+      },
+      {
+        "range": "10 DEC 2026 TO 21 JAN 2027",
+        "prices": [
+          {
+            "roomType": "Double",
+            "price": 745
+          },
+          {
+            "roomType": "Triple",
+            "price": 815
+          },
+          {
+            "roomType": "Quad",
+            "price": 885
+          }
+        ]
+      },
+      {
+        "range": "21 JAN 2027 TO 07 FEB 2027",
+        "prices": [
+          {
+            "roomType": "Double",
+            "price": 510
+          },
+          {
+            "roomType": "Triple",
+            "price": 580
+          },
+          {
+            "roomType": "Quad",
+            "price": 650
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "emaar-manar-makkah",
+    "name": "Emaar Manar Hotel",
+    "city": "Makkah",
+    "vendor": "Emaar Al Diyafa",
+    "mealPlan": "FB",
+    "stars": 4,
+    "seasons": [
+      {
+        "range": "16 JUN 2026 TO 15 JUL 2026",
+        "prices": [
+          {
+            "roomType": "Double",
+            "price": 330
+          },
+          {
+            "roomType": "Triple",
+            "price": 400
+          },
+          {
+            "roomType": "Quad",
+            "price": 470
+          }
+        ]
+      },
+      {
+        "range": "15 JUL 2026 TO 12 SEP 2026",
+        "prices": [
+          {
+            "roomType": "Double",
+            "price": 345
+          },
+          {
+            "roomType": "Triple",
+            "price": 415
+          },
+          {
+            "roomType": "Quad",
+            "price": 485
+          }
+        ]
+      },
+      {
+        "range": "12 SEP 2026 TO 10 DEC 2026",
+        "prices": [
+          {
+            "roomType": "Double",
+            "price": 390
+          },
+          {
+            "roomType": "Triple",
+            "price": 460
+          },
+          {
+            "roomType": "Quad",
+            "price": 530
+          }
+        ]
+      },
+      {
+        "range": "10 DEC 2026 TO 21 JAN 2027",
+        "prices": [
+          {
+            "roomType": "Double",
+            "price": 685
+          },
+          {
+            "roomType": "Triple",
+            "price": 755
+          },
+          {
+            "roomType": "Quad",
+            "price": 825
+          }
+        ]
+      },
+      {
+        "range": "21 JAN 2027 TO 07 FEB 2027",
+        "prices": [
+          {
+            "roomType": "Double",
+            "price": 445
+          },
+          {
+            "roomType": "Triple",
+            "price": 515
+          },
+          {
+            "roomType": "Quad",
+            "price": 585
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "emaar-andalusia-makkah",
+    "name": "Emaar Andalusia Hotel",
+    "city": "Makkah",
+    "vendor": "Emaar Al Diyafa",
+    "mealPlan": "FB",
+    "stars": 4,
+    "seasons": [
+      {
+        "range": "16 JUN 2026 TO 15 JUL 2026",
+        "prices": [
+          {
+            "roomType": "Double",
+            "price": 330
+          },
+          {
+            "roomType": "Triple",
+            "price": 400
+          },
+          {
+            "roomType": "Quad",
+            "price": 470
+          }
+        ]
+      },
+      {
+        "range": "15 JUL 2026 TO 12 SEP 2026",
+        "prices": [
+          {
+            "roomType": "Double",
+            "price": 345
+          },
+          {
+            "roomType": "Triple",
+            "price": 415
+          },
+          {
+            "roomType": "Quad",
+            "price": 485
+          }
+        ]
+      },
+      {
+        "range": "12 SEP 2026 TO 10 DEC 2026",
+        "prices": [
+          {
+            "roomType": "Double",
+            "price": 390
+          },
+          {
+            "roomType": "Triple",
+            "price": 460
+          },
+          {
+            "roomType": "Quad",
+            "price": 530
+          }
+        ]
+      },
+      {
+        "range": "10 DEC 2026 TO 21 JAN 2027",
+        "prices": [
+          {
+            "roomType": "Double",
+            "price": 685
+          },
+          {
+            "roomType": "Triple",
+            "price": 755
+          },
+          {
+            "roomType": "Quad",
+            "price": 825
+          }
+        ]
+      },
+      {
+        "range": "21 JAN 2027 TO 07 FEB 2027",
+        "prices": [
+          {
+            "roomType": "Double",
+            "price": 445
+          },
+          {
+            "roomType": "Triple",
+            "price": 515
+          },
+          {
+            "roomType": "Quad",
+            "price": 585
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "emaar-khalil-makkah",
+    "name": "Emaar Khalil Hotel",
+    "city": "Makkah",
+    "vendor": "Emaar Al Diyafa",
+    "mealPlan": "FB",
+    "stars": 3,
+    "seasons": [
+      {
+        "range": "16 JUN 2026 TO 15 JUL 2026",
+        "prices": [
+          {
+            "roomType": "Double",
+            "price": 295
+          },
+          {
+            "roomType": "Triple",
+            "price": 365
+          },
+          {
+            "roomType": "Quad",
+            "price": 435
+          }
+        ]
+      },
+      {
+        "range": "15 JUL 2026 TO 12 SEP 2026",
+        "prices": [
+          {
+            "roomType": "Double",
+            "price": 335
+          },
+          {
+            "roomType": "Triple",
+            "price": 405
+          },
+          {
+            "roomType": "Quad",
+            "price": 475
+          }
+        ]
+      },
+      {
+        "range": "12 SEP 2026 TO 10 DEC 2026",
+        "prices": [
+          {
+            "roomType": "Double",
+            "price": 355
+          },
+          {
+            "roomType": "Triple",
+            "price": 425
+          },
+          {
+            "roomType": "Quad",
+            "price": 495
+          }
+        ]
+      },
+      {
+        "range": "10 DEC 2026 TO 21 JAN 2027",
+        "prices": [
+          {
+            "roomType": "Double",
+            "price": 455
+          },
+          {
+            "roomType": "Triple",
+            "price": 525
+          },
+          {
+            "roomType": "Quad",
+            "price": 595
+          }
+        ]
+      },
+      {
+        "range": "21 JAN 2027 TO 07 FEB 2027",
+        "prices": [
+          {
+            "roomType": "Double",
+            "price": 355
+          },
+          {
+            "roomType": "Triple",
+            "price": 425
+          },
+          {
+            "roomType": "Quad",
+            "price": 495
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "emar-elite-makkah",
+    "name": "Emar Elite Makkah",
+    "city": "Makkah",
+    "vendor": "Emaar Al Diyafa",
+    "mealPlan": "FB",
+    "stars": 4,
+    "seasons": [
+      {
+        "range": "16 JUN 2026 TO 15 JUL 2026",
+        "prices": [
+          {
+            "roomType": "Double",
+            "price": 215
+          },
+          {
+            "roomType": "Triple",
+            "price": 280
+          },
+          {
+            "roomType": "Quad",
+            "price": 345
+          }
+        ]
+      },
+      {
+        "range": "15 JUL 2026 TO 12 SEP 2026",
+        "prices": [
+          {
+            "roomType": "Double",
+            "price": 240
+          },
+          {
+            "roomType": "Triple",
+            "price": 305
+          },
+          {
+            "roomType": "Quad",
+            "price": 370
+          }
+        ]
+      },
+      {
+        "range": "12 SEP 2026 TO 10 DEC 2026",
+        "prices": [
+          {
+            "roomType": "Double",
+            "price": 285
+          },
+          {
+            "roomType": "Triple",
+            "price": 350
+          },
+          {
+            "roomType": "Quad",
+            "price": 415
+          }
+        ]
+      },
+      {
+        "range": "10 DEC 2026 TO 21 JAN 2027",
+        "prices": [
+          {
+            "roomType": "Double",
+            "price": 390
+          },
+          {
+            "roomType": "Triple",
+            "price": 455
+          },
+          {
+            "roomType": "Quad",
+            "price": 520
+          }
+        ]
+      },
+      {
+        "range": "21 JAN 2027 TO 07 FEB 2027",
+        "prices": [
+          {
+            "roomType": "Double",
+            "price": 265
+          },
+          {
+            "roomType": "Triple",
+            "price": 330
+          },
+          {
+            "roomType": "Quad",
+            "price": 395
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "afaq-al-sud-makkah",
+    "name": "Afaq Al Sud Hotel",
+    "city": "Makkah",
+    "vendor": "Emaar Al Diyafa",
+    "mealPlan": "RO",
+    "stars": 3,
+    "seasons": [
+      {
+        "range": "16 JUN 2026 TO 15 JUL 2026",
+        "prices": [
+          {
+            "roomType": "Double",
+            "price": 105
+          },
+          {
+            "roomType": "Triple",
+            "price": 120
+          },
+          {
+            "roomType": "Quad",
+            "price": 135
+          }
+        ]
+      },
+      {
+        "range": "15 JUL 2026 TO 12 SEP 2026",
+        "prices": [
+          {
+            "roomType": "Double",
+            "price": 130
+          },
+          {
+            "roomType": "Triple",
+            "price": 145
+          },
+          {
+            "roomType": "Quad",
+            "price": 160
+          }
+        ]
+      },
+      {
+        "range": "12 SEP 2026 TO 10 DEC 2026",
+        "prices": [
+          {
+            "roomType": "Double",
+            "price": 160
+          },
+          {
+            "roomType": "Triple",
+            "price": 175
+          },
+          {
+            "roomType": "Quad",
+            "price": 190
+          }
+        ]
+      },
+      {
+        "range": "10 DEC 2026 TO 21 JAN 2027",
+        "prices": [
+          {
+            "roomType": "Double",
+            "price": 260
+          },
+          {
+            "roomType": "Triple",
+            "price": 275
+          },
+          {
+            "roomType": "Quad",
+            "price": 290
+          }
+        ]
+      },
+      {
+        "range": "21 JAN 2027 TO 07 FEB 2027",
+        "prices": [
+          {
+            "roomType": "Double",
+            "price": 165
+          },
+          {
+            "roomType": "Triple",
+            "price": 180
+          },
+          {
+            "roomType": "Quad",
+            "price": 195
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "al-dewan-makkah",
+    "name": "Al Dewan Hotel",
+    "city": "Makkah",
+    "vendor": "Emaar Al Diyafa",
+    "mealPlan": "RO",
+    "stars": 3,
+    "seasons": [
+      {
+        "range": "16 JUN 2026 TO 15 JUL 2026",
+        "prices": [
+          {
+            "roomType": "Double",
+            "price": 105
+          },
+          {
+            "roomType": "Triple",
+            "price": 120
+          },
+          {
+            "roomType": "Quad",
+            "price": 135
+          }
+        ]
+      },
+      {
+        "range": "15 JUL 2026 TO 12 SEP 2026",
+        "prices": [
+          {
+            "roomType": "Double",
+            "price": 130
+          },
+          {
+            "roomType": "Triple",
+            "price": 145
+          },
+          {
+            "roomType": "Quad",
+            "price": 160
+          }
+        ]
+      },
+      {
+        "range": "12 SEP 2026 TO 10 DEC 2026",
+        "prices": [
+          {
+            "roomType": "Double",
+            "price": 160
+          },
+          {
+            "roomType": "Triple",
+            "price": 175
+          },
+          {
+            "roomType": "Quad",
+            "price": 190
+          }
+        ]
+      },
+      {
+        "range": "10 DEC 2026 TO 21 JAN 2027",
+        "prices": [
+          {
+            "roomType": "Double",
+            "price": 260
+          },
+          {
+            "roomType": "Triple",
+            "price": 275
+          },
+          {
+            "roomType": "Quad",
+            "price": 290
+          }
+        ]
+      },
+      {
+        "range": "21 JAN 2027 TO 07 FEB 2027",
+        "prices": [
+          {
+            "roomType": "Double",
+            "price": 165
+          },
+          {
+            "roomType": "Triple",
+            "price": 180
+          },
+          {
+            "roomType": "Quad",
+            "price": 195
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "austorah-makkah",
+    "name": "Austorah Hotel",
+    "city": "Makkah",
+    "vendor": "Emaar Al Diyafa",
+    "mealPlan": "RO",
+    "stars": 3,
+    "seasons": [
+      {
+        "range": "16 JUN 2026 TO 15 JUL 2026",
+        "prices": [
+          {
+            "roomType": "Double",
+            "price": 65
+          },
+          {
+            "roomType": "Triple",
+            "price": 80
+          },
+          {
+            "roomType": "Quad",
+            "price": 95
+          }
+        ]
+      },
+      {
+        "range": "15 JUL 2026 TO 12 SEP 2026",
+        "prices": [
+          {
+            "roomType": "Double",
+            "price": 80
+          },
+          {
+            "roomType": "Triple",
+            "price": 95
+          },
+          {
+            "roomType": "Quad",
+            "price": 110
+          }
+        ]
+      },
+      {
+        "range": "12 SEP 2026 TO 10 DEC 2026",
+        "prices": [
+          {
+            "roomType": "Double",
+            "price": 90
+          },
+          {
+            "roomType": "Triple",
+            "price": 105
+          },
+          {
+            "roomType": "Quad",
+            "price": 120
+          }
+        ]
+      },
+      {
+        "range": "10 DEC 2026 TO 21 JAN 2027",
+        "prices": [
+          {
+            "roomType": "Double",
+            "price": 160
+          },
+          {
+            "roomType": "Triple",
+            "price": 175
+          },
+          {
+            "roomType": "Quad",
+            "price": 190
+          }
+        ]
+      },
+      {
+        "range": "21 JAN 2027 TO 07 FEB 2027",
+        "prices": [
+          {
+            "roomType": "Double",
+            "price": 90
+          },
+          {
+            "roomType": "Triple",
+            "price": 105
+          },
+          {
+            "roomType": "Quad",
+            "price": 120
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "emaar-al-noor-makkah",
+    "name": "Emaar Al Noor Hotel",
+    "city": "Makkah",
+    "vendor": "Emaar Al Diyafa",
+    "mealPlan": "RO",
+    "stars": 3,
+    "seasons": [
+      {
+        "range": "16 JUN 2026 TO 15 JUL 2026",
+        "prices": [
+          {
+            "roomType": "Double",
+            "price": 65
+          },
+          {
+            "roomType": "Triple",
+            "price": 80
+          },
+          {
+            "roomType": "Quad",
+            "price": 95
+          }
+        ]
+      },
+      {
+        "range": "15 JUL 2026 TO 12 SEP 2026",
+        "prices": [
+          {
+            "roomType": "Double",
+            "price": 75
+          },
+          {
+            "roomType": "Triple",
+            "price": 90
+          },
+          {
+            "roomType": "Quad",
+            "price": 105
+          }
+        ]
+      },
+      {
+        "range": "12 SEP 2026 TO 10 DEC 2026",
+        "prices": [
+          {
+            "roomType": "Double",
+            "price": 85
+          },
+          {
+            "roomType": "Triple",
+            "price": 100
+          },
+          {
+            "roomType": "Quad",
+            "price": 115
+          }
+        ]
+      },
+      {
+        "range": "10 DEC 2026 TO 21 JAN 2027",
+        "prices": [
+          {
+            "roomType": "Double",
+            "price": 150
+          },
+          {
+            "roomType": "Triple",
+            "price": 165
+          },
+          {
+            "roomType": "Quad",
+            "price": 180
+          }
+        ]
+      },
+      {
+        "range": "21 JAN 2027 TO 07 FEB 2027",
+        "prices": [
+          {
+            "roomType": "Double",
+            "price": 85
+          },
+          {
+            "roomType": "Triple",
+            "price": 100
+          },
+          {
+            "roomType": "Quad",
+            "price": 115
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "emaar-international-makkah",
+    "name": "Emaar International Hotel",
+    "city": "Makkah",
+    "vendor": "Emaar Al Diyafa",
+    "mealPlan": "RO",
+    "stars": 3,
+    "seasons": [
+      {
+        "range": "12 SEP 2026 TO 10 DEC 2026",
+        "prices": [
+          {
+            "roomType": "Double",
+            "price": 75
+          },
+          {
+            "roomType": "Triple",
+            "price": 90
+          },
+          {
+            "roomType": "Quad",
+            "price": 105
+          }
+        ]
+      },
+      {
+        "range": "10 DEC 2026 TO 21 JAN 2027",
+        "prices": [
+          {
+            "roomType": "Double",
+            "price": 120
+          },
+          {
+            "roomType": "Triple",
+            "price": 135
+          },
+          {
+            "roomType": "Quad",
+            "price": 150
+          }
+        ]
+      },
+      {
+        "range": "21 JAN 2027 TO 07 FEB 2027",
+        "prices": [
+          {
+            "roomType": "Double",
+            "price": 85
+          },
+          {
+            "roomType": "Triple",
+            "price": 100
+          },
+          {
+            "roomType": "Quad",
+            "price": 115
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "al-harithia-madinah",
+    "name": "Al Harithia",
+    "city": "Madinah",
+    "vendor": "Maysan Int. Group",
+    "mealPlan": "FB",
+    "stars": 5,
+    "seasons": [
+      {
+        "range": "30 JUN 2026 TO 20 SEP 2026",
+        "prices": [
+          {
+            "roomType": "Double",
+            "price": 750
+          },
+          {
+            "roomType": "Triple",
+            "price": 900
+          },
+          {
+            "roomType": "Quad",
+            "price": 1050
+          },
+          {
+            "roomType": "Junior suite (2 Pax)",
+            "price": 1125
+          },
+          {
+            "roomType": "Executive Suite (2 Rooms 4 Pax)",
+            "price": 2250
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "grand-plaza-badr-almaqam-madinah",
+    "name": "Grand Plaza Badr Almaqam",
+    "city": "Madinah",
+    "vendor": "Maysan Int. Group",
+    "mealPlan": "FB",
+    "stars": 4,
+    "seasons": [
+      {
+        "range": "30 JUN 2026 TO 20 SEP 2026",
+        "prices": [
+          {
+            "roomType": "Double",
+            "price": 520
+          },
+          {
+            "roomType": "Triple",
+            "price": 600
+          },
+          {
+            "roomType": "Quad",
+            "price": 680
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "shaza-regency-plaza-madinah",
+    "name": "Shaza Regency Plaza",
+    "city": "Madinah",
+    "vendor": "Maysan Int. Group",
+    "mealPlan": "FB",
+    "stars": 5,
+    "seasons": [
+      {
+        "range": "30 JUN 2026 TO 20 SEP 2026",
+        "prices": [
+          {
+            "roomType": "Double",
+            "price": 500
+          },
+          {
+            "roomType": "Triple",
+            "price": 580
+          },
+          {
+            "roomType": "Quad",
+            "price": 660
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "grand-plaza-almadina-madinah",
+    "name": "Grand Plaza Almadina",
+    "city": "Madinah",
+    "vendor": "Maysan Int. Group",
+    "mealPlan": "FB",
+    "stars": 4,
+    "seasons": [
+      {
+        "range": "30 JUN 2026 TO 20 SEP 2026",
+        "prices": [
+          {
+            "roomType": "Double",
+            "price": 480
+          },
+          {
+            "roomType": "Triple",
+            "price": 550
+          },
+          {
+            "roomType": "Quad",
+            "price": 620
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "maysan-rehab-elmysk-madinah",
+    "name": "Maysan Rehab Elmysk",
+    "city": "Madinah",
+    "vendor": "Maysan Int. Group",
+    "mealPlan": "FB",
+    "stars": 4,
+    "seasons": [
+      {
+        "range": "30 JUN 2026 TO 20 SEP 2026",
+        "prices": [
+          {
+            "roomType": "Double",
+            "price": 430
+          },
+          {
+            "roomType": "Triple",
+            "price": 490
+          },
+          {
+            "roomType": "Quad",
+            "price": 550
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "arkan-almanar-madinah",
+    "name": "Arkan Almanar",
+    "city": "Madinah",
+    "vendor": "Maysan Int. Group",
+    "mealPlan": "FB",
+    "stars": 4,
+    "seasons": [
+      {
+        "range": "30 JUN 2026 TO 20 SEP 2026",
+        "prices": [
+          {
+            "roomType": "Double",
+            "price": 430
+          },
+          {
+            "roomType": "Triple",
+            "price": 490
+          },
+          {
+            "roomType": "Quad",
+            "price": 550
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "maysan-altaqwa-madinah",
+    "name": "Maysan Altaqwa",
+    "city": "Madinah",
+    "vendor": "Maysan Int. Group",
+    "mealPlan": "FB",
+    "stars": 4,
+    "seasons": [
+      {
+        "range": "30 JUN 2026 TO 20 SEP 2026",
+        "prices": [
+          {
+            "roomType": "Double",
+            "price": 360
+          },
+          {
+            "roomType": "Triple",
+            "price": 410
+          },
+          {
+            "roomType": "Quad",
+            "price": 460
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "plaza-inn-ohud-madinah",
+    "name": "Plaza Inn Ohud",
+    "city": "Madinah",
+    "vendor": "Maysan Int. Group",
+    "mealPlan": "FB",
+    "stars": 3,
+    "seasons": [
+      {
+        "range": "30 JUN 2026 TO 20 SEP 2026",
+        "prices": [
+          {
+            "roomType": "Double",
+            "price": 335
+          },
+          {
+            "roomType": "Triple",
+            "price": 385
+          },
+          {
+            "roomType": "Quad",
+            "price": 435
+          }
+        ]
+      }
+    ]
+  }
+,
+  {
+    "id": "wahat-al-diyafah",
+    "name": "Wahat Al Diyafah",
+    "city": "Makkah",
+    "vendor": "Alharmain Hotels Management",
+    "mealPlan": "RO",
+    "stars": 3,
+    "seasons": [
+      {
+        "range": "15/06/2026 TO 01/07/2026",
+        "prices": [
+          {
+            "roomType": "Double",
+            "price": 260
+          },
+          {
+            "roomType": "Triple",
+            "price": 290
+          },
+          {
+            "roomType": "Quad",
+            "price": 340
+          }
+        ]
+      },
+      {
+        "range": "01/07/2026 TO 01/08/2026",
+        "prices": [
+          {
+            "roomType": "Double",
+            "price": 290
+          },
+          {
+            "roomType": "Triple",
+            "price": 340
+          },
+          {
+            "roomType": "Quad",
+            "price": 380
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "elaf-golden",
+    "name": "Elaf Golden",
+    "city": "Makkah",
+    "vendor": "Alharmain Hotels Management",
+    "mealPlan": "RO",
+    "stars": 4,
+    "seasons": [
+      {
+        "range": "15/06/2026 TO 01/07/2026",
+        "prices": [
+          {
+            "roomType": "Double",
+            "price": 380
+          },
+          {
+            "roomType": "Triple",
+            "price": 430
+          },
+          {
+            "roomType": "Quad",
+            "price": 470
+          }
+        ]
+      },
+      {
+        "range": "01/07/2026 TO 01/08/2026",
+        "prices": [
+          {
+            "roomType": "Double",
+            "price": 430
+          },
+          {
+            "roomType": "Triple",
+            "price": 470
+          },
+          {
+            "roomType": "Quad",
+            "price": 500
+          }
+        ]
+      },
+      {
+        "range": "01/08/2026 TO 30/09/2026",
+        "prices": [
+          {
+            "roomType": "Double",
+            "price": 460
+          },
+          {
+            "roomType": "Triple",
+            "price": 500
+          },
+          {
+            "roomType": "Quad",
+            "price": 540
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "elaf-diamond",
+    "name": "Elaf Diamond",
+    "city": "Makkah",
+    "vendor": "Alharmain Hotels Management",
+    "mealPlan": "RO",
+    "stars": 4,
+    "seasons": [
+      {
+        "range": "15/06/2026 TO 01/07/2026",
+        "prices": [
+          {
+            "roomType": "Double",
+            "price": 400
+          },
+          {
+            "roomType": "Triple",
+            "price": 445
+          },
+          {
+            "roomType": "Quad",
+            "price": 490
+          }
+        ]
+      },
+      {
+        "range": "01/07/2026 TO 01/08/2026",
+        "prices": [
+          {
+            "roomType": "Double",
+            "price": 470
+          },
+          {
+            "roomType": "Triple",
+            "price": 525
+          },
+          {
+            "roomType": "Quad",
+            "price": 570
+          }
+        ]
+      },
+      {
+        "range": "01/08/2026 TO 30/09/2026",
+        "prices": [
+          {
+            "roomType": "Double",
+            "price": 500
+          },
+          {
+            "roomType": "Triple",
+            "price": 545
+          },
+          {
+            "roomType": "Quad",
+            "price": 590
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "elaf-rayyan",
+    "name": "Elaf Rayyan",
+    "city": "Makkah",
+    "vendor": "Alharmain Hotels Management",
+    "mealPlan": "RO",
+    "stars": 4,
+    "seasons": [
+      {
+        "range": "15/06/2026 TO 01/07/2026",
+        "prices": [
+          {
+            "roomType": "Double",
+            "price": 430
+          },
+          {
+            "roomType": "Triple",
+            "price": 475
+          },
+          {
+            "roomType": "Quad",
+            "price": 520
+          }
+        ]
+      },
+      {
+        "range": "01/07/2026 TO 01/08/2026",
+        "prices": [
+          {
+            "roomType": "Double",
+            "price": 500
+          },
+          {
+            "roomType": "Triple",
+            "price": 550
+          },
+          {
+            "roomType": "Quad",
+            "price": 600
+          }
+        ]
+      },
+      {
+        "range": "01/08/2026 TO 30/09/2026",
+        "prices": [
+          {
+            "roomType": "Double",
+            "price": 525
+          },
+          {
+            "roomType": "Triple",
+            "price": 575
+          },
+          {
+            "roomType": "Quad",
+            "price": 625
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "snood-ajyad-alharmain",
+    "name": "Snood Ajyad",
+    "city": "Makkah",
+    "vendor": "Alharmain Hotels Management",
+    "mealPlan": "RO",
+    "stars": 3,
+    "seasons": [
+      {
+        "range": "15/06/2026 TO 01/07/2026",
+        "prices": [
+          {
+            "roomType": "Double",
+            "price": 430
+          },
+          {
+            "roomType": "Triple",
+            "price": 480
+          },
+          {
+            "roomType": "Quad",
+            "price": 530
+          }
+        ]
+      },
+      {
+        "range": "01/07/2026 TO 01/08/2026",
+        "prices": [
+          {
+            "roomType": "Double",
+            "price": 500
+          },
+          {
+            "roomType": "Triple",
+            "price": 550
+          },
+          {
+            "roomType": "Quad",
+            "price": 600
+          }
+        ]
+      },
+      {
+        "range": "01/08/2026 TO 30/09/2026",
+        "prices": [
+          {
+            "roomType": "Double",
+            "price": 525
+          },
+          {
+            "roomType": "Triple",
+            "price": 575
+          },
+          {
+            "roomType": "Quad",
+            "price": 625
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "elaf-al-khair",
+    "name": "Elaf Al Khair",
+    "city": "Makkah",
+    "vendor": "Alharmain Hotels Management",
+    "mealPlan": "RO",
+    "stars": 4,
+    "seasons": [
+      {
+        "range": "15/06/2026 TO 01/07/2026",
+        "prices": [
+          {
+            "roomType": "Double",
+            "price": 450
+          },
+          {
+            "roomType": "Triple",
+            "price": 500
+          },
+          {
+            "roomType": "Quad",
+            "price": 550
+          }
+        ]
+      },
+      {
+        "range": "01/07/2026 TO 01/08/2026",
+        "prices": [
+          {
+            "roomType": "Double",
+            "price": 500
+          },
+          {
+            "roomType": "Triple",
+            "price": 550
+          },
+          {
+            "roomType": "Quad",
+            "price": 600
+          }
+        ]
+      },
+      {
+        "range": "01/08/2026 TO 30/09/2026",
+        "prices": [
+          {
+            "roomType": "Double",
+            "price": 525
+          },
+          {
+            "roomType": "Triple",
+            "price": 575
+          },
+          {
+            "roomType": "Quad",
+            "price": 625
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "marsa-al-jariyah",
+    "name": "Marsa Al Jariyah",
+    "city": "Makkah",
+    "vendor": "Alharmain Hotels Management",
+    "mealPlan": "RO",
+    "stars": 3,
+    "seasons": [
+      {
+        "range": "15/06/2026 TO 01/07/2026",
+        "prices": [
+          {
+            "roomType": "Double",
+            "price": 450
+          },
+          {
+            "roomType": "Triple",
+            "price": 500
+          },
+          {
+            "roomType": "Quad",
+            "price": 550
+          }
+        ]
+      },
+      {
+        "range": "01/07/2026 TO 01/08/2026",
+        "prices": [
+          {
+            "roomType": "Double",
+            "price": 500
+          },
+          {
+            "roomType": "Triple",
+            "price": 550
+          },
+          {
+            "roomType": "Quad",
+            "price": 600
+          }
+        ]
+      },
+      {
+        "range": "01/08/2026 TO 30/09/2026",
+        "prices": [
+          {
+            "roomType": "Double",
+            "price": 530
+          },
+          {
+            "roomType": "Triple",
+            "price": 580
+          },
+          {
+            "roomType": "Quad",
+            "price": 630
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "azka-asafa",
+    "name": "Azka Asafa",
+    "city": "Makkah",
+    "vendor": "Alharmain Hotels Management",
+    "mealPlan": "RO",
+    "stars": 4,
+    "seasons": [
+      {
+        "range": "15/06/2026 TO 01/07/2026",
+        "prices": [
+          {
+            "roomType": "Double",
+            "price": 570
+          },
+          {
+            "roomType": "Triple",
+            "price": 620
+          },
+          {
+            "roomType": "Quad",
+            "price": 680
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "azka-al-maqom",
+    "name": "Azka Al Maqom",
+    "city": "Makkah",
+    "vendor": "Alharmain Hotels Management",
+    "mealPlan": "RO",
+    "stars": 4,
+    "seasons": [
+      {
+        "range": "15/06/2026 TO 01/07/2026",
+        "prices": [
+          {
+            "roomType": "Double",
+            "price": 600
+          },
+          {
+            "roomType": "Triple",
+            "price": 680
+          },
+          {
+            "roomType": "Quad",
+            "price": 740
+          }
+        ]
+      },
+      {
+        "range": "01/07/2026 TO 01/08/2026",
+        "prices": [
+          {
+            "roomType": "Double",
+            "price": 650
+          },
+          {
+            "roomType": "Triple",
+            "price": 750
+          },
+          {
+            "roomType": "Quad",
+            "price": 850
+          }
+        ]
+      },
+      {
+        "range": "01/08/2026 TO 01/09/2026",
+        "prices": [
+          {
+            "roomType": "Double",
+            "price": 700
+          },
+          {
+            "roomType": "Triple",
+            "price": 800
+          },
+          {
+            "roomType": "Quad",
+            "price": 900
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "olayan-ajyad-alharmain",
+    "name": "Olayan Ajyad",
+    "city": "Makkah",
+    "vendor": "Alharmain Hotels Management",
+    "mealPlan": "RO",
+    "stars": 4,
+    "seasons": [
+      {
+        "range": "15/06/2026 TO 01/07/2026",
+        "prices": [
+          {
+            "roomType": "Double",
+            "price": 600
+          },
+          {
+            "roomType": "Triple",
+            "price": 700
+          },
+          {
+            "roomType": "Quad",
+            "price": 800
+          }
+        ]
+      },
+      {
+        "range": "01/07/2026 TO 01/08/2026",
+        "prices": [
+          {
+            "roomType": "Double",
+            "price": 725
+          },
+          {
+            "roomType": "Triple",
+            "price": 825
+          },
+          {
+            "roomType": "Quad",
+            "price": 925
+          }
+        ]
+      },
+      {
+        "range": "01/08/2026 TO 01/09/2026",
+        "prices": [
+          {
+            "roomType": "Double",
+            "price": 775
+          },
+          {
+            "roomType": "Triple",
+            "price": 875
+          },
+          {
+            "roomType": "Quad",
+            "price": 975
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "sofwah-tower-3",
+    "name": "Sofwah Tower 3",
+    "city": "Makkah",
+    "vendor": "Alharmain Hotels Management",
+    "mealPlan": "RO",
+    "stars": 5,
+    "seasons": [
+      {
+        "range": "15/06/2026 TO 01/07/2026",
+        "prices": [
+          {
+            "roomType": "Double",
+            "price": 900
+          },
+          {
+            "roomType": "Triple",
+            "price": 1100
+          },
+          {
+            "roomType": "Quad",
+            "price": 1300
+          }
+        ]
+      },
+      {
+        "range": "01/07/2026 TO 01/08/2026",
+        "prices": [
+          {
+            "roomType": "Double",
+            "price": 1000
+          },
+          {
+            "roomType": "Triple",
+            "price": 1200
+          },
+          {
+            "roomType": "Quad",
+            "price": 1400
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "elaf-al-bayit",
+    "name": "Elaf Al Bayit",
+    "city": "Makkah",
+    "vendor": "Alharmain Hotels Management",
+    "mealPlan": "RO",
+    "stars": 4,
+    "seasons": [
+      {
+        "range": "15/06/2026 TO 01/07/2026",
+        "prices": [
+          {
+            "roomType": "Double",
+            "price": 600
+          },
+          {
+            "roomType": "Triple",
+            "price": 675
+          },
+          {
+            "roomType": "Quad",
+            "price": 750
+          }
+        ]
+      },
+      {
+        "range": "01/07/2026 TO 01/08/2026",
+        "prices": [
+          {
+            "roomType": "Double",
+            "price": 625
+          },
+          {
+            "roomType": "Triple",
+            "price": 725
+          },
+          {
+            "roomType": "Quad",
+            "price": 825
+          }
+        ]
+      },
+      {
+        "range": "01/08/2026 TO 01/09/2026",
+        "prices": [
+          {
+            "roomType": "Double",
+            "price": 650
+          },
+          {
+            "roomType": "Triple",
+            "price": 750
+          },
+          {
+            "roomType": "Quad",
+            "price": 850
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "frontel-al-haritzia",
+    "name": "Frontel Al Haritzia",
+    "city": "Madinah",
+    "vendor": "Alharmain Hotels Management",
+    "mealPlan": "RO",
+    "stars": 5,
+    "seasons": [
+      {
+        "range": "30/06/2026 TO 20/09/2026",
+        "prices": [
+          {
+            "roomType": "Double",
+            "price": 800
+          },
+          {
+            "roomType": "Triple",
+            "price": 950
+          },
+          {
+            "roomType": "Quad",
+            "price": 1100
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "grand-plaza-badr-maqom-alharmain",
+    "name": "Grand Plaza Badr Maqom",
+    "city": "Madinah",
+    "vendor": "Alharmain Hotels Management",
+    "mealPlan": "RO",
+    "stars": 4,
+    "seasons": [
+      {
+        "range": "30/06/2026 TO 20/09/2026",
+        "prices": [
+          {
+            "roomType": "Double",
+            "price": 570
+          },
+          {
+            "roomType": "Triple",
+            "price": 650
+          },
+          {
+            "roomType": "Quad",
+            "price": 730
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "grand-plaza-madina-alharmain",
+    "name": "Grand Plaza Madina",
+    "city": "Madinah",
+    "vendor": "Alharmain Hotels Management",
+    "mealPlan": "RO",
+    "stars": 4,
+    "seasons": [
+      {
+        "range": "30/06/2026 TO 20/09/2026",
+        "prices": [
+          {
+            "roomType": "Double",
+            "price": 530
+          },
+          {
+            "roomType": "Triple",
+            "price": 600
+          },
+          {
+            "roomType": "Quad",
+            "price": 670
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "jiwar-al-saha",
+    "name": "Jiwar Al Saha",
+    "city": "Madinah",
+    "vendor": "Alharmain Hotels Management",
+    "mealPlan": "RO",
+    "stars": 4,
+    "seasons": [
+      {
+        "range": "30/06/2026 TO 14/09/2026",
+        "prices": [
+          {
+            "roomType": "Double",
+            "price": 510
+          },
+          {
+            "roomType": "Triple",
+            "price": 560
+          },
+          {
+            "roomType": "Quad",
+            "price": 610
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "shaza-regency",
+    "name": "Shaza Regency",
+    "city": "Madinah",
+    "vendor": "Alharmain Hotels Management",
+    "mealPlan": "RO",
+    "stars": 5,
+    "seasons": [
+      {
+        "range": "30/06/2026 TO 20/09/2026",
+        "prices": [
+          {
+            "roomType": "Double",
+            "price": 550
+          },
+          {
+            "roomType": "Triple",
+            "price": 630
+          },
+          {
+            "roomType": "Quad",
+            "price": 710
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "maysan-rehab-al-misk-alharmain",
+    "name": "Maysan Rehab Al Misk",
+    "city": "Madinah",
+    "vendor": "Alharmain Hotels Management",
+    "mealPlan": "RO",
+    "stars": 4,
+    "seasons": [
+      {
+        "range": "30/06/2026 TO 20/09/2026",
+        "prices": [
+          {
+            "roomType": "Double",
+            "price": 480
+          },
+          {
+            "roomType": "Triple",
+            "price": 540
+          },
+          {
+            "roomType": "Quad",
+            "price": 600
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "arkan-al-manar-alharmain",
+    "name": "Arkan Al Manar",
+    "city": "Madinah",
+    "vendor": "Alharmain Hotels Management",
+    "mealPlan": "RO",
+    "stars": 4,
+    "seasons": [
+      {
+        "range": "30/06/2026 TO 20/09/2026",
+        "prices": [
+          {
+            "roomType": "Double",
+            "price": 480
+          },
+          {
+            "roomType": "Triple",
+            "price": 540
+          },
+          {
+            "roomType": "Quad",
+            "price": 600
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "maysan-al-taqwa-alharmain",
+    "name": "Maysan Al Taqwa",
+    "city": "Madinah",
+    "vendor": "Alharmain Hotels Management",
+    "mealPlan": "RO",
+    "stars": 4,
+    "seasons": [
+      {
+        "range": "30/06/2026 TO 20/09/2026",
+        "prices": [
+          {
+            "roomType": "Double",
+            "price": 410
+          },
+          {
+            "roomType": "Triple",
+            "price": 460
+          },
+          {
+            "roomType": "Quad",
+            "price": 500
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "plaza-in-houd-alharmain",
+    "name": "Plaza In Houd",
+    "city": "Madinah",
+    "vendor": "Alharmain Hotels Management",
+    "mealPlan": "RO",
+    "stars": 3,
+    "seasons": [
+      {
+        "range": "30/06/2026 TO 20/09/2026",
+        "prices": [
+          {
+            "roomType": "Double",
+            "price": 405
+          },
+          {
+            "roomType": "Triple",
+            "price": 435
+          },
+          {
+            "roomType": "Quad",
+            "price": 485
+          }
+        ]
+      }
+    ]
+  }
+
+,
+  {
+    "id": "marwa-rotana-rowa",
+    "name": "Marwa Rotana",
+    "city": "Makkah",
+    "vendor": "ROWA",
+    "mealPlan": "FB",
+    "stars": 5,
+    "seasons": [
+      {
+        "range": "16/06/2026 TO 08/07/2026",
+        "prices": [
+          {
+            "roomType": "Double",
+            "price": 1100
+          },
+          {
+            "roomType": "Triple",
+            "price": 1370
+          },
+          {
+            "roomType": "Quad",
+            "price": 1640
+          }
+        ]
+      },
+      {
+        "range": "09/07/2026 TO 30/09/2026",
+        "prices": [
+          {
+            "roomType": "Double",
+            "price": 1180
+          },
+          {
+            "roomType": "Triple",
+            "price": 1450
+          },
+          {
+            "roomType": "Quad",
+            "price": 1720
+          }
+        ]
+      },
+      {
+        "range": "01/10/2026 TO 16/12/2026",
+        "prices": [
+          {
+            "roomType": "Double",
+            "price": 1250
+          },
+          {
+            "roomType": "Triple",
+            "price": 1520
+          },
+          {
+            "roomType": "Quad",
+            "price": 1790
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "movenpick-hajar-rowa",
+    "name": "Movenpick Hajar",
+    "city": "Makkah",
+    "vendor": "ROWA",
+    "mealPlan": "FB",
+    "stars": 5,
+    "seasons": [
+      {
+        "range": "16/06/2026 TO 08/07/2026",
+        "prices": [
+          {
+            "roomType": "Double",
+            "price": 950
+          },
+          {
+            "roomType": "Triple",
+            "price": 1150
+          },
+          {
+            "roomType": "Quad",
+            "price": 1280
+          },
+          {
+            "roomType": "Suite 5 Pax",
+            "price": 1600
+          },
+          {
+            "roomType": "Suite 6 Pax",
+            "price": 1750
+          }
+        ]
+      },
+      {
+        "range": "09/07/2026 TO 30/08/2026",
+        "prices": [
+          {
+            "roomType": "Double",
+            "price": 1100
+          },
+          {
+            "roomType": "Triple",
+            "price": 1200
+          },
+          {
+            "roomType": "Quad",
+            "price": 1350
+          },
+          {
+            "roomType": "Suite 5 Pax",
+            "price": 1650
+          },
+          {
+            "roomType": "Suite 6 Pax",
+            "price": 1850
+          }
+        ]
+      },
+      {
+        "range": "31/08/2026 TO 14/10/2026",
+        "prices": [
+          {
+            "roomType": "Double",
+            "price": 1050
+          },
+          {
+            "roomType": "Triple",
+            "price": 1250
+          },
+          {
+            "roomType": "Quad",
+            "price": 1400
+          },
+          {
+            "roomType": "Suite 5 Pax",
+            "price": 1750
+          },
+          {
+            "roomType": "Suite 6 Pax",
+            "price": 1850
+          }
+        ]
+      },
+      {
+        "range": "15/10/2026 TO 16/12/2026",
+        "prices": [
+          {
+            "roomType": "Double",
+            "price": 1100
+          },
+          {
+            "roomType": "Triple",
+            "price": 1300
+          },
+          {
+            "roomType": "Quad",
+            "price": 1500
+          },
+          {
+            "roomType": "Suite 5 Pax",
+            "price": 1800
+          },
+          {
+            "roomType": "Suite 6 Pax",
+            "price": 2000
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "safwa-tower-3-rowa",
+    "name": "Safwa Tower 3",
+    "city": "Makkah",
+    "vendor": "ROWA",
+    "mealPlan": "FB",
+    "stars": 5,
+    "seasons": [
+      {
+        "range": "16/06/2026 TO 08/07/2026",
+        "prices": [
+          {
+            "roomType": "Double",
+            "price": 950
+          },
+          {
+            "roomType": "Triple",
+            "price": 1150
+          },
+          {
+            "roomType": "Quad",
+            "price": 1350
+          }
+        ]
+      },
+      {
+        "range": "09/07/2026 TO 16/12/2026",
+        "prices": [
+          {
+            "roomType": "Double",
+            "price": 1050
+          },
+          {
+            "roomType": "Triple",
+            "price": 1250
+          },
+          {
+            "roomType": "Quad",
+            "price": 1450
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "pullman-zamzam-rowa",
+    "name": "Pullman Zamzam",
+    "city": "Makkah",
+    "vendor": "ROWA",
+    "mealPlan": "FB",
+    "stars": 5,
+    "seasons": [
+      {
+        "range": "16/06/2026 TO 08/07/2026",
+        "prices": [
+          {
+            "roomType": "Double",
+            "price": 1000
+          },
+          {
+            "roomType": "Triple",
+            "price": 1200
+          },
+          {
+            "roomType": "Quad",
+            "price": 1400
+          }
+        ]
+      },
+      {
+        "range": "09/07/2026 TO 14/10/2026",
+        "prices": [
+          {
+            "roomType": "Double",
+            "price": 1050
+          },
+          {
+            "roomType": "Triple",
+            "price": 1250
+          },
+          {
+            "roomType": "Quad",
+            "price": 1450
+          },
+          {
+            "roomType": "Suite 6 Pax",
+            "price": 2250
+          },
+          {
+            "roomType": "Suite 7 Pax",
+            "price": 2450
+          }
+        ]
+      },
+      {
+        "range": "15/10/2026 TO 16/12/2026",
+        "prices": [
+          {
+            "roomType": "Double",
+            "price": 1150
+          },
+          {
+            "roomType": "Triple",
+            "price": 1350
+          },
+          {
+            "roomType": "Quad",
+            "price": 1550
+          },
+          {
+            "roomType": "Suite 6 Pax",
+            "price": 2350
+          },
+          {
+            "roomType": "Suite 7 Pax",
+            "price": 2550
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "fairmont-rowa",
+    "name": "Fairmont",
+    "city": "Makkah",
+    "vendor": "ROWA",
+    "mealPlan": "FB",
+    "stars": 5,
+    "seasons": [
+      {
+        "range": "16/06/2026 TO 08/07/2026",
+        "prices": [
+          {
+            "roomType": "Double",
+            "price": 1350
+          },
+          {
+            "roomType": "Triple",
+            "price": 1680
+          },
+          {
+            "roomType": "Quad",
+            "price": 2010
+          }
+        ]
+      },
+      {
+        "range": "09/07/2026 TO 16/12/2026",
+        "prices": [
+          {
+            "roomType": "Double",
+            "price": 1470
+          },
+          {
+            "roomType": "Triple",
+            "price": 1800
+          },
+          {
+            "roomType": "Quad",
+            "price": 2130
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "swiss-al-maqam-rowa",
+    "name": "Swiss Al Maqam",
+    "city": "Makkah",
+    "vendor": "ROWA",
+    "mealPlan": "FB",
+    "stars": 5,
+    "seasons": [
+      {
+        "range": "16/06/2026 TO 08/07/2026",
+        "prices": [
+          {
+            "roomType": "Double",
+            "price": 1080
+          },
+          {
+            "roomType": "Triple",
+            "price": 1360
+          },
+          {
+            "roomType": "Quad",
+            "price": 1640
+          }
+        ]
+      },
+      {
+        "range": "09/07/2026 TO 16/12/2026",
+        "prices": [
+          {
+            "roomType": "Double",
+            "price": 1250
+          },
+          {
+            "roomType": "Triple",
+            "price": 1530
+          },
+          {
+            "roomType": "Quad",
+            "price": 1810
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "hilton-suites-rowa",
+    "name": "Hilton Suites",
+    "city": "Makkah",
+    "vendor": "ROWA",
+    "mealPlan": "FB",
+    "stars": 5,
+    "seasons": [
+      {
+        "range": "16/06/2026 TO 08/07/2026",
+        "prices": [
+          {
+            "roomType": "Double",
+            "price": 1000
+          },
+          {
+            "roomType": "Triple",
+            "price": 1210
+          },
+          {
+            "roomType": "Quad",
+            "price": 1420
+          }
+        ]
+      },
+      {
+        "range": "09/07/2026 TO 16/12/2026",
+        "prices": [
+          {
+            "roomType": "Double",
+            "price": 1150
+          },
+          {
+            "roomType": "Triple",
+            "price": 1385
+          },
+          {
+            "roomType": "Quad",
+            "price": 1620
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "rotana-jabal-omar-rowa",
+    "name": "Rotana Jabal Omar",
+    "city": "Makkah",
+    "vendor": "ROWA",
+    "mealPlan": "FB",
+    "stars": 5,
+    "seasons": [
+      {
+        "range": "16/06/2026 TO 08/07/2026",
+        "prices": [
+          {
+            "roomType": "Double",
+            "price": 940
+          },
+          {
+            "roomType": "Triple",
+            "price": 1190
+          },
+          {
+            "roomType": "Quad",
+            "price": 1390
+          }
+        ]
+      },
+      {
+        "range": "09/07/2026 TO 03/11/2026",
+        "prices": [
+          {
+            "roomType": "Double",
+            "price": 1040
+          },
+          {
+            "roomType": "Triple",
+            "price": 1290
+          },
+          {
+            "roomType": "Quad",
+            "price": 1491
+          }
+        ]
+      },
+      {
+        "range": "04/11/2026 TO 16/12/2026",
+        "prices": [
+          {
+            "roomType": "Double",
+            "price": 1040
+          },
+          {
+            "roomType": "Triple",
+            "price": 1290
+          },
+          {
+            "roomType": "Quad",
+            "price": 1490
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "olayan-ajyad-rowa",
+    "name": "Olayan Ajyad",
+    "city": "Makkah",
+    "vendor": "ROWA",
+    "mealPlan": "FB",
+    "stars": 4,
+    "seasons": [
+      {
+        "range": "16/06/2026 TO 31/07/2026",
+        "prices": [
+          {
+            "roomType": "Double",
+            "price": 600
+          },
+          {
+            "roomType": "Triple",
+            "price": 700
+          },
+          {
+            "roomType": "Quad",
+            "price": 800
+          }
+        ]
+      },
+      {
+        "range": "01/08/2026 TO 04/10/2026",
+        "prices": [
+          {
+            "roomType": "Double",
+            "price": 660
+          },
+          {
+            "roomType": "Triple",
+            "price": 760
+          },
+          {
+            "roomType": "Quad",
+            "price": 860
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "prestige-rowa",
+    "name": "Prestige",
+    "city": "Makkah",
+    "vendor": "ROWA",
+    "mealPlan": "FB",
+    "stars": 4,
+    "seasons": [
+      {
+        "range": "16/06/2026 TO 30/06/2026",
+        "prices": [
+          {
+            "roomType": "Double",
+            "price": 475
+          },
+          {
+            "roomType": "Triple",
+            "price": 550
+          },
+          {
+            "roomType": "Quad",
+            "price": 625
+          }
+        ]
+      },
+      {
+        "range": "01/07/2026 TO 31/07/2026",
+        "prices": [
+          {
+            "roomType": "Double",
+            "price": 500
+          },
+          {
+            "roomType": "Triple",
+            "price": 575
+          },
+          {
+            "roomType": "Quad",
+            "price": 650
+          }
+        ]
+      },
+      {
+        "range": "01/08/2026 TO 04/10/2026",
+        "prices": [
+          {
+            "roomType": "Double",
+            "price": 625
+          },
+          {
+            "roomType": "Triple",
+            "price": 725
+          },
+          {
+            "roomType": "Quad",
+            "price": 825
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "safa-azka-rowa",
+    "name": "Safa Azka",
+    "city": "Makkah",
+    "vendor": "ROWA",
+    "mealPlan": "FB",
+    "stars": 4,
+    "seasons": [
+      {
+        "range": "20/06/2026 TO 30/06/2026",
+        "prices": [
+          {
+            "roomType": "Double",
+            "price": 530
+          },
+          {
+            "roomType": "Triple",
+            "price": 580
+          },
+          {
+            "roomType": "Quad",
+            "price": 620
+          }
+        ]
+      },
+      {
+        "range": "01/07/2026 TO 31/07/2026",
+        "prices": [
+          {
+            "roomType": "Double",
+            "price": 560
+          },
+          {
+            "roomType": "Triple",
+            "price": 635
+          },
+          {
+            "roomType": "Quad",
+            "price": 710
+          }
+        ]
+      },
+      {
+        "range": "01/08/2026 TO 31/08/2026",
+        "prices": [
+          {
+            "roomType": "Double",
+            "price": 590
+          },
+          {
+            "roomType": "Triple",
+            "price": 675
+          },
+          {
+            "roomType": "Quad",
+            "price": 760
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "al-masa-grand-rowa",
+    "name": "Al Masa Grand",
+    "city": "Makkah",
+    "vendor": "ROWA",
+    "mealPlan": "FB",
+    "stars": 3,
+    "seasons": [
+      {
+        "range": "16/06/2026 TO 31/07/2026",
+        "prices": [
+          {
+            "roomType": "Double",
+            "price": 400
+          },
+          {
+            "roomType": "Triple",
+            "price": 450
+          },
+          {
+            "roomType": "Quad",
+            "price": 500
+          }
+        ]
+      },
+      {
+        "range": "01/08/2026 TO 04/10/2026",
+        "prices": [
+          {
+            "roomType": "Double",
+            "price": 430
+          },
+          {
+            "roomType": "Triple",
+            "price": 480
+          },
+          {
+            "roomType": "Quad",
+            "price": 530
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "al-masa-al-fazeen-rowa",
+    "name": "Al Masa Al Fazeen",
+    "city": "Makkah",
+    "vendor": "ROWA",
+    "mealPlan": "FB",
+    "stars": 3,
+    "seasons": [
+      {
+        "range": "16/06/2026 TO 31/07/2026",
+        "prices": [
+          {
+            "roomType": "Double",
+            "price": 370
+          },
+          {
+            "roomType": "Triple",
+            "price": 420
+          },
+          {
+            "roomType": "Quad",
+            "price": 470
+          }
+        ]
+      },
+      {
+        "range": "01/08/2026 TO 04/10/2026",
+        "prices": [
+          {
+            "roomType": "Double",
+            "price": 380
+          },
+          {
+            "roomType": "Triple",
+            "price": 430
+          },
+          {
+            "roomType": "Quad",
+            "price": 480
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "snood-ajyad-rowa",
+    "name": "Snood Ajyad",
+    "city": "Makkah",
+    "vendor": "ROWA",
+    "mealPlan": "FB",
+    "stars": 3,
+    "seasons": [
+      {
+        "range": "16/06/2026 TO 31/07/2026",
+        "prices": [
+          {
+            "roomType": "Double",
+            "price": 380
+          },
+          {
+            "roomType": "Triple",
+            "price": 425
+          },
+          {
+            "roomType": "Quad",
+            "price": 470
+          }
+        ]
+      },
+      {
+        "range": "01/08/2026 TO 04/10/2026",
+        "prices": [
+          {
+            "roomType": "Double",
+            "price": 430
+          },
+          {
+            "roomType": "Triple",
+            "price": 475
+          },
+          {
+            "roomType": "Quad",
+            "price": 520
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "waha-ajyad-rowa",
+    "name": "Waha Ajyad",
+    "city": "Makkah",
+    "vendor": "ROWA",
+    "mealPlan": "FB",
+    "stars": 3,
+    "seasons": [
+      {
+        "range": "16/06/2026 TO 31/07/2026",
+        "prices": [
+          {
+            "roomType": "Double",
+            "price": 290
+          },
+          {
+            "roomType": "Triple",
+            "price": 330
+          },
+          {
+            "roomType": "Quad",
+            "price": 370
+          }
+        ]
+      },
+      {
+        "range": "01/08/2026 TO 04/10/2026",
+        "prices": [
+          {
+            "roomType": "Double",
+            "price": 310
+          },
+          {
+            "roomType": "Triple",
+            "price": 350
+          },
+          {
+            "roomType": "Quad",
+            "price": 390
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "nada-ajyad-rowa",
+    "name": "Nada Ajyad",
+    "city": "Makkah",
+    "vendor": "ROWA",
+    "mealPlan": "FB",
+    "stars": 3,
+    "seasons": [
+      {
+        "range": "16/06/2026 TO 31/07/2026",
+        "prices": [
+          {
+            "roomType": "Double",
+            "price": 310
+          },
+          {
+            "roomType": "Triple",
+            "price": 350
+          },
+          {
+            "roomType": "Quad",
+            "price": 390
+          }
+        ]
+      },
+      {
+        "range": "01/08/2026 TO 04/10/2026",
+        "prices": [
+          {
+            "roomType": "Double",
+            "price": 330
+          },
+          {
+            "roomType": "Triple",
+            "price": 370
+          },
+          {
+            "roomType": "Quad",
+            "price": 410
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "diafat-al-rajaa-rowa",
+    "name": "Diafat Al Rajaa",
+    "city": "Makkah",
+    "vendor": "ROWA",
+    "mealPlan": "FB",
+    "stars": 3,
+    "seasons": [
+      {
+        "range": "16/06/2026 TO 31/07/2026",
+        "prices": [
+          {
+            "roomType": "Double",
+            "price": 260
+          },
+          {
+            "roomType": "Triple",
+            "price": 310
+          },
+          {
+            "roomType": "Quad",
+            "price": 360
+          }
+        ]
+      },
+      {
+        "range": "01/08/2026 TO 04/10/2026",
+        "prices": [
+          {
+            "roomType": "Double",
+            "price": 300
+          },
+          {
+            "roomType": "Triple",
+            "price": 350
+          },
+          {
+            "roomType": "Quad",
+            "price": 400
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "olayan-golden-rowa",
+    "name": "Olayan Golden",
+    "city": "Makkah",
+    "vendor": "ROWA",
+    "mealPlan": "FB",
+    "stars": 3,
+    "seasons": [
+      {
+        "range": "16/06/2026 TO 31/07/2026",
+        "prices": [
+          {
+            "roomType": "Double",
+            "price": 270
+          },
+          {
+            "roomType": "Triple",
+            "price": 310
+          },
+          {
+            "roomType": "Quad",
+            "price": 350
+          }
+        ]
+      },
+      {
+        "range": "01/08/2026 TO 04/10/2026",
+        "prices": [
+          {
+            "roomType": "Double",
+            "price": 320
+          },
+          {
+            "roomType": "Triple",
+            "price": 360
+          },
+          {
+            "roomType": "Quad",
+            "price": 400
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "badr-al-masa-rowa",
+    "name": "Badr Al Masa",
+    "city": "Makkah",
+    "vendor": "ROWA",
+    "mealPlan": "FB",
+    "stars": 3,
+    "seasons": [
+      {
+        "range": "16/06/2026 TO 31/07/2026",
+        "prices": [
+          {
+            "roomType": "Double",
+            "price": 260
+          },
+          {
+            "roomType": "Triple",
+            "price": 300
+          },
+          {
+            "roomType": "Quad",
+            "price": 340
+          }
+        ]
+      },
+      {
+        "range": "01/08/2026 TO 04/10/2026",
+        "prices": [
+          {
+            "roomType": "Double",
+            "price": 280
+          },
+          {
+            "roomType": "Triple",
+            "price": 320
+          },
+          {
+            "roomType": "Quad",
+            "price": 360
+          }
+        ]
+      },
+      {
+        "range": "05/10/2026 TO 05/10/2026",
+        "prices": [
+          {
+            "roomType": "Double",
+            "price": 440
+          },
+          {
+            "roomType": "Triple",
+            "price": 490
+          },
+          {
+            "roomType": "Quad",
+            "price": 540
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "olayan-grand-rowa",
+    "name": "Olayan Grand",
+    "city": "Makkah",
+    "vendor": "ROWA",
+    "mealPlan": "FB",
+    "stars": 3,
+    "seasons": [
+      {
+        "range": "16/06/2026 TO 31/07/2026",
+        "prices": [
+          {
+            "roomType": "Double",
+            "price": 180
+          },
+          {
+            "roomType": "Triple",
+            "price": 220
+          },
+          {
+            "roomType": "Quad",
+            "price": 260
+          }
+        ]
+      },
+      {
+        "range": "01/08/2026 TO 04/10/2026",
+        "prices": [
+          {
+            "roomType": "Double",
+            "price": 200
+          },
+          {
+            "roomType": "Triple",
+            "price": 240
+          },
+          {
+            "roomType": "Quad",
+            "price": 280
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "saja-makkah-rowa",
+    "name": "Saja Makkah / Ex.Lemeredian Towers",
+    "city": "Makkah",
+    "vendor": "ROWA",
+    "mealPlan": "FB",
+    "stars": 4,
+    "seasons": [
+      {
+        "range": "16/06/2026 TO 31/07/2026",
+        "prices": [
+          {
+            "roomType": "Double",
+            "price": 270
+          },
+          {
+            "roomType": "Triple",
+            "price": 320
+          },
+          {
+            "roomType": "Quad",
+            "price": 370
+          }
+        ]
+      },
+      {
+        "range": "01/08/2026 TO 04/10/2026",
+        "prices": [
+          {
+            "roomType": "Double",
+            "price": 290
+          },
+          {
+            "roomType": "Triple",
+            "price": 340
+          },
+          {
+            "roomType": "Quad",
+            "price": 390
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "nawazi-towers-rowa",
+    "name": "Nawazi Towers",
+    "city": "Makkah",
+    "vendor": "ROWA",
+    "mealPlan": "FB",
+    "stars": 3,
+    "seasons": [
+      {
+        "range": "16/06/2026 TO 31/07/2026",
+        "prices": [
+          {
+            "roomType": "Double",
+            "price": 200
+          },
+          {
+            "roomType": "Triple",
+            "price": 240
+          },
+          {
+            "roomType": "Quad",
+            "price": 280
+          }
+        ]
+      },
+      {
+        "range": "01/08/2026 TO 04/10/2026",
+        "prices": [
+          {
+            "roomType": "Double",
+            "price": 230
+          },
+          {
+            "roomType": "Triple",
+            "price": 270
+          },
+          {
+            "roomType": "Quad",
+            "price": 410
+          }
+        ]
+      }
+    ]
+  }
+,
+  {
+    "id": "elaf-al-bait-akuw",
+    "name": "Elaf Al Bait",
+    "city": "Makkah",
+    "vendor": "AKUW",
+    "mealPlan": "FB",
+    "stars": 4,
+    "seasons": [
+      {
+        "range": "15/06/2026 TO 01/07/2026",
+        "prices": [
+          {
+            "roomType": "Double",
+            "price": 550
+          },
+          {
+            "roomType": "Triple",
+            "price": 625
+          },
+          {
+            "roomType": "Quad",
+            "price": 700
+          }
+        ]
+      },
+      {
+        "range": "01/07/2026 TO 01/08/2026",
+        "prices": [
+          {
+            "roomType": "Double",
+            "price": 575
+          },
+          {
+            "roomType": "Triple",
+            "price": 675
+          },
+          {
+            "roomType": "Quad",
+            "price": 775
+          }
+        ]
+      },
+      {
+        "range": "01/08/2026 TO 01/09/2026",
+        "prices": [
+          {
+            "roomType": "Double",
+            "price": 600
+          },
+          {
+            "roomType": "Triple",
+            "price": 700
+          },
+          {
+            "roomType": "Quad",
+            "price": 800
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "marsa-jaria-akuw",
+    "name": "Marsa Jaria",
+    "city": "Makkah",
+    "vendor": "AKUW",
+    "mealPlan": "FB",
+    "stars": 3,
+    "seasons": [
+      {
+        "range": "15/06/2026 TO 01/07/2026",
+        "prices": [
+          {
+            "roomType": "Double",
+            "price": 400
+          },
+          {
+            "roomType": "Triple",
+            "price": 450
+          },
+          {
+            "roomType": "Quad",
+            "price": 500
+          }
+        ]
+      },
+      {
+        "range": "01/07/2026 TO 01/08/2026",
+        "prices": [
+          {
+            "roomType": "Double",
+            "price": 450
+          },
+          {
+            "roomType": "Triple",
+            "price": 500
+          },
+          {
+            "roomType": "Quad",
+            "price": 550
+          }
+        ]
+      },
+      {
+        "range": "01/08/2026 TO 30/09/2026",
+        "prices": [
+          {
+            "roomType": "Double",
+            "price": 480
+          },
+          {
+            "roomType": "Triple",
+            "price": 530
+          },
+          {
+            "roomType": "Quad",
+            "price": 580
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "kunuz-ajyad-akuw",
+    "name": "Kunuz Ajyad",
+    "city": "Makkah",
+    "vendor": "AKUW",
+    "mealPlan": "FB",
+    "stars": 3,
+    "seasons": [
+      {
+        "range": "15/06/2026 TO 01/07/2026",
+        "prices": [
+          {
+            "roomType": "Double",
+            "price": 390
+          },
+          {
+            "roomType": "Triple",
+            "price": 435
+          },
+          {
+            "roomType": "Quad",
+            "price": 480
+          }
+        ]
+      },
+      {
+        "range": "01/07/2026 TO 01/08/2026",
+        "prices": [
+          {
+            "roomType": "Double",
+            "price": 440
+          },
+          {
+            "roomType": "Triple",
+            "price": 485
+          },
+          {
+            "roomType": "Quad",
+            "price": 530
+          }
+        ]
+      },
+      {
+        "range": "01/08/2026 TO 30/09/2026",
+        "prices": [
+          {
+            "roomType": "Double",
+            "price": 470
+          },
+          {
+            "roomType": "Triple",
+            "price": 515
+          },
+          {
+            "roomType": "Quad",
+            "price": 560
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "elaf-rayyan-akuw",
+    "name": "Elaf Rayyan",
+    "city": "Makkah",
+    "vendor": "AKUW",
+    "mealPlan": "FB",
+    "stars": 4,
+    "seasons": [
+      {
+        "range": "15/06/2026 TO 01/07/2026",
+        "prices": [
+          {
+            "roomType": "Double",
+            "price": 380
+          },
+          {
+            "roomType": "Triple",
+            "price": 425
+          },
+          {
+            "roomType": "Quad",
+            "price": 470
+          }
+        ]
+      },
+      {
+        "range": "01/07/2026 TO 01/08/2026",
+        "prices": [
+          {
+            "roomType": "Double",
+            "price": 450
+          },
+          {
+            "roomType": "Triple",
+            "price": 500
+          },
+          {
+            "roomType": "Quad",
+            "price": 550
+          }
+        ]
+      },
+      {
+        "range": "01/08/2026 TO 30/09/2026",
+        "prices": [
+          {
+            "roomType": "Double",
+            "price": 475
+          },
+          {
+            "roomType": "Triple",
+            "price": 525
+          },
+          {
+            "roomType": "Quad",
+            "price": 575
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "elaf-al-khair-akuw",
+    "name": "Elaf Al Khair",
+    "city": "Makkah",
+    "vendor": "AKUW",
+    "mealPlan": "FB",
+    "stars": 4,
+    "seasons": [
+      {
+        "range": "15/06/2026 TO 01/07/2026",
+        "prices": [
+          {
+            "roomType": "Double",
+            "price": 400
+          },
+          {
+            "roomType": "Triple",
+            "price": 450
+          },
+          {
+            "roomType": "Quad",
+            "price": 500
+          }
+        ]
+      },
+      {
+        "range": "01/07/2026 TO 01/08/2026",
+        "prices": [
+          {
+            "roomType": "Double",
+            "price": 450
+          },
+          {
+            "roomType": "Triple",
+            "price": 500
+          },
+          {
+            "roomType": "Quad",
+            "price": 550
+          }
+        ]
+      },
+      {
+        "range": "01/08/2026 TO 30/09/2026",
+        "prices": [
+          {
+            "roomType": "Double",
+            "price": 475
+          },
+          {
+            "roomType": "Triple",
+            "price": 525
+          },
+          {
+            "roomType": "Quad",
+            "price": 575
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "elaf-diamond-akuw",
+    "name": "Elaf Diamond",
+    "city": "Makkah",
+    "vendor": "AKUW",
+    "mealPlan": "FB",
+    "stars": 4,
+    "seasons": [
+      {
+        "range": "15/06/2026 TO 01/07/2026",
+        "prices": [
+          {
+            "roomType": "Double",
+            "price": 350
+          },
+          {
+            "roomType": "Triple",
+            "price": 395
+          },
+          {
+            "roomType": "Quad",
+            "price": 440
+          }
+        ]
+      },
+      {
+        "range": "01/07/2026 TO 01/08/2026",
+        "prices": [
+          {
+            "roomType": "Double",
+            "price": 420
+          },
+          {
+            "roomType": "Triple",
+            "price": 475
+          },
+          {
+            "roomType": "Quad",
+            "price": 520
+          }
+        ]
+      },
+      {
+        "range": "01/08/2026 TO 30/09/2026",
+        "prices": [
+          {
+            "roomType": "Double",
+            "price": 450
+          },
+          {
+            "roomType": "Triple",
+            "price": 495
+          },
+          {
+            "roomType": "Quad",
+            "price": 540
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "elaf-golden-akuw",
+    "name": "Elaf Golden",
+    "city": "Makkah",
+    "vendor": "AKUW",
+    "mealPlan": "FB",
+    "stars": 4,
+    "seasons": [
+      {
+        "range": "15/06/2026 TO 01/07/2026",
+        "prices": [
+          {
+            "roomType": "Double",
+            "price": 330
+          },
+          {
+            "roomType": "Triple",
+            "price": 370
+          },
+          {
+            "roomType": "Quad",
+            "price": 420
+          }
+        ]
+      },
+      {
+        "range": "01/07/2026 TO 01/08/2026",
+        "prices": [
+          {
+            "roomType": "Double",
+            "price": 380
+          },
+          {
+            "roomType": "Triple",
+            "price": 420
+          },
+          {
+            "roomType": "Quad",
+            "price": 460
+          }
+        ]
+      },
+      {
+        "range": "01/08/2026 TO 30/09/2026",
+        "prices": [
+          {
+            "roomType": "Double",
+            "price": 410
+          },
+          {
+            "roomType": "Triple",
+            "price": 450
+          },
+          {
+            "roomType": "Quad",
+            "price": 490
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "elaf-noor-akuw",
+    "name": "Elaf Noor",
+    "city": "Makkah",
+    "vendor": "AKUW",
+    "mealPlan": "FB",
+    "stars": 3,
+    "seasons": [
+      {
+        "range": "01/07/2026 TO 01/10/2026",
+        "prices": [
+          {
+            "roomType": "Double",
+            "price": 150
+          },
+          {
+            "roomType": "Triple",
+            "price": 185
+          },
+          {
+            "roomType": "Quad",
+            "price": 220
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "safwah-tower-3-akuw",
+    "name": "Safwah Tower 3",
+    "city": "Makkah",
+    "vendor": "AKUW",
+    "mealPlan": "FB",
+    "stars": 5,
+    "seasons": [
+      {
+        "range": "15/06/2026 TO 01/07/2026",
+        "prices": [
+          {
+            "roomType": "Double",
+            "price": 850
+          },
+          {
+            "roomType": "Triple",
+            "price": 1050
+          },
+          {
+            "roomType": "Quad",
+            "price": 1250
+          }
+        ]
+      },
+      {
+        "range": "01/07/2026 TO 01/08/2026",
+        "prices": [
+          {
+            "roomType": "Double",
+            "price": 950
+          },
+          {
+            "roomType": "Triple",
+            "price": 1150
+          },
+          {
+            "roomType": "Quad",
+            "price": 1350
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "olayan-ajyad-akuw",
+    "name": "Olayan Ajyad",
+    "city": "Makkah",
+    "vendor": "AKUW",
+    "mealPlan": "FB",
+    "stars": 4,
+    "seasons": [
+      {
+        "range": "15/06/2026 TO 01/07/2026",
+        "prices": [
+          {
+            "roomType": "Double",
+            "price": 550
+          },
+          {
+            "roomType": "Triple",
+            "price": 650
+          },
+          {
+            "roomType": "Quad",
+            "price": 750
+          }
+        ]
+      },
+      {
+        "range": "01/07/2026 TO 01/08/2026",
+        "prices": [
+          {
+            "roomType": "Double",
+            "price": 675
+          },
+          {
+            "roomType": "Triple",
+            "price": 775
+          },
+          {
+            "roomType": "Quad",
+            "price": 875
+          }
+        ]
+      },
+      {
+        "range": "01/08/2026 TO 01/09/2026",
+        "prices": [
+          {
+            "roomType": "Double",
+            "price": 725
+          },
+          {
+            "roomType": "Triple",
+            "price": 825
+          },
+          {
+            "roomType": "Quad",
+            "price": 925
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "azka-maqam-akuw",
+    "name": "Azka Maqam",
+    "city": "Makkah",
+    "vendor": "AKUW",
+    "mealPlan": "FB",
+    "stars": 5,
+    "seasons": [
+      {
+        "range": "15/06/2026 TO 01/07/2026",
+        "prices": [
+          {
+            "roomType": "Double",
+            "price": 550
+          },
+          {
+            "roomType": "Triple",
+            "price": 620
+          },
+          {
+            "roomType": "Quad",
+            "price": 690
+          }
+        ]
+      },
+      {
+        "range": "01/07/2026 TO 01/08/2026",
+        "prices": [
+          {
+            "roomType": "Double",
+            "price": 600
+          },
+          {
+            "roomType": "Triple",
+            "price": 700
+          },
+          {
+            "roomType": "Quad",
+            "price": 800
+          }
+        ]
+      },
+      {
+        "range": "01/08/2026 TO 01/09/2026",
+        "prices": [
+          {
+            "roomType": "Double",
+            "price": 650
+          },
+          {
+            "roomType": "Triple",
+            "price": 750
+          },
+          {
+            "roomType": "Quad",
+            "price": 850
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "azka-safa-akuw",
+    "name": "Azka Safa",
+    "city": "Makkah",
+    "vendor": "AKUW",
+    "mealPlan": "FB",
+    "stars": 4,
+    "seasons": [
+      {
+        "range": "15/06/2026 TO 01/07/2026",
+        "prices": [
+          {
+            "roomType": "Double",
+            "price": 520
+          },
+          {
+            "roomType": "Triple",
+            "price": 570
+          },
+          {
+            "roomType": "Quad",
+            "price": 620
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "snood-ajyad-akuw",
+    "name": "Snood Ajyad",
+    "city": "Makkah",
+    "vendor": "AKUW",
+    "mealPlan": "FB",
+    "stars": 3,
+    "seasons": [
+      {
+        "range": "15/06/2026 TO 01/07/2026",
+        "prices": [
+          {
+            "roomType": "Double",
+            "price": 380
+          },
+          {
+            "roomType": "Triple",
+            "price": 430
+          },
+          {
+            "roomType": "Quad",
+            "price": 480
+          }
+        ]
+      },
+      {
+        "range": "01/07/2026 TO 01/08/2026",
+        "prices": [
+          {
+            "roomType": "Double",
+            "price": 450
+          },
+          {
+            "roomType": "Triple",
+            "price": 500
+          },
+          {
+            "roomType": "Quad",
+            "price": 550
+          }
+        ]
+      },
+      {
+        "range": "01/08/2026 TO 30/09/2026",
+        "prices": [
+          {
+            "roomType": "Double",
+            "price": 475
+          },
+          {
+            "roomType": "Triple",
+            "price": 525
+          },
+          {
+            "roomType": "Quad",
+            "price": 575
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "waha-diafa-akuw",
+    "name": "Waha Diafa",
+    "city": "Makkah",
+    "vendor": "AKUW",
+    "mealPlan": "FB",
+    "stars": 3,
+    "seasons": [
+      {
+        "range": "15/06/2026 TO 01/07/2026",
+        "prices": [
+          {
+            "roomType": "Double",
+            "price": 210
+          },
+          {
+            "roomType": "Triple",
+            "price": 240
+          },
+          {
+            "roomType": "Quad",
+            "price": 290
+          }
+        ]
+      },
+      {
+        "range": "01/07/2026 TO 01/08/2026",
+        "prices": [
+          {
+            "roomType": "Double",
+            "price": 250
+          },
+          {
+            "roomType": "Triple",
+            "price": 290
+          },
+          {
+            "roomType": "Quad",
+            "price": 330
+          }
+        ]
+      }
+    ]
   }
 ];
 
@@ -8635,7 +11477,16 @@ export const getHotels = (): Hotel[] => {
   const stored = localStorage.getItem('hotels_db');
   if (stored) {
     try {
-      return JSON.parse(stored);
+      const parsed = JSON.parse(stored) as Hotel[];
+      // Merge missing hotels from defaultHotels
+      const parsedIds = new Set(parsed.map(h => h.id));
+      const missingHotels = defaultHotels.filter(h => !parsedIds.has(h.id));
+      if (missingHotels.length > 0) {
+        const merged = [...parsed, ...missingHotels];
+        localStorage.setItem('hotels_db', JSON.stringify(merged));
+        return merged;
+      }
+      return parsed;
     } catch (e) {
       console.error('Failed to parse stored hotels', e);
     }

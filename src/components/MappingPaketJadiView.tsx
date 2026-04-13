@@ -1,9 +1,7 @@
 import React, { useState, useMemo, useEffect } from 'react';
-import { Calendar, Search, Download, Filter, Edit, CheckCircle, AlertCircle, Clock, Package, Save, X, Plus } from 'lucide-react';
+import { Calendar, Search, Download, Filter, Edit, CheckCircle, AlertCircle, Clock, Package, Save, X, Plus, Trash2, ChevronDown, ChevronUp } from 'lucide-react';
 import { format, subDays, differenceInDays, isToday, isPast, isFuture, parseISO, startOfDay } from 'date-fns';
 import { id as idLocale } from 'date-fns/locale';
-import { collection, onSnapshot, doc, updateDoc, addDoc, setDoc, getDocs } from 'firebase/firestore';
-import { db } from '../firebase';
 
 type PaymentStatus = 'Belum Bayar' | 'DP' | 'Lunas';
 
@@ -128,32 +126,35 @@ export const MappingPaketJadiView: React.FC = () => {
   const [editPayment3, setEditPayment3] = useState<number>(0);
   const [editTotalPembelian, setEditTotalPembelian] = useState<number>(0);
   const [showAddModal, setShowAddModal] = useState(false);
+  const [expandedServiceId, setExpandedServiceId] = useState<string | null>(null);
 
   useEffect(() => {
-    const servicesRef = collection(db, 'vendor_services');
-    
-    // Check if collection is empty and seed if necessary
-    const seedData = async () => {
-      const snapshot = await getDocs(servicesRef);
-      if (snapshot.empty) {
-        for (const item of initialData) {
-          await setDoc(doc(db, 'vendor_services', item.id), item);
-        }
+    const loadData = () => {
+      const storedData = localStorage.getItem('vendor_services');
+      if (storedData) {
+        setServices(JSON.parse(storedData));
+      } else {
+        localStorage.setItem('vendor_services', JSON.stringify(initialData));
+        setServices(initialData);
       }
-    };
-    seedData();
-
-    const unsubscribe = onSnapshot(servicesRef, (snapshot) => {
-      const data = snapshot.docs.map(doc => ({
-        ...doc.data(),
-        id: doc.id
-      })) as VendorService[];
-      setServices(data);
       setLoading(false);
-    });
-
-    return () => unsubscribe();
+    };
+    
+    loadData();
   }, []);
+
+  const handleDeleteService = (id: string) => {
+    if (window.confirm('Apakah Anda yakin ingin menghapus layanan ini?')) {
+      const updatedServices = services.filter(service => service.id !== id);
+      setServices(updatedServices);
+      localStorage.setItem('vendor_services', JSON.stringify(updatedServices));
+    }
+  };
+
+  const toggleExpandService = (serviceId: string) => {
+    setExpandedServiceId(prev => prev === serviceId ? null : serviceId);
+  };
+
   const [newService, setNewService] = useState<Partial<VendorService>>({
     namaPaket: '',
     namaLayanan: '',
@@ -235,63 +236,66 @@ export const MappingPaketJadiView: React.FC = () => {
     setEditTotalPembelian(service.totalPembelian || 0);
   };
 
-  const handleSaveEdit = async (id: string) => {
-    try {
-      const serviceRef = doc(db, 'vendor_services', id);
-      await updateDoc(serviceRef, {
-        statusPembayaran: editStatus,
-        pic: editPic,
-        estimasiBiaya: editBiaya,
-        isManualDate: editIsManualDate,
-        manualPelunasanDate: editIsManualDate ? editManualDate : null,
-        paymentPerItems: editPaymentPerItems,
-        dpAmount: editDpAmount,
-        payment1: editPayment1,
-        payment2: editPayment2,
-        payment3: editPayment3,
-        totalPembelian: editTotalPembelian
-      });
-      setEditingId(null);
-    } catch (error) {
-      console.error("Error updating document: ", error);
-    }
+  const handleSaveEdit = (id: string) => {
+    const updatedServices = services.map(service => {
+      if (service.id === id) {
+        return {
+          ...service,
+          statusPembayaran: editStatus,
+          pic: editPic,
+          estimasiBiaya: editBiaya,
+          isManualDate: editIsManualDate,
+          manualPelunasanDate: editIsManualDate ? editManualDate : undefined,
+          paymentPerItems: editPaymentPerItems,
+          dpAmount: editDpAmount,
+          payment1: editPayment1,
+          payment2: editPayment2,
+          payment3: editPayment3,
+          totalPembelian: editTotalPembelian
+        };
+      }
+      return service;
+    });
+    
+    setServices(updatedServices);
+    localStorage.setItem('vendor_services', JSON.stringify(updatedServices));
+    setEditingId(null);
   };
 
-  const handleAddService = async () => {
+  const handleAddService = () => {
     if (!newService.namaPaket || !newService.namaLayanan || !newService.vendor) return;
     
-    try {
-      const serviceToAdd = {
-        paketId: `P${Math.floor(Math.random() * 1000)}`,
-        ...(newService as VendorService),
-        id: Math.random().toString(36).substr(2, 9),
-      };
-      
-      await setDoc(doc(db, 'vendor_services', serviceToAdd.id), serviceToAdd);
-      setShowAddModal(false);
-      setNewService({
-        namaPaket: '',
-        namaLayanan: '',
-        vendor: '',
-        tanggalKeberangkatan: format(new Date(), 'yyyy-MM-dd'),
-        tanggalKepulangan: format(new Date(), 'yyyy-MM-dd'),
-        reminderDPHMinus: 30,
-        reminderPelunasanHMinus: 14,
-        estimasiBiaya: 0,
-        statusPembayaran: 'Belum Bayar',
-        pic: 'Rinaldi',
-        catatan: '',
-        isManualDate: false,
-        paymentPerItems: '',
-        dpAmount: 0,
-        payment1: 0,
-        payment2: 0,
-        payment3: 0,
-        totalPembelian: 0
-      });
-    } catch (error) {
-      console.error("Error adding document: ", error);
-    }
+    const serviceToAdd = {
+      paketId: `P${Math.floor(Math.random() * 1000)}`,
+      ...(newService as VendorService),
+      id: Math.random().toString(36).substr(2, 9),
+    };
+    
+    const updatedServices = [...services, serviceToAdd];
+    setServices(updatedServices);
+    localStorage.setItem('vendor_services', JSON.stringify(updatedServices));
+    
+    setShowAddModal(false);
+    setNewService({
+      namaPaket: '',
+      namaLayanan: '',
+      vendor: '',
+      tanggalKeberangkatan: format(new Date(), 'yyyy-MM-dd'),
+      tanggalKepulangan: format(new Date(), 'yyyy-MM-dd'),
+      reminderDPHMinus: 30,
+      reminderPelunasanHMinus: 14,
+      estimasiBiaya: 0,
+      statusPembayaran: 'Belum Bayar',
+      pic: 'Rinaldi',
+      catatan: '',
+      isManualDate: false,
+      paymentPerItems: '',
+      dpAmount: 0,
+      payment1: 0,
+      payment2: 0,
+      payment3: 0,
+      totalPembelian: 0
+    });
   };
 
   const formatCurrency = (amount: number) => {
@@ -333,11 +337,9 @@ export const MappingPaketJadiView: React.FC = () => {
       }
       
       // Check Pelunasan
-      if (s.statusPembayaran !== 'Lunas') {
-        if (pelunasanInfo.daysDiff < 0) sudahLewat++;
-        else if (pelunasanInfo.daysDiff <= 7) hariIni++;
-        else akanDatang++;
-      }
+      if (pelunasanInfo.daysDiff < 0) sudahLewat++;
+      else if (pelunasanInfo.daysDiff <= 7) hariIni++;
+      else akanDatang++;
     });
 
     return { hariIni, akanDatang, sudahLewat };
@@ -484,9 +486,10 @@ export const MappingPaketJadiView: React.FC = () => {
                     const sisaPembayaranKeseluruhan = packageTotal - packagePaid;
 
                     return (
-                      <tr key={service.id} className="hover:bg-gray-50 border-b border-gray-100 transition-colors">
-                        <td className="px-4 py-4">
-                          <div className="font-bold text-gray-900">{service.namaLayanan}</div>
+                      <React.Fragment key={service.id}>
+                        <tr className="hover:bg-gray-50 border-b border-gray-100 transition-colors">
+                          <td className="px-4 py-4">
+                            <div className="font-bold text-gray-900">{service.namaLayanan}</div>
                           <div className="text-xs text-gray-500 mt-1">{service.namaPaket}</div>
                         </td>
                         <td className="px-4 py-4">
@@ -691,19 +694,90 @@ export const MappingPaketJadiView: React.FC = () => {
                               </button>
                             </div>
                           ) : (
-                            <button 
-                              onClick={() => handleEditClick(service)}
-                              className="p-1.5 text-gray-400 hover:text-amber-600 hover:bg-amber-50 rounded-lg transition-colors"
-                              title="Edit Status"
-                            >
-                              <Edit className="w-4 h-4" />
-                            </button>
+                            <div className="flex items-center justify-center gap-1">
+                              <button 
+                                onClick={() => handleEditClick(service)}
+                                className="p-1.5 text-gray-400 hover:text-amber-600 hover:bg-amber-50 rounded-lg transition-colors"
+                                title="Edit Status"
+                              >
+                                <Edit className="w-4 h-4" />
+                              </button>
+                              <button 
+                                onClick={() => handleDeleteService(service.id)}
+                                className="p-1.5 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                                title="Hapus Layanan"
+                              >
+                                <Trash2 className="w-4 h-4" />
+                              </button>
+                              <button 
+                                onClick={() => toggleExpandService(service.id)}
+                                className="p-1.5 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+                                title="Lihat Summary Paket"
+                              >
+                                {expandedServiceId === service.id ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+                              </button>
+                            </div>
                           )}
                         </td>
                       </tr>
-                    );
-                  })}
-                </tbody>
+                      {expandedServiceId === service.id && (
+                        <tr className="bg-blue-50/50 border-b border-gray-200">
+                          <td colSpan={15} className="px-6 py-4">
+                            <div className="bg-white rounded-lg p-4 shadow-sm border border-blue-100">
+                              <h4 className="font-bold text-blue-900 mb-3 flex items-center gap-2">
+                                <Package className="w-4 h-4" />
+                                Summary Paket: {service.namaPaket}
+                              </h4>
+                              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                <div className="space-y-2">
+                                  <div className="text-xs text-gray-500">Total Pembelian Paket</div>
+                                  <div className="font-bold text-gray-900">{formatCurrency(packageTotal)}</div>
+                                </div>
+                                <div className="space-y-2">
+                                  <div className="text-xs text-gray-500">Total Sudah Dibayar</div>
+                                  <div className="font-bold text-emerald-600">{formatCurrency(packagePaid)}</div>
+                                </div>
+                                <div className="space-y-2">
+                                  <div className="text-xs text-gray-500">Sisa Pembayaran Keseluruhan</div>
+                                  <div className="font-bold text-rose-600">{formatCurrency(sisaPembayaranKeseluruhan)}</div>
+                                </div>
+                              </div>
+                              
+                              <div className="mt-4 pt-4 border-t border-gray-100">
+                                <h5 className="text-xs font-bold text-gray-700 mb-2">Detail Pembayaran Layanan Ini:</h5>
+                                <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
+                                  <div className="bg-gray-50 p-2 rounded">
+                                    <div className="text-[10px] text-gray-500 mb-1">DP</div>
+                                    <div className="font-medium text-sm">{service.dpAmount ? formatCurrency(service.dpAmount) : '-'}</div>
+                                    <div className="text-[10px] text-gray-400 mt-1">{dpInfo.formattedDate}</div>
+                                  </div>
+                                  <div className="bg-gray-50 p-2 rounded">
+                                    <div className="text-[10px] text-gray-500 mb-1">Payment 1</div>
+                                    <div className="font-medium text-sm">{service.payment1 ? formatCurrency(service.payment1) : '-'}</div>
+                                  </div>
+                                  <div className="bg-gray-50 p-2 rounded">
+                                    <div className="text-[10px] text-gray-500 mb-1">Payment 2</div>
+                                    <div className="font-medium text-sm">{service.payment2 ? formatCurrency(service.payment2) : '-'}</div>
+                                  </div>
+                                  <div className="bg-gray-50 p-2 rounded">
+                                    <div className="text-[10px] text-gray-500 mb-1">Payment 3</div>
+                                    <div className="font-medium text-sm">{service.payment3 ? formatCurrency(service.payment3) : '-'}</div>
+                                  </div>
+                                  <div className="bg-purple-50 p-2 rounded border border-purple-100">
+                                    <div className="text-[10px] text-purple-700 font-bold mb-1">Pelunasan</div>
+                                    <div className="font-bold text-sm text-purple-900">{formatCurrency(pelunasanAmount)}</div>
+                                    <div className="text-[10px] text-purple-600 mt-1">{pelunasanInfo.formattedDate}</div>
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
+                          </td>
+                        </tr>
+                      )}
+                    </React.Fragment>
+                  );
+                })}
+              </tbody>
               </table>
             </div>
 
@@ -747,12 +821,26 @@ export const MappingPaketJadiView: React.FC = () => {
                             </button>
                           </div>
                         ) : (
-                          <button 
-                            onClick={() => handleEditClick(service)}
-                            className="p-2 text-gray-400 hover:text-amber-600 hover:bg-amber-50 rounded-lg"
-                          >
-                            <Edit className="w-4 h-4" />
-                          </button>
+                          <div className="flex items-center gap-1">
+                            <button 
+                              onClick={() => handleEditClick(service)}
+                              className="p-2 text-gray-400 hover:text-amber-600 hover:bg-amber-50 rounded-lg"
+                            >
+                              <Edit className="w-4 h-4" />
+                            </button>
+                            <button 
+                              onClick={() => handleDeleteService(service.id)}
+                              className="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg"
+                            >
+                              <Trash2 className="w-4 h-4" />
+                            </button>
+                            <button 
+                              onClick={() => toggleExpandService(service.id)}
+                              className="p-2 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg"
+                            >
+                              {expandedServiceId === service.id ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+                            </button>
+                          </div>
                         )}
                       </div>
                     </div>
@@ -964,6 +1052,29 @@ export const MappingPaketJadiView: React.FC = () => {
                         </div>
                       </div>
                     </div>
+
+                    {expandedServiceId === service.id && (
+                      <div className="mt-4 pt-4 border-t border-blue-100 bg-blue-50/50 -mx-4 md:-mx-6 px-4 md:px-6 pb-4">
+                        <h4 className="font-bold text-blue-900 mb-3 flex items-center gap-2 text-sm">
+                          <Package className="w-4 h-4" />
+                          Summary Paket: {service.namaPaket}
+                        </h4>
+                        <div className="grid grid-cols-1 gap-3">
+                          <div className="bg-white p-3 rounded-lg border border-blue-100 flex justify-between items-center">
+                            <span className="text-xs text-gray-500">Total Pembelian Paket</span>
+                            <span className="font-bold text-gray-900">{formatCurrency(packageTotal)}</span>
+                          </div>
+                          <div className="bg-white p-3 rounded-lg border border-blue-100 flex justify-between items-center">
+                            <span className="text-xs text-gray-500">Total Sudah Dibayar</span>
+                            <span className="font-bold text-emerald-600">{formatCurrency(packagePaid)}</span>
+                          </div>
+                          <div className="bg-white p-3 rounded-lg border border-blue-100 flex justify-between items-center">
+                            <span className="text-xs text-gray-500">Sisa Pembayaran Keseluruhan</span>
+                            <span className="font-bold text-rose-600">{formatCurrency(sisaPembayaranKeseluruhan)}</span>
+                          </div>
+                        </div>
+                      </div>
+                    )}
                   </div>
                 );
               })}

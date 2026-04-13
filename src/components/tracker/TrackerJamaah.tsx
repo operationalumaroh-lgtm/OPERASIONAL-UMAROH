@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { collection, onSnapshot, addDoc, updateDoc, deleteDoc, doc } from 'firebase/firestore';
-import { db } from '../../firebase';
+import { collection, onSnapshot, addDoc, updateDoc, deleteDoc, doc, db } from '../../firebase';
 import { Plus, Edit2, Trash2, Save, X, FileText } from 'lucide-react';
 import { PaketTracker, JamaahTracker } from './types';
+import { handleFirestoreError, OperationType } from '../../utils/firestoreErrorHandler';
 
 export const TrackerJamaah: React.FC = () => {
   const [jamaahs, setJamaahs] = useState<JamaahTracker[]>([]);
@@ -20,9 +20,13 @@ export const TrackerJamaah: React.FC = () => {
   useEffect(() => {
     const unsubJamaah = onSnapshot(collection(db, 'tracker_jamaah'), (snapshot) => {
       setJamaahs(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as JamaahTracker)));
+    }, (error) => {
+      handleFirestoreError(error, OperationType.GET, 'tracker_jamaah');
     });
     const unsubPaket = onSnapshot(collection(db, 'tracker_paket'), (snapshot) => {
       setPakets(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as PaketTracker)));
+    }, (error) => {
+      handleFirestoreError(error, OperationType.GET, 'tracker_paket');
     });
     return () => { unsubJamaah(); unsubPaket(); };
   }, []);
@@ -50,7 +54,7 @@ export const TrackerJamaah: React.FC = () => {
       }
       setFormData({});
     } catch (error) {
-      console.error("Error saving jamaah:", error);
+      handleFirestoreError(error, OperationType.WRITE, 'tracker_jamaah');
     }
   };
 
@@ -59,7 +63,7 @@ export const TrackerJamaah: React.FC = () => {
       await deleteDoc(doc(db, 'tracker_jamaah', id));
       setDeleteConfirm(null);
     } catch (error) {
-      console.error("Error deleting jamaah:", error);
+      handleFirestoreError(error, OperationType.DELETE, 'tracker_jamaah');
     }
   };
 
@@ -85,7 +89,7 @@ export const TrackerJamaah: React.FC = () => {
       await updateDoc(doc(db, 'tracker_jamaah', manifestJamaahId), dataToSave);
       setIsManifestModalOpen(false);
     } catch (error) {
-      console.error("Error saving manifest data:", error);
+      handleFirestoreError(error, OperationType.WRITE, 'tracker_jamaah');
     }
   };
 

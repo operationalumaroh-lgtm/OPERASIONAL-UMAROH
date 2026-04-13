@@ -11,16 +11,19 @@ import { manasikData } from '../data/manasik';
 import { ziarahData } from '../data/ziarah';
 import { keretaCepatData } from '../data/keretaCepat';
 import { umrahAirports } from '../data/airports';
-import { Download, FileSpreadsheet, Image as ImageIcon, FileText } from 'lucide-react';
+import { Download, FileSpreadsheet, Image as ImageIcon, FileText, Save } from 'lucide-react';
 import * as XLSX from 'xlsx';
 import { format } from 'date-fns';
 import { id } from 'date-fns/locale';
 import { AIPromptInput } from './AIPromptInput';
 import { Type } from '@google/genai';
-import html2canvas from 'html2canvas';
+import * as htmlToImage from 'html-to-image';
 import jsPDF from 'jspdf';
 import { formatCurrency, formatPercent } from '../utils/format';
 import { OfferingTemplate } from './OfferingTemplate';
+import { db, collection, addDoc } from '../firebase';
+import { generateTimelineEstimasi } from './tracker/utils';
+import { handleFirestoreError, OperationType } from '../utils/firestoreErrorHandler';
 
 import { isDateInRange, parseDateRange } from '../utils/dateUtils';
 
@@ -528,10 +531,10 @@ export const SalesOrderView: React.FC = () => {
 
   const handleDownloadExcel = () => {
     const data = [
-      ["NAMA PAKET", namaPaket, "", "", "JUMLAH PAX", jumlahPax, "PIC", pic, "HARGA VISA UPDATE", "", "", `$${hargaVisaUpdate}/pax`],
+      ["NAMA PAKET", namaPaket, "", "", "JUMLAH PAX", jumlahPax, "PIC", pic, "", "", "", ""],
       ["EMBERKASI", emberkasi, "", "", "", "", "", "", "", "", "", ""],
-      ["TGL KEBERANGKATAN", tglKeberangkatan, "", "", "+ TL", tl, "", "", "HARGA TRANSPORTASI UPDATE", "", "", `SAR${hargaTransportasiUpdate}`],
-      ["PROGRAM HARI", programHari, "ROOM", room, "NAMA TRAVEL", namaTravel, "", "", "HARGA MUTAWWIF UPDATE", "", "", `SAR${hargaMutawwifUpdate}`],
+      ["TGL KEBERANGKATAN", tglKeberangkatan, "", "", "+ TL", tl, "", "", "", "", "", ""],
+      ["PROGRAM HARI", programHari, "ROOM", room, "NAMA TRAVEL", namaTravel, "", "", "", "", "", ""],
       ["NAMA MITRA", namaMitra, "", "", "", "", "", "", "", "", "", ""],
       [],
       ["DESK", "VENDOR", "HARGA APK", "HARGA VENDOR", "EST. MARGIN", "% MARGIN", "JAMAAH BAYAR", "TOTAL HRG JUAL", "JAMAAH BELI", "TOTAL HARGA BELI", "TOTAL MARGIN", "REFF."]
@@ -576,13 +579,9 @@ export const SalesOrderView: React.FC = () => {
   const handleGenerateJPG = async () => {
     if (offeringRef.current) {
       try {
-        const canvas = await html2canvas(offeringRef.current, { 
-          scale: 2,
-          useCORS: true,
-          allowTaint: true,
+        const canvas = await htmlToImage.toCanvas(offeringRef.current, { 
+          pixelRatio: 2,
           backgroundColor: '#ffffff',
-          windowWidth: offeringRef.current.scrollWidth,
-          windowHeight: offeringRef.current.scrollHeight
         });
         const imgData = canvas.toDataURL('image/jpeg', 0.95);
         const link = document.createElement('a');
@@ -596,16 +595,34 @@ export const SalesOrderView: React.FC = () => {
     }
   };
 
+  const handleGenerateSOPDF = async () => {
+    if (tableRef.current) {
+      try {
+        const canvas = await htmlToImage.toCanvas(tableRef.current, { 
+          pixelRatio: 2,
+          backgroundColor: '#ffffff',
+        });
+        const imgData = canvas.toDataURL('image/jpeg', 0.95);
+        const pdf = new jsPDF({
+          orientation: 'landscape',
+          unit: 'px',
+          format: [canvas.width, canvas.height]
+        });
+        pdf.addImage(imgData, 'JPEG', 0, 0, canvas.width, canvas.height);
+        pdf.save(`SO_${namaPaket || 'Draft'}.pdf`);
+      } catch (error) {
+        console.error("Error generating SO PDF:", error);
+        alert("Gagal membuat PDF SO. Pastikan semua data terisi.");
+      }
+    }
+  };
+
   const handleGeneratePDF = async () => {
     if (offeringRef.current) {
       try {
-        const canvas = await html2canvas(offeringRef.current, { 
-          scale: 2,
-          useCORS: true,
-          allowTaint: true,
+        const canvas = await htmlToImage.toCanvas(offeringRef.current, { 
+          pixelRatio: 2,
           backgroundColor: '#ffffff',
-          windowWidth: offeringRef.current.scrollWidth,
-          windowHeight: offeringRef.current.scrollHeight
         });
         const imgData = canvas.toDataURL('image/jpeg', 0.95);
         const pdf = new jsPDF({
@@ -619,6 +636,29 @@ export const SalesOrderView: React.FC = () => {
         console.error("Error generating PDF:", error);
         alert("Gagal membuat PDF. Pastikan semua data terisi.");
       }
+    }
+  };
+
+  const handleSaveToTracker = async () => {
+    if (!namaPaket || !tglKeberangkatan) {
+      alert("Nama Paket dan Tanggal Keberangkatan harus diisi sebelum menyimpan.");
+      return;
+    }
+
+    try {
+      const timeline_estimasi = generateTimelineEstimasi(tglKeberangkatan);
+      await addDoc(collection(db, 'tracker_paket'), {
+        namaPaket,
+        tanggalBerangkat: tglKeberangkatan,
+        targetJamaah: jumlahPax,
+        terdaftar: 0,
+        status: 'Persiapan',
+        timeline_estimasi,
+        timeline_actual: {}
+      });
+      alert("Paket berhasil disimpan ke Tracker!");
+    } catch (error) {
+      handleFirestoreError(error, OperationType.WRITE, 'tracker_paket');
     }
   };
 
@@ -657,6 +697,14 @@ export const SalesOrderView: React.FC = () => {
               JPG
             </button>
             <button 
+              onClick={handleGenerateSOPDF}
+              className="flex items-center gap-2 bg-purple-600 text-white px-3 py-1.5 rounded-lg hover:bg-purple-700 transition-colors text-sm"
+              title="Download SO PDF"
+            >
+              <FileText className="w-4 h-4" />
+              SO PDF
+            </button>
+            <button 
               onClick={handleGeneratePDF}
               className="flex items-center gap-2 bg-rose-600 text-white px-3 py-1.5 rounded-lg hover:bg-rose-700 transition-colors text-sm"
               title="Generate Offering PDF"
@@ -670,6 +718,13 @@ export const SalesOrderView: React.FC = () => {
             >
               <FileSpreadsheet className="w-4 h-4" />
               Excel
+            </button>
+            <button 
+              onClick={handleSaveToTracker}
+              className="flex items-center gap-2 bg-emerald-600 text-white px-3 py-1.5 rounded-lg hover:bg-emerald-700 transition-colors text-sm"
+            >
+              <Save className="w-4 h-4" />
+              Save
             </button>
             <div className="h-6 w-px bg-gray-300 mx-2"></div>
             <div className="flex items-center gap-2">
@@ -700,10 +755,8 @@ export const SalesOrderView: React.FC = () => {
                 <td className="border-r border-gray-300 p-2 text-center">
                   <input type="text" value={pic} onChange={e => setPic(e.target.value)} className="w-full bg-white border border-gray-300 rounded px-2 py-1 text-center" />
                 </td>
-                <td colSpan={3} className="border-r border-gray-300 p-2 font-bold text-right italic text-gray-600">HARGA VISA UPDATE</td>
-                <td className="p-2 font-bold text-gray-600 italic flex items-center">
-                  $<input type="number" value={hargaVisaUpdate} onChange={e => setHargaVisaUpdate(Number(e.target.value))} className="w-16 bg-transparent border-b border-gray-400 outline-none text-right ml-1" />/pax
-                </td>
+                <td colSpan={3} className="border-r border-gray-300 p-2 font-bold text-right italic text-gray-600"></td>
+                <td className="p-2"></td>
               </tr>
               <tr className="bg-gray-100 border-b border-gray-300">
                 <td colSpan={2} className="border-r border-gray-300 p-2 font-bold text-center">TGL DAN BULAN KEBERANGKATAN</td>
@@ -722,10 +775,8 @@ export const SalesOrderView: React.FC = () => {
                     <option value="Paket L.A.">Paket L.A.</option>
                   </select>
                 </td>
-                <td colSpan={3} className="border-r border-gray-300 p-2 font-bold text-right italic text-gray-600">HARGA TRANSPORTASI UPDATE</td>
-                <td className="p-2 font-bold text-gray-600 italic flex items-center">
-                  SAR<input type="number" value={hargaTransportasiUpdate} onChange={e => setHargaTransportasiUpdate(Number(e.target.value))} className="w-16 bg-transparent border-b border-gray-400 outline-none text-right ml-1" />
-                </td>
+                <td colSpan={3} className="border-r border-gray-300 p-2 font-bold text-right italic text-gray-600"></td>
+                <td className="p-2"></td>
               </tr>
               <tr className="bg-gray-100 border-b border-gray-300">
                 <td colSpan={2} className="border-r border-gray-300 p-2 font-bold text-center">PROGRAM HARI</td>
@@ -745,10 +796,8 @@ export const SalesOrderView: React.FC = () => {
                 <td className="border-r border-gray-300 p-2">
                   <input type="text" value={namaTravel} onChange={e => setNamaTravel(e.target.value)} className="w-full bg-white border border-gray-300 rounded px-2 py-1" />
                 </td>
-                <td colSpan={3} className="border-r border-gray-300 p-2 font-bold text-right italic text-gray-600">HARGA MUTAWWIF UPDATE</td>
-                <td className="p-2 font-bold text-gray-600 italic flex items-center">
-                  SAR<input type="number" value={hargaMutawwifUpdate} onChange={e => setHargaMutawwifUpdate(Number(e.target.value))} className="w-16 bg-transparent border-b border-gray-400 outline-none text-right ml-1" />
-                </td>
+                <td colSpan={3} className="border-r border-gray-300 p-2 font-bold text-right italic text-gray-600"></td>
+                <td className="p-2"></td>
               </tr>
               <tr className="bg-gray-100 border-b border-gray-400">
                 <td colSpan={2} className="border-r border-gray-300 p-2 font-bold text-center">NAMA MITRA</td>
@@ -1207,7 +1256,7 @@ export const SalesOrderView: React.FC = () => {
                 </td>
                 <td className="border-r border-gray-300 p-2"></td>
                 <td className="border-r border-gray-300 p-2 text-right">{formatCurrency(komisiUmaroh)}</td>
-                <td className="border-r border-gray-300 p-2 text-center bg-yellow-300 font-bold">{komisiUmarohPercent}%</td>
+                <td className="border-r border-gray-300 p-2 text-center bg-yellow-300 font-bold">{formatPercent((totalEstMargin + komisiUmaroh) / hargaQuadDewasa)}</td>
                 <td className="border-r border-gray-300 p-2"></td>
                 <td className="border-r border-gray-300 p-2 text-right">{formatCurrency(komisiUmaroh * jamaahBayar)}</td>
                 <td className="border-r border-gray-300 p-2"></td>
@@ -1219,7 +1268,7 @@ export const SalesOrderView: React.FC = () => {
               <tr className="border-b border-gray-300 bg-yellow-300 font-bold italic">
                 <td colSpan={2} className="border-r border-gray-300 p-2 text-center">HARGA QUAD DEWASA SETELAH ADA KOMISI</td>
                 <td className="border-r border-gray-300 p-2 text-right">{formatCurrency(hargaQuadDewasa)}</td>
-                <td className="border-r border-gray-300 p-2 text-right">{formatCurrency(hargaQuadDewasa)}</td>
+                <td className="border-r border-gray-300 p-2"></td>
                 <td className="border-r border-gray-300 p-2 text-right">{formatCurrency(totalEstMargin + komisiUmaroh)}</td>
                 <td className="border-r border-gray-300 p-2"></td>
                 <td className="border-r border-gray-300 p-2"></td>
@@ -1233,7 +1282,7 @@ export const SalesOrderView: React.FC = () => {
               <tr className="border-b border-gray-300 bg-yellow-300 font-bold italic">
                 <td colSpan={2} className="border-r border-gray-300 p-2 text-center">HARGA TRIPLE DEWASA SETELAH ADA KOMISI</td>
                 <td className="border-r border-gray-300 p-2 text-right">{formatCurrency(hargaTripleDewasa)}</td>
-                <td className="border-r border-gray-300 p-2 text-center">1</td>
+                <td className="border-r border-gray-300 p-2"></td>
                 <td className="border-r border-gray-300 p-2"></td>
                 <td className="border-r border-gray-300 p-2"></td>
                 <td className="border-r border-gray-300 p-2"></td>
@@ -1248,12 +1297,13 @@ export const SalesOrderView: React.FC = () => {
                 <td colSpan={2} className="border-r border-gray-300 p-2 text-center">HARGA DOUBLE DEWASA SETELAH ADA KOMISI</td>
                 <td className="border-r border-gray-300 p-2 text-right">{formatCurrency(hargaDoubleDewasa)}</td>
                 <td className="border-r border-gray-300 p-2"></td>
-                <td colSpan={2} className="border-r border-gray-300 p-2 text-center text-blue-600">Kurs Saudi</td>
-                <td className="border-r border-gray-300 p-2 text-blue-600 text-right">{formatCurrency(kursSaudi)}</td>
-                <td className="border-r border-gray-300 p-2 text-center">948</td>
                 <td className="border-r border-gray-300 p-2"></td>
                 <td className="border-r border-gray-300 p-2"></td>
-                <td className="border-r border-gray-300 p-2 text-right">7,34%</td>
+                <td className="border-r border-gray-300 p-2"></td>
+                <td className="border-r border-gray-300 p-2"></td>
+                <td className="border-r border-gray-300 p-2"></td>
+                <td className="border-r border-gray-300 p-2"></td>
+                <td className="border-r border-gray-300 p-2 text-center">{formatPercent((totalMarginAll + (komisiUmaroh * jamaahBayar)) / (totalHrgJual + (komisiMitra * jamaahBayar) + (komisiUmaroh * jamaahBayar)))}</td>
                 <td className="p-2"></td>
               </tr>
 

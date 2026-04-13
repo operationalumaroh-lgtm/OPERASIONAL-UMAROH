@@ -6,6 +6,8 @@ import { isDateInRange, parseDateRange } from '../utils/dateUtils';
 import { AIPromptInput } from './AIPromptInput';
 import { Type } from '@google/genai';
 import { logoBase64 } from '../utils/logoBase64';
+import { format } from 'date-fns';
+import { id } from 'date-fns/locale';
 
 type HotelRow = {
   hotelName: string;
@@ -88,6 +90,42 @@ export const HotelTemplateView: React.FC = () => {
     }
   };
 
+  const getHotelAvailabilityText = (hotelName: string, dateStr: string): string => {
+    if (!hotelName || !dateStr) return '';
+    const hotel = hotels.find(h => h.name.toLowerCase() === hotelName.toLowerCase() && h.city === city);
+    if (!hotel || !hotel.seasons) return '';
+    
+    const checkDate = new Date(dateStr);
+    
+    // Exact match
+    const exactMatch = hotel.seasons.find(s => isDateInRange(checkDate, s.range));
+    if (exactMatch) return ''; // No need to show text if it's an exact match
+    
+    // Find closest season
+    let closestSeason = null;
+    let minDiff = Infinity;
+    let closestStart: Date | null = null;
+
+    for (const s of hotel.seasons) {
+      const { start, end } = parseDateRange(s.range);
+      if (start && end) {
+        const diffStart = Math.abs(checkDate.getTime() - start.getTime());
+        const diffEnd = Math.abs(checkDate.getTime() - end.getTime());
+        const diff = Math.min(diffStart, diffEnd);
+        if (diff < minDiff) {
+          minDiff = diff;
+          closestSeason = s;
+          closestStart = start;
+        }
+      }
+    }
+    
+    if (closestStart) {
+      return `Avail: ${format(closestStart, 'dd MMM yyyy', { locale: id })}`;
+    }
+    return '';
+  };
+
   const getClosestSeason = (hotel: Hotel, dateStr: string) => {
     const checkDate = new Date(dateStr);
     
@@ -162,9 +200,14 @@ export const HotelTemplateView: React.FC = () => {
 
   // Auto-populate when date or city changes
   useEffect(() => {
-    if (!selectedDate) return;
+    if (!selectedDate) {
+      setSections(initialSections);
+      return;
+    }
 
     const checkDate = new Date(selectedDate);
+    const maxDate = new Date(checkDate);
+    maxDate.setDate(maxDate.getDate() + 30);
     
     // Helper to score a hotel based on how close its seasons are to the selected date
     const getHotelScore = (hotel: Hotel) => {
@@ -199,7 +242,15 @@ export const HotelTemplateView: React.FC = () => {
         
         // If no user selected hotels or no matches found for this star rating, fallback to top 3
         if (topHotels.length === 0) {
-          const availableHotels = hotels.filter(h => h.city === city && h.stars === section.star);
+          const availableHotels = hotels.filter(h => {
+            if (h.city !== city || h.stars !== section.star) return false;
+            // Only include if it has a season within +30 days
+            return h.seasons.some(season => {
+              const { start, end } = parseDateRange(season.range);
+              if (!start || !end) return false;
+              return start <= maxDate && end >= checkDate;
+            });
+          });
           availableHotels.sort((a, b) => getHotelScore(a) - getHotelScore(b));
           topHotels = availableHotels.slice(0, 3);
         }
@@ -537,17 +588,24 @@ export const HotelTemplateView: React.FC = () => {
                 <tbody>
                   {section.rows.map((row, rIndex) => (
                     <tr key={rIndex} className="border-b border-gray-200 text-center">
-                      <td className="border-r border-gray-200 p-0 h-8">
-                        <input
-                          type="text"
-                          list={`hotel-list-${section.star}`}
-                          className="w-full h-full bg-transparent px-4 outline-none font-medium text-xs text-left"
-                          placeholder="Nama Hotel..."
-                          value={row.hotelName}
-                          onChange={(e) => handleRowChange(sIndex, rIndex, 'hotelName', e.target.value)}
-                        />
+                      <td className="border-r border-gray-200 p-0 h-10 relative">
+                        <div className="flex flex-col h-full justify-center">
+                          <input
+                            type="text"
+                            list={`hotel-list-${section.star}`}
+                            className="w-full bg-transparent px-4 outline-none font-medium text-xs text-left"
+                            placeholder="Nama Hotel..."
+                            value={row.hotelName}
+                            onChange={(e) => handleRowChange(sIndex, rIndex, 'hotelName', e.target.value)}
+                          />
+                          {selectedDate && row.hotelName && getHotelAvailabilityText(row.hotelName, selectedDate) && (
+                            <span className="px-4 text-[9px] text-emerald-600 font-medium whitespace-nowrap text-left leading-none mt-0.5">
+                              {getHotelAvailabilityText(row.hotelName, selectedDate)}
+                            </span>
+                          )}
+                        </div>
                       </td>
-                      <td className="border-r border-gray-200 p-0 h-8">
+                      <td className="border-r border-gray-200 p-0 h-10">
                         <input
                           type="text"
                           className="w-full h-full bg-transparent text-center outline-none font-medium text-xs"
@@ -555,7 +613,7 @@ export const HotelTemplateView: React.FC = () => {
                           onChange={(e) => handleRowChange(sIndex, rIndex, 'quad', e.target.value)}
                         />
                       </td>
-                      <td className="border-r border-gray-200 p-0 h-8">
+                      <td className="border-r border-gray-200 p-0 h-10">
                         <input
                           type="text"
                           className="w-full h-full bg-transparent text-center outline-none font-medium text-xs"
@@ -563,7 +621,7 @@ export const HotelTemplateView: React.FC = () => {
                           onChange={(e) => handleRowChange(sIndex, rIndex, 'triple', e.target.value)}
                         />
                       </td>
-                      <td className="p-0 h-8">
+                      <td className="p-0 h-10">
                         <input
                           type="text"
                           className="w-full h-full bg-transparent text-center outline-none font-medium text-xs"

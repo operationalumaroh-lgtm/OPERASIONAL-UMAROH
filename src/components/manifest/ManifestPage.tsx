@@ -6,6 +6,7 @@ import { ManifestTable } from './ManifestTable';
 import { ValidationAlert } from './ValidationAlert';
 import { ExportButton } from './ExportButton';
 import { FileText } from 'lucide-react';
+import { handleFirestoreError, OperationType } from '../../utils/firestoreErrorHandler';
 
 export const ManifestPage: React.FC = () => {
   const [pakets, setPakets] = useState<PaketTracker[]>([]);
@@ -15,6 +16,8 @@ export const ManifestPage: React.FC = () => {
   useEffect(() => {
     const unsubPaket = onSnapshot(collection(db, 'tracker_paket'), (snapshot) => {
       setPakets(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as PaketTracker)));
+    }, (error) => {
+      handleFirestoreError(error, OperationType.GET, 'tracker_paket');
     });
     return () => unsubPaket();
   }, []);
@@ -27,6 +30,8 @@ export const ManifestPage: React.FC = () => {
     const q = query(collection(db, 'tracker_jamaah'), where('paketId', '==', selectedPaketId));
     const unsubJamaah = onSnapshot(q, (snapshot) => {
       setJamaahs(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as JamaahTracker)));
+    }, (error) => {
+      handleFirestoreError(error, OperationType.GET, 'tracker_jamaah');
     });
     return () => unsubJamaah();
   }, [selectedPaketId]);

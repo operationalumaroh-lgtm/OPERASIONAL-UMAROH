@@ -32,6 +32,7 @@ export const QuotationView: React.FC = () => {
   const [rows, setRows] = useState<QuotationRow[]>(Array(14).fill({}));
   const [isGeneratingImage, setIsGeneratingImage] = useState(false);
   const printRef = useRef<HTMLDivElement>(null);
+  const prevSelectedDate = useRef<string>('');
 
   const quotationSchema = {
     type: Type.OBJECT,
@@ -265,17 +266,69 @@ export const QuotationView: React.FC = () => {
     return 250; // Default selling price in SAR
   }
 
+  // Helper to get availability text if the hotel is not available exactly on the selected date
+  function getHotelAvailabilityText(hotel: Hotel | undefined, dateStr: string): string {
+    if (!hotel || !dateStr || !hotel.seasons) return '';
+    const checkDate = new Date(dateStr);
+    
+    // Exact match
+    const exactMatch = hotel.seasons.find(s => isDateInRange(checkDate, s.range));
+    if (exactMatch) return ''; // No need to show text if it's an exact match
+    
+    // Find closest season
+    let closestSeason = null;
+    let minDiff = Infinity;
+    let closestStart: Date | null = null;
+
+    for (const s of hotel.seasons) {
+      const { start, end } = parseDateRange(s.range);
+      if (start && end) {
+        const diffStart = Math.abs(checkDate.getTime() - start.getTime());
+        const diffEnd = Math.abs(checkDate.getTime() - end.getTime());
+        const diff = Math.min(diffStart, diffEnd);
+        if (diff < minDiff) {
+          minDiff = diff;
+          closestSeason = s;
+          closestStart = start;
+        }
+      }
+    }
+    
+    if (closestStart) {
+      return `Avail: ${format(closestStart, 'dd MMM yyyy', { locale: id })}`;
+    }
+    return '';
+  }
+
   // Update rows when date, paxCount, includeHandling, includeMutawif, includeVisa, currency, or kurs changes
   useEffect(() => {
     if (!selectedDate) {
       setRows(Array(14).fill({}));
+      prevSelectedDate.current = '';
       return;
     }
 
     const checkDate = new Date(selectedDate);
+    const maxDate = new Date(checkDate);
+    maxDate.setDate(maxDate.getDate() + 30);
+
     const availableMadinahHotels = hotels.filter(hotel => {
       if (hotel.city !== 'Madinah') return false;
-      const season = hotel.seasons.find(s => isDateInRange(checkDate, s.range));
+      const season = hotel.seasons.find(s => {
+        const { start, end } = parseDateRange(s.range);
+        if (!start || !end) return false;
+        return start <= maxDate && end >= checkDate;
+      });
+      return season && season.prices && season.prices.length > 0;
+    });
+
+    const availableMakkahHotels = hotels.filter(hotel => {
+      if (hotel.city !== 'Makkah') return false;
+      const season = hotel.seasons.find(s => {
+        const { start, end } = parseDateRange(s.range);
+        if (!start || !end) return false;
+        return start <= maxDate && end >= checkDate;
+      });
       return season && season.prices && season.prices.length > 0;
     });
 
@@ -283,15 +336,25 @@ export const QuotationView: React.FC = () => {
     const mutawwifSAR = getMutawwifPriceSAR();
     const visaIDR = getVisaPriceIDR();
 
+    const isDateChanged = selectedDate !== prevSelectedDate.current;
+    prevSelectedDate.current = selectedDate;
+
     // Update existing rows with new prices if both hotels are present
     setRows(prevRows => {
-      // If prevRows is empty (initial state), fill with Madinah hotels
-      if (prevRows.every(r => !r.madinah && !r.makkah)) {
-        return Array.from({ length: 14 }, (_, i) => {
-          const madinahHotel = availableMadinahHotels[i];
+      let baseRows = prevRows;
+
+      // If date changed, or if it's completely empty, auto-fill
+      if (isDateChanged || prevRows.every(r => !r.madinah?.name && !r.makkah?.name)) {
+        // Sort by stars descending to pair 5-star with 5-star, etc.
+        const sortedMadinah = [...availableMadinahHotels].sort((a, b) => (b.stars || 0) - (a.stars || 0));
+        const sortedMakkah = [...availableMakkahHotels].sort((a, b) => (b.stars || 0) - (a.stars || 0));
+
+        baseRows = Array.from({ length: 14 }, (_, i) => {
+          const madinahHotel = sortedMadinah[i];
+          const makkahHotel = sortedMakkah[i];
           return {
             madinah: madinahHotel || {},
-            makkah: {},
+            makkah: makkahHotel || {},
             priceDouble: '-',
             priceTriple: '-',
             priceQuad: '-',
@@ -300,7 +363,7 @@ export const QuotationView: React.FC = () => {
       }
 
       // Otherwise, update prices for existing rows
-      return prevRows.map(row => {
+      return baseRows.map(row => {
         if (row.madinah?.name && row.makkah?.name) {
           let pDoubleMadinah = 0, pTripleMadinah = 0, pQuadMadinah = 0;
           let pDoubleMakkah = 0, pTripleMakkah = 0, pQuadMakkah = 0;
@@ -634,11 +697,39 @@ export const QuotationView: React.FC = () => {
   };
 
   const madinahHotels = useMemo(() => {
-    return hotels.filter(h => h.city === 'Madinah');
+    let filtered = hotels.filter(h => h.city === 'Madinah');
+    if (selectedDate) {
+      const checkDate = new Date(selectedDate);
+      const maxDate = new Date(checkDate);
+      maxDate.setDate(maxDate.getDate() + 30);
+      
+      filtered = filtered.filter(hotel => {
+        return hotel.seasons.some(season => {
+          const { start, end } = parseDateRange(season.range);
+          if (!start || !end) return false;
+          return start <= maxDate && end >= checkDate;
+        });
+      });
+    }
+    return filtered;
   }, [selectedDate]);
 
   const makkahHotels = useMemo(() => {
-    return hotels.filter(h => h.city === 'Makkah');
+    let filtered = hotels.filter(h => h.city === 'Makkah');
+    if (selectedDate) {
+      const checkDate = new Date(selectedDate);
+      const maxDate = new Date(checkDate);
+      maxDate.setDate(maxDate.getDate() + 30);
+      
+      filtered = filtered.filter(hotel => {
+        return hotel.seasons.some(season => {
+          const { start, end } = parseDateRange(season.range);
+          if (!start || !end) return false;
+          return start <= maxDate && end >= checkDate;
+        });
+      });
+    }
+    return filtered;
   }, [selectedDate]);
 
   return (
@@ -846,7 +937,14 @@ export const QuotationView: React.FC = () => {
                           value={row.madinah?.name || ''}
                           onChange={(e) => handleHotelChange(index, 'madinah', e.target.value)}
                         />
-                        <span className="px-2 text-[10px] text-gray-400 font-bold uppercase tracking-wider">Madinah</span>
+                        <div className="flex justify-between items-center px-2">
+                          <span className="text-[10px] text-gray-400 font-bold uppercase tracking-wider">Madinah</span>
+                          {selectedDate && row.madinah?.id && getHotelAvailabilityText(row.madinah as Hotel, selectedDate) && (
+                            <span className="text-[9px] text-emerald-600 font-medium whitespace-nowrap">
+                              {getHotelAvailabilityText(row.madinah as Hotel, selectedDate)}
+                            </span>
+                          )}
+                        </div>
                       </div>
                     </td>
                     <td className="border-r border-gray-200 font-bold text-xs p-0">
@@ -869,7 +967,14 @@ export const QuotationView: React.FC = () => {
                           value={row.makkah?.name || ''}
                           onChange={(e) => handleHotelChange(index, 'makkah', e.target.value)}
                         />
-                        <span className="px-2 text-[10px] text-gray-400 font-bold uppercase tracking-wider">Makkah</span>
+                        <div className="flex justify-between items-center px-2">
+                          <span className="text-[10px] text-gray-400 font-bold uppercase tracking-wider">Makkah</span>
+                          {selectedDate && row.makkah?.id && getHotelAvailabilityText(row.makkah as Hotel, selectedDate) && (
+                            <span className="text-[9px] text-emerald-600 font-medium whitespace-nowrap">
+                              {getHotelAvailabilityText(row.makkah as Hotel, selectedDate)}
+                            </span>
+                          )}
+                        </div>
                       </div>
                     </td>
                     <td className="border-r border-gray-200 font-bold text-xs p-0">
@@ -917,7 +1022,7 @@ export const QuotationView: React.FC = () => {
         <div className="px-2 mt-2 flex justify-between items-start relative z-10">
             {/* Include Section */}
             <div className="w-[60%]">
-                <h3 className="text-sm font-bold mb-1 uppercase tracking-wide border-b-2 border-gray-900 inline-block">HANDLING SAUDI ARABIA ( ECONOMY )</h3>
+                <h3 className="text-sm font-bold mb-1 pb-1 uppercase tracking-wide border-b-2 border-gray-900 inline-block">HANDLING SAUDI ARABIA ( ECONOMY )</h3>
                 <ol className="list-decimal list-outside ml-4 text-[10px] font-bold space-y-0.5 leading-tight">
                     {includeVisa && <li>Visa Umrah</li>}
                     {includeMutawif && <li>Mutawif / Guide</li>}
@@ -938,14 +1043,14 @@ export const QuotationView: React.FC = () => {
             </div>
 
             {/* Base On Section */}
-            <div className="w-[40%] text-right">
-                <h3 className="text-2xl font-bold uppercase tracking-wide mb-[-10px]">Base On</h3>
-                <div className="text-[100px] font-bold leading-none tracking-tighter">{paxCount}</div>
-                <div className="text-6xl font-bold uppercase tracking-widest mt-[-10px]">Pax</div>
+            <div className="w-[40%] text-right flex flex-col items-end justify-start pt-2">
+                <h3 className="text-2xl font-bold uppercase tracking-wide mb-2">Base On</h3>
+                <div className="text-[80px] font-bold leading-none tracking-tighter">{paxCount}</div>
+                <div className="text-5xl font-bold uppercase tracking-widest mt-2">Pax</div>
             </div>
         </div>
         {/* Bottom Contact Bar */}
-        <div className="mt-auto pt-6 flex justify-between items-end relative z-10 border-t border-gray-900/20">
+        <div className="mt-auto px-2 pt-2 pb-4 flex justify-between items-end relative z-10 border-t border-gray-900/20">
             <div>
                 <h4 className="font-bold text-xl uppercase mb-1">Call Us Now</h4>
                 <div className="font-bold text-lg tracking-wide">+62 812-6006-6304</div>

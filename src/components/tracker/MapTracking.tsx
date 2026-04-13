@@ -3,8 +3,8 @@ import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
 import L from 'leaflet';
 import { TrackingGroup } from './types';
-import { collection, onSnapshot, query, where, doc, updateDoc } from 'firebase/firestore';
-import { db } from '../../firebase';
+import { collection, onSnapshot, query, where, doc, updateDoc, db } from '../../firebase';
+import { handleFirestoreError, OperationType } from '../../utils/firestoreErrorHandler';
 
 // Fix Leaflet icon issue
 delete (L.Icon.Default.prototype as any)._getIconUrl;
@@ -26,6 +26,8 @@ export const MapTracking: React.FC<Props> = ({ paketId }) => {
     const q = query(collection(db, 'tracking_group'), where('paket_id', '==', paketId));
     const unsub = onSnapshot(q, (snapshot) => {
       setGroups(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as TrackingGroup)));
+    }, (error) => {
+      handleFirestoreError(error, OperationType.GET, 'tracking_group');
     });
     return () => unsub();
   }, [paketId]);
@@ -85,7 +87,7 @@ const PetugasTracker: React.FC<{ paketId: string }> = ({ paketId }) => {
               });
               console.log('Location updated');
             } catch (error) {
-              console.error('Error updating location:', error);
+              handleFirestoreError(error, OperationType.WRITE, 'tracking_group');
             }
           });
         }

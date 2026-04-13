@@ -1,10 +1,10 @@
 {
-  "projectId": "remixed-project-id",
-  "appId": "remixed-app-id",
-  "apiKey": "remixed-api-key",
-  "authDomain": "remixed-auth-domain",
-  "firestoreDatabaseId": "remixed-firestore-database-id",
-  "storageBucket": "remixed-storage-bucket",
-  "messagingSenderId": "remixed-messaging-sender-id",
-  "measurementId": "remixed-measurement-id"
+  "projectId": "sistem-travel-ocr",
+  "appId": "1:821570600864:web:643de9673e645288d62ec5",
+  "apiKey": "AIzaSyD2PArSzd6IRXepy9TO7u3GqG9Bechbi6E",
+  "authDomain": "sistem-travel-ocr.firebaseapp.com",
+  "firestoreDatabaseId": "ai-studio-28c03b42-88bc-44b5-b7e8-57fdce825463",
+  "storageBucket": "sistem-travel-ocr.firebasestorage.app",
+  "messagingSenderId": "821570600864",
+  "measurementId": ""
 }

@@ -10,7 +10,7 @@ export const formatCurrency = (amount: number) => {
 export const formatPercent = (amount: number) => {
   return new Intl.NumberFormat('id-ID', {
     style: 'percent',
-    minimumFractionDigits: 0,
-    maximumFractionDigits: 0,
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
   }).format(amount);
 };

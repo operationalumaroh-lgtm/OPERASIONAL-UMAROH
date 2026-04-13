@@ -1,5 +1,5 @@
 {
-  "name": "OPERASIONAL UMAROH",
-  "description": "Sistem manajemen database maskapai dengan informasi ketersediaan kursi real-time.",
+  "name": "Booking & Payment Mapper",
+  "description": "Aplikasi untuk mapping pembayaran dan booking layanan menggunakan penyimpanan lokal.",
   "requestFramePermissions": []
 }

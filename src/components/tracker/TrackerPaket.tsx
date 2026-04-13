@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { collection, onSnapshot, addDoc, updateDoc, deleteDoc, doc, query, where } from 'firebase/firestore';
-import { db } from '../../firebase';
+import { collection, onSnapshot, addDoc, updateDoc, deleteDoc, doc, query, where, db } from '../../firebase';
 import { Plus, Edit2, Trash2, Save, X, ArrowLeft } from 'lucide-react';
 import { PaketTracker, JamaahTracker, KeberangkatanTracker, Timeline } from './types';
 import { generateTimelineEstimasi, getStatusColor } from './utils';
@@ -8,6 +7,7 @@ import { TrackerTimeline } from './TrackerTimeline';
 import { ProgressSummary } from './ProgressSummary';
 import { AlertBox } from './AlertBox';
 import { MapTracking } from './MapTracking';
+import { handleFirestoreError, OperationType } from '../../utils/firestoreErrorHandler';
 
 export const TrackerPaket: React.FC = () => {
   const [pakets, setPakets] = useState<PaketTracker[]>([]);
@@ -28,6 +28,8 @@ export const TrackerPaket: React.FC = () => {
         const updated = data.find(p => p.id === selectedPaket.id);
         if (updated) setSelectedPaket(updated);
       }
+    }, (error) => {
+      handleFirestoreError(error, OperationType.GET, 'tracker_paket');
     });
     return () => unsubscribe();
   }, [selectedPaket]);
@@ -37,11 +39,15 @@ export const TrackerPaket: React.FC = () => {
     const qJamaah = query(collection(db, 'tracker_jamaah'), where('paketId', '==', selectedPaket.id));
     const unsubJamaah = onSnapshot(qJamaah, (snapshot) => {
       setJamaahs(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as JamaahTracker)));
+    }, (error) => {
+      handleFirestoreError(error, OperationType.GET, 'tracker_jamaah');
     });
 
     const qKeberangkatan = query(collection(db, 'tracker_keberangkatan'), where('paketId', '==', selectedPaket.id));
     const unsubKeberangkatan = onSnapshot(qKeberangkatan, (snapshot) => {
       setKeberangkatans(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as KeberangkatanTracker)));
+    }, (error) => {
+      handleFirestoreError(error, OperationType.GET, 'tracker_keberangkatan');
     });
 
     return () => {
@@ -75,7 +81,7 @@ export const TrackerPaket: React.FC = () => {
       }
       setFormData({});
     } catch (error) {
-      console.error("Error saving paket:", error);
+      handleFirestoreError(error, OperationType.WRITE, 'tracker_paket');
     }
   };
 
@@ -85,7 +91,7 @@ export const TrackerPaket: React.FC = () => {
       if (selectedPaket?.id === id) setSelectedPaket(null);
       setDeleteConfirm(null);
     } catch (error) {
-      console.error("Error deleting paket:", error);
+      handleFirestoreError(error, OperationType.DELETE, 'tracker_paket');
     }
   };
 
