@@ -93,7 +93,7 @@ export const OfferingTemplate = forwardRef<HTMLDivElement, OfferingProps>(({
       {/* Header */}
       <div className="flex justify-between items-start mb-6">
         <div className="flex flex-col">
-          <img src={logoBase64} alt="Umaroh Logo" className="h-12 mb-2 object-contain" style={{ filter: 'brightness(0) saturate(100%)' }} />
+          <img src={logoBase64} alt="Umaroh Logo" className="h-12 mb-2 object-contain" />
           <p className="text-xs font-semibold italic">Platform Digital Umrah & Haji Pertama di Indonesia</p>
         </div>
         <div className="text-right border-l-2 border-black pl-4">

@@ -93,6 +93,7 @@ export const TrackerKeberangkatan: React.FC = () => {
             <tr>
               <th className="p-3 font-medium">Paket</th>
               <th className="p-3 font-medium">Penerbangan</th>
+              <th className="p-3 font-medium">Petugas</th>
               <th className="p-3 font-medium">Visa</th>
               <th className="p-3 font-medium">Tiket</th>
               <th className="p-3 font-medium">Hotel</th>
@@ -110,8 +111,23 @@ export const TrackerKeberangkatan: React.FC = () => {
                 </td>
                 <td className="p-2 space-y-1">
                   <input type="text" placeholder="Maskapai" className="w-full p-1.5 border rounded text-xs" value={formData.maskapai || ''} onChange={e => setFormData({...formData, maskapai: e.target.value})} />
-                  <input type="text" placeholder="No. Flight" className="w-full p-1.5 border rounded text-xs" value={formData.nomorPenerbangan || ''} onChange={e => setFormData({...formData, nomorPenerbangan: e.target.value})} />
-                  <input type="datetime-local" className="w-full p-1.5 border rounded text-xs" value={formData.waktuBerangkat || ''} onChange={e => setFormData({...formData, waktuBerangkat: e.target.value})} />
+                  <div className="flex gap-1">
+                    <input type="text" placeholder="No. Flight" className="w-1/2 p-1.5 border rounded text-xs" value={formData.nomorPenerbangan || ''} onChange={e => setFormData({...formData, nomorPenerbangan: e.target.value})} />
+                    <input type="text" placeholder="PNR/Booking" className="w-1/2 p-1.5 border rounded text-xs" value={formData.kodeBooking || ''} onChange={e => setFormData({...formData, kodeBooking: e.target.value})} />
+                  </div>
+                  <input type="text" placeholder="Rute (misal: CGK-JED)" className="w-full p-1.5 border rounded text-xs" value={formData.rute || ''} onChange={e => setFormData({...formData, rute: e.target.value})} />
+                  <div className="flex gap-1 items-center">
+                    <span className="text-[10px] text-gray-500 w-8">Brgkt</span>
+                    <input type="datetime-local" className="flex-1 p-1.5 border rounded text-xs" value={formData.waktuBerangkat || ''} onChange={e => setFormData({...formData, waktuBerangkat: e.target.value})} />
+                  </div>
+                  <div className="flex gap-1 items-center">
+                    <span className="text-[10px] text-gray-500 w-8">Tiba</span>
+                    <input type="datetime-local" className="flex-1 p-1.5 border rounded text-xs" value={formData.waktuTiba || ''} onChange={e => setFormData({...formData, waktuTiba: e.target.value})} />
+                  </div>
+                </td>
+                <td className="p-2 space-y-1">
+                  <input type="text" placeholder="Tour Leader" className="w-full p-1.5 border rounded text-xs" value={formData.tourLeader || ''} onChange={e => setFormData({...formData, tourLeader: e.target.value})} />
+                  <input type="text" placeholder="Mutawwif" className="w-full p-1.5 border rounded text-xs" value={formData.mutawwif || ''} onChange={e => setFormData({...formData, mutawwif: e.target.value})} />
                 </td>
                 <td className="p-2">
                   <select className="w-full p-1.5 border rounded text-xs" value={formData.statusVisa || 'Proses'} onChange={e => setFormData({...formData, statusVisa: e.target.value as any})}>
@@ -148,8 +164,23 @@ export const TrackerKeberangkatan: React.FC = () => {
                 </td>
                 <td className="p-2 space-y-1">
                   <input type="text" className="w-full p-1.5 border rounded text-xs" value={formData.maskapai || ''} onChange={e => setFormData({...formData, maskapai: e.target.value})} />
-                  <input type="text" className="w-full p-1.5 border rounded text-xs" value={formData.nomorPenerbangan || ''} onChange={e => setFormData({...formData, nomorPenerbangan: e.target.value})} />
-                  <input type="datetime-local" className="w-full p-1.5 border rounded text-xs" value={formData.waktuBerangkat || ''} onChange={e => setFormData({...formData, waktuBerangkat: e.target.value})} />
+                  <div className="flex gap-1">
+                    <input type="text" className="w-1/2 p-1.5 border rounded text-xs" value={formData.nomorPenerbangan || ''} onChange={e => setFormData({...formData, nomorPenerbangan: e.target.value})} />
+                    <input type="text" placeholder="PNR" className="w-1/2 p-1.5 border rounded text-xs" value={formData.kodeBooking || ''} onChange={e => setFormData({...formData, kodeBooking: e.target.value})} />
+                  </div>
+                  <input type="text" placeholder="Rute" className="w-full p-1.5 border rounded text-xs" value={formData.rute || ''} onChange={e => setFormData({...formData, rute: e.target.value})} />
+                  <div className="flex gap-1 items-center">
+                    <span className="text-[10px] text-gray-500 w-8">Brgkt</span>
+                    <input type="datetime-local" className="flex-1 p-1.5 border rounded text-xs" value={formData.waktuBerangkat || ''} onChange={e => setFormData({...formData, waktuBerangkat: e.target.value})} />
+                  </div>
+                  <div className="flex gap-1 items-center">
+                    <span className="text-[10px] text-gray-500 w-8">Tiba</span>
+                    <input type="datetime-local" className="flex-1 p-1.5 border rounded text-xs" value={formData.waktuTiba || ''} onChange={e => setFormData({...formData, waktuTiba: e.target.value})} />
+                  </div>
+                </td>
+                <td className="p-2 space-y-1">
+                  <input type="text" placeholder="Tour Leader" className="w-full p-1.5 border rounded text-xs" value={formData.tourLeader || ''} onChange={e => setFormData({...formData, tourLeader: e.target.value})} />
+                  <input type="text" placeholder="Mutawwif" className="w-full p-1.5 border rounded text-xs" value={formData.mutawwif || ''} onChange={e => setFormData({...formData, mutawwif: e.target.value})} />
                 </td>
                 <td className="p-2">
                   <select className="w-full p-1.5 border rounded text-xs" value={formData.statusVisa || 'Proses'} onChange={e => setFormData({...formData, statusVisa: e.target.value as any})}>
@@ -179,7 +210,20 @@ export const TrackerKeberangkatan: React.FC = () => {
                 <td className="p-3 font-medium text-gray-900">{getPaketName(item.paketId)}</td>
                 <td className="p-3">
                   <div className="font-medium text-gray-900">{item.maskapai} <span className="text-gray-500 text-xs">({item.nomorPenerbangan})</span></div>
-                  <div className="text-xs text-gray-500">{new Date(item.waktuBerangkat).toLocaleString('id-ID')}</div>
+                  {item.kodeBooking && <div className="text-xs text-blue-600 font-medium">PNR: {item.kodeBooking}</div>}
+                  {item.rute && <div className="text-xs text-gray-600">{item.rute}</div>}
+                  <div className="text-xs text-gray-500 mt-1">
+                    <div>🛫 {new Date(item.waktuBerangkat).toLocaleString('id-ID')}</div>
+                    {item.waktuTiba && <div>🛬 {new Date(item.waktuTiba).toLocaleString('id-ID')}</div>}
+                  </div>
+                </td>
+                <td className="p-3">
+                  <div className="text-xs">
+                    <span className="text-gray-500">TL:</span> <span className="font-medium">{item.tourLeader || '-'}</span>
+                  </div>
+                  <div className="text-xs">
+                    <span className="text-gray-500">Mutawwif:</span> <span className="font-medium">{item.mutawwif || '-'}</span>
+                  </div>
                 </td>
                 <td className="p-3">
                   <span className={`px-2 py-1 rounded-full text-xs font-medium ${getBadgeColor(item.statusVisa)}`}>{item.statusVisa}</span>

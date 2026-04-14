@@ -13,7 +13,9 @@ import { TemplatesView } from './components/TemplatesView';
 import { SalesOrderView } from './components/SalesOrderView';
 import { FlightMonitoringView } from './components/FlightMonitoringView';
 import { TrackerView } from './components/TrackerView';
+import { TourLeaderPortal } from './components/TourLeaderPortal';
 import { ManifestPage } from './components/manifest/ManifestPage';
+import { RevenueReport } from './components/RevenueReport';
 import { LoginView, Role } from './components/LoginView';
 import { ErrorBoundary } from './components/ErrorBoundary';
 import { logoBase64 } from './utils/logoBase64';
@@ -98,6 +100,10 @@ function App() {
         return <TrackerView />;
       case 'manifest':
         return <ManifestPage />;
+      case 'revenue':
+        return <RevenueReport />;
+      case 'tl-portal':
+        return <TourLeaderPortal />;
       default:
         return <DashboardView onNavigate={handleTabChange} />;
     }

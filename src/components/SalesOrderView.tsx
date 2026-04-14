@@ -20,6 +20,8 @@ import { Type } from '@google/genai';
 import * as htmlToImage from 'html-to-image';
 import jsPDF from 'jspdf';
 import { formatCurrency, formatPercent } from '../utils/format';
+import { saveTransaction } from '../data/transactions';
+import { Transaction } from '../types/transaction';
 import { OfferingTemplate } from './OfferingTemplate';
 import { db, collection, addDoc } from '../firebase';
 import { generateTimelineEstimasi } from './tracker/utils';
@@ -428,13 +430,29 @@ export const SalesOrderView: React.FC = () => {
   useEffect(() => {
     const ziarah = ziarahData.find(z => z.id === selectedZiarah);
     if (ziarah) {
-      setZiarahHargaApk(ziarah.hargaJual);
-      setZiarahHargaVendor(ziarah.hargaBeli);
+      const vendor = (ziarah.hargaAsing * kursSaudi) / (jumlahPax > 0 ? jumlahPax : 1);
+      
+      let multiplier = 1;
+      const itemName = ziarah.item.toUpperCase();
+      if (itemName.includes('JABAL KHANDAMAH')) {
+        multiplier = 1.2;
+      } else if (itemName.includes('AL ULA MADINAH')) {
+        multiplier = 2.0;
+      } else if (itemName.includes('JABAL MAGNET')) {
+        multiplier = 2.9;
+      } else if (itemName.includes('THAIF')) {
+        multiplier = 2.0;
+      } else if (ziarah.hargaBeli > 0) {
+        multiplier = ziarah.hargaJual / ziarah.hargaBeli;
+      }
+
+      setZiarahHargaVendor(vendor);
+      setZiarahHargaApk(vendor * multiplier);
     } else {
       setZiarahHargaApk(0);
       setZiarahHargaVendor(0);
     }
-  }, [selectedZiarah]);
+  }, [selectedZiarah, kursSaudi, jumlahPax]);
 
   useEffect(() => {
     const keretaCepat = keretaCepatData.find(k => k.id === selectedKeretaCepat);
@@ -529,6 +547,28 @@ export const SalesOrderView: React.FC = () => {
   const hargaTripleDewasa = totalHargaApk - (hotelMadinahHargaApk + hotelMakkahHargaApk) + hotelMadinahTriple + hotelMakkahTriple + komisiMitra + komisiUmaroh;
   const hargaDoubleDewasa = totalHargaApk - (hotelMadinahHargaApk + hotelMakkahHargaApk) + hotelMadinahDouble + hotelMakkahDouble + komisiMitra + komisiUmaroh;
 
+  const handleSaveTransaction = () => {
+    if (!namaPaket || !tglKeberangkatan) {
+      alert("Nama Paket dan Tanggal Keberangkatan harus diisi sebelum menyimpan transaksi.");
+      return;
+    }
+
+    const transaction: Transaction = {
+      id: Date.now().toString(),
+      date: new Date().toISOString(),
+      namaPaket,
+      namaTravel,
+      tglKeberangkatan,
+      jumlahPax,
+      totalOmzet: totalHrgJual + (komisiMitra * jamaahBayar) + (komisiUmaroh * jamaahBayar),
+      totalHpp: totalHargaBeliAll + (komisiMitra * jamaahBayar),
+      totalProfit: totalMarginAll + (komisiUmaroh * jamaahBayar)
+    };
+
+    saveTransaction(transaction);
+    alert("Transaksi berhasil disimpan! Anda bisa melihatnya di menu Laporan Pendapatan.");
+  };
+
   const handleDownloadExcel = () => {
     const data = [
       ["NAMA PAKET", namaPaket, "", "", "JUMLAH PAX", jumlahPax, "PIC", pic, "", "", "", ""],
@@ -581,7 +621,7 @@ export const SalesOrderView: React.FC = () => {
       try {
         const canvas = await htmlToImage.toCanvas(offeringRef.current, { 
           pixelRatio: 2,
-          backgroundColor: '#ffffff',
+          backgroundColor: '#FFC000',
         });
         const imgData = canvas.toDataURL('image/jpeg', 0.95);
         const link = document.createElement('a');
@@ -633,7 +673,7 @@ export const SalesOrderView: React.FC = () => {
       try {
         const canvas = await htmlToImage.toCanvas(offeringRef.current, { 
           pixelRatio: 2,
-          backgroundColor: '#ffffff',
+          backgroundColor: '#FFC000',
         });
         const imgData = canvas.toDataURL('image/jpeg', 0.95);
         const pdf = new jsPDF({
@@ -729,6 +769,14 @@ export const SalesOrderView: React.FC = () => {
             >
               <FileSpreadsheet className="w-4 h-4" />
               Excel
+            </button>
+            <button 
+              onClick={handleSaveTransaction}
+              className="flex items-center gap-2 bg-green-600 text-white px-3 py-1.5 rounded-lg hover:bg-green-700 transition-colors text-sm"
+              title="Simpan Transaksi untuk Laporan Pendapatan"
+            >
+              <Save className="w-4 h-4" />
+              Simpan Transaksi
             </button>
             <button 
               onClick={handleSaveToTracker}

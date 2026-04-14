@@ -11470,6 +11470,620 @@ export const defaultHotels: Hotel[] = [
         ]
       }
     ]
+  },
+  {
+    "id": "olayan-ajyad-darmawisata",
+    "name": "Olayan Ajyad",
+    "city": "Makkah",
+    "vendor": "Darmawisata",
+    "mealPlan": "FB",
+    "seasons": [
+      {
+        "range": "16/06/2026 TO 01/08/2026",
+        "prices": [
+          { "roomType": "Double", "price": 595 },
+          { "roomType": "Triple", "price": 695 },
+          { "roomType": "Quad", "price": 795 }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "al-masa-grand-makkah-darmawisata",
+    "name": "AL Masa Grand Makkah",
+    "city": "Makkah",
+    "vendor": "Darmawisata",
+    "mealPlan": "FB",
+    "seasons": [
+      {
+        "range": "16/06/2026 TO 31/07/2026",
+        "prices": [
+          { "roomType": "Double", "price": 420 },
+          { "roomType": "Triple", "price": 470 },
+          { "roomType": "Quad", "price": 520 }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "azka-al-maqam-hotel-darmawisata",
+    "name": "Azka Al Maqam Hotel",
+    "city": "Makkah",
+    "vendor": "Darmawisata",
+    "mealPlan": "FB",
+    "seasons": [
+      {
+        "range": "15/06/2026 TO 01/07/2026",
+        "prices": [
+          { "roomType": "Double", "price": 580 },
+          { "roomType": "Triple", "price": 650 },
+          { "roomType": "Quad", "price": 720 }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "al-massa-dar-al-fayzeen-hotel-darmawisata",
+    "name": "Al Massa Dar Al Fayzeen Hotel",
+    "city": "Makkah",
+    "vendor": "Darmawisata",
+    "mealPlan": "FB",
+    "seasons": [
+      {
+        "range": "16/06/2026 TO 01/08/2026",
+        "prices": [
+          { "roomType": "Double", "price": 390 },
+          { "roomType": "Triple", "price": 440 },
+          { "roomType": "Quad", "price": 480 }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "maysan-al-safa-jarwal-darmawisata",
+    "name": "Maysan AL Safa Jarwal",
+    "city": "Makkah",
+    "vendor": "Darmawisata",
+    "mealPlan": "FB",
+    "seasons": [
+      {
+        "range": "16/06/2026 TO 19/07/2026",
+        "prices": [
+          { "roomType": "Double", "price": 150 },
+          { "roomType": "Triple", "price": 190 },
+          { "roomType": "Quad", "price": 230 }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "snood-al-rayyan-darmawisata",
+    "name": "Snood Al Rayyan",
+    "city": "Makkah",
+    "vendor": "Darmawisata",
+    "mealPlan": "FB",
+    "seasons": [
+      {
+        "range": "16/06/2026 TO 19/07/2026",
+        "prices": [
+          { "roomType": "Double", "price": 190 },
+          { "roomType": "Triple", "price": 230 },
+          { "roomType": "Quad", "price": 270 }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "olayan-grand-ex-rawdat-al-bait-darmawisata",
+    "name": "Olayan Grand - Ex.Rawdat Al bait",
+    "city": "Makkah",
+    "vendor": "Darmawisata",
+    "mealPlan": "FB",
+    "seasons": [
+      {
+        "range": "16/06/2026 TO 31/07/2026",
+        "prices": [
+          { "roomType": "Double", "price": 195 },
+          { "roomType": "Triple", "price": 235 },
+          { "roomType": "Quad", "price": 275 }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "maysan-al-multazem-darmawisata",
+    "name": "Maysan AL Multazem",
+    "city": "Makkah",
+    "vendor": "Darmawisata",
+    "mealPlan": "FB",
+    "seasons": [
+      {
+        "range": "16/06/2026 TO 16/07/2026",
+        "prices": [
+          { "roomType": "Double", "price": 185 },
+          { "roomType": "Triple", "price": 230 },
+          { "roomType": "Quad", "price": 275 }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "taiba-front-darmawisata",
+    "name": "Taiba Front",
+    "city": "Madinah",
+    "vendor": "Darmawisata",
+    "mealPlan": "FB",
+    "seasons": [
+      {
+        "range": "30/06/2026 TO 14/08/2026",
+        "prices": [
+          { "roomType": "Double", "price": 730 },
+          { "roomType": "Triple", "price": 855 },
+          { "roomType": "Quad", "price": 980 }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "dallah-taibah-darmawisata",
+    "name": "Dallah Taibah",
+    "city": "Madinah",
+    "vendor": "Darmawisata",
+    "mealPlan": "FB",
+    "seasons": [
+      {
+        "range": "01/07/2026 TO 20/08/2026",
+        "prices": [
+          { "roomType": "Double", "price": 765 },
+          { "roomType": "Triple", "price": 910 },
+          { "roomType": "Quad", "price": 1055 }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "kayan-international-hotel-darmawisata",
+    "name": "Kayan International Hotel",
+    "city": "Madinah",
+    "vendor": "Darmawisata",
+    "mealPlan": "FB",
+    "seasons": [
+      {
+        "range": "30/06/2026 TO 01/08/2026",
+        "prices": [
+          { "roomType": "Double", "price": 410 },
+          { "roomType": "Triple", "price": 450 },
+          { "roomType": "Quad", "price": 490 }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "odst-darmawisata",
+    "name": "Odst",
+    "city": "Madinah",
+    "vendor": "Darmawisata",
+    "mealPlan": "FB",
+    "seasons": [
+      {
+        "range": "30/06/2026 TO 14/08/2026",
+        "prices": [
+          { "roomType": "Double", "price": 450 },
+          { "roomType": "Triple", "price": 495 },
+          { "roomType": "Quad", "price": 540 }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "jawharat-al-rasheed-hotel-darmawisata",
+    "name": "Jawharat Al Rasheed Hotel",
+    "city": "Madinah",
+    "vendor": "Darmawisata",
+    "mealPlan": "FB",
+    "seasons": [
+      {
+        "range": "30/06/2026 TO 31/07/2026",
+        "prices": [
+          { "roomType": "Double", "price": 400 },
+          { "roomType": "Triple", "price": 440 },
+          { "roomType": "Quad", "price": 480 }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "astoneast-taiba-hotel-ex-artal-international-darmawisata",
+    "name": "ASTONEAST TAIBA HOTEL (ex Artal International)",
+    "city": "Madinah",
+    "vendor": "Darmawisata",
+    "mealPlan": "FB",
+    "seasons": [
+      {
+        "range": "30/06/2026 TO 15/07/2026",
+        "prices": [
+          { "roomType": "Double", "price": 390 },
+          { "roomType": "Triple", "price": 430 },
+          { "roomType": "Quad", "price": 470 }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "al-mukhtara-al-gharbi-darmawisata",
+    "name": "Al Mukhtara Al Gharbi",
+    "city": "Madinah",
+    "vendor": "Darmawisata",
+    "mealPlan": "FB",
+    "seasons": [
+      {
+        "range": "30/06/2026 TO 14/08/2026",
+        "prices": [
+          { "roomType": "Double", "price": 350 },
+          { "roomType": "Triple", "price": 390 },
+          { "roomType": "Quad", "price": 430 }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "maysan-altaqwa-darmawisata",
+    "name": "MAYSAN ALTAQWA",
+    "city": "Madinah",
+    "vendor": "Darmawisata",
+    "mealPlan": "FB",
+    "seasons": [
+      {
+        "range": "30/06/2026 TO 20/09/2026",
+        "prices": [
+          { "roomType": "Double", "price": 370 },
+          { "roomType": "Triple", "price": 420 },
+          { "roomType": "Quad", "price": 470 }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "movenpick-makkah-konoz",
+    "name": "Movenpick Makkah",
+    "city": "Makkah",
+    "vendor": "Konoz",
+    "mealPlan": "FB",
+    "stars": 5,
+    "seasons": [
+      {
+        "range": "16/06/2026 TO 19/07/2026",
+        "prices": [{ "roomType": "Double", "price": 950 }, { "roomType": "Triple", "price": 1150 }, { "roomType": "Quad", "price": 1350 }]
+      }
+    ]
+  },
+  {
+    "id": "pullman-zamzam-konoz",
+    "name": "Pullman Zamzam",
+    "city": "Makkah",
+    "vendor": "Konoz",
+    "mealPlan": "FB",
+    "stars": 5,
+    "seasons": [
+      {
+        "range": "16/06/2026 TO 19/07/2026",
+        "prices": [{ "roomType": "Double", "price": 950 }, { "roomType": "Triple", "price": 1150 }, { "roomType": "Quad", "price": 1350 }]
+      }
+    ]
+  },
+  {
+    "id": "olayan-ajyad-konoz",
+    "name": "Olayan Ajyad",
+    "city": "Makkah",
+    "vendor": "Konoz",
+    "mealPlan": "FB",
+    "stars": 5,
+    "seasons": [
+      {
+        "range": "16/06/2026 TO 01/08/2026",
+        "prices": [{ "roomType": "Double", "price": 575 }, { "roomType": "Triple", "price": 675 }, { "roomType": "Quad", "price": 775 }]
+      },
+      {
+        "range": "01/08/2026 TO 05/10/2026",
+        "prices": [{ "roomType": "Double", "price": 670 }, { "roomType": "Triple", "price": 770 }, { "roomType": "Quad", "price": 870 }]
+      }
+    ]
+  },
+  {
+    "id": "prestige-ajyad-konoz",
+    "name": "Prestige Ajyad",
+    "city": "Makkah",
+    "vendor": "Konoz",
+    "mealPlan": "FB",
+    "stars": 5,
+    "seasons": [
+      {
+        "range": "16/06/2026 TO 19/07/2026",
+        "prices": [{ "roomType": "Double", "price": 580 }, { "roomType": "Triple", "price": 680 }, { "roomType": "Quad", "price": 780 }]
+      }
+    ]
+  },
+  {
+    "id": "maysan-al-mashaer-konoz",
+    "name": "Maysan Al Mashaer",
+    "city": "Makkah",
+    "vendor": "Konoz",
+    "mealPlan": "FB",
+    "stars": 5,
+    "seasons": [
+      {
+        "range": "16/06/2026 TO 19/07/2026",
+        "prices": [{ "roomType": "Double", "price": 520 }, { "roomType": "Triple", "price": 610 }, { "roomType": "Quad", "price": 700 }]
+      }
+    ]
+  },
+  {
+    "id": "azka-al-maqam-konoz",
+    "name": "Azka Al Maqam",
+    "city": "Makkah",
+    "vendor": "Konoz",
+    "mealPlan": "FB",
+    "stars": 5,
+    "seasons": [
+      {
+        "range": "20/06/2026 TO 01/07/2026",
+        "prices": [{ "roomType": "Double", "price": 550 }, { "roomType": "Triple", "price": 620 }, { "roomType": "Quad", "price": 690 }]
+      },
+      {
+        "range": "01/07/2026 TO 01/08/2026",
+        "prices": [{ "roomType": "Double", "price": 600 }, { "roomType": "Triple", "price": 690 }, { "roomType": "Quad", "price": 780 }]
+      },
+      {
+        "range": "01/08/2026 TO 01/09/2026",
+        "prices": [{ "roomType": "Double", "price": 630 }, { "roomType": "Triple", "price": 730 }, { "roomType": "Quad", "price": 820 }]
+      }
+    ]
+  },
+  {
+    "id": "azka-al-safa-konoz",
+    "name": "Azka Al Safa",
+    "city": "Makkah",
+    "vendor": "Konoz",
+    "mealPlan": "FB",
+    "stars": 5,
+    "seasons": [
+      {
+        "range": "20/06/2026 TO 01/07/2026",
+        "prices": [{ "roomType": "Double", "price": 520 }, { "roomType": "Triple", "price": 570 }, { "roomType": "Quad", "price": 620 }]
+      },
+      {
+        "range": "01/07/2026 TO 01/08/2026",
+        "prices": [{ "roomType": "Double", "price": 550 }, { "roomType": "Triple", "price": 625 }, { "roomType": "Quad", "price": 700 }]
+      },
+      {
+        "range": "01/08/2026 TO 01/09/2026",
+        "prices": [{ "roomType": "Double", "price": 580 }, { "roomType": "Triple", "price": 665 }, { "roomType": "Quad", "price": 750 }]
+      }
+    ]
+  },
+  {
+    "id": "al-massa-grand-konoz",
+    "name": "Al Massa Grand",
+    "city": "Makkah",
+    "vendor": "Konoz",
+    "mealPlan": "FB",
+    "stars": 4,
+    "seasons": [
+      {
+        "range": "16/06/2026 TO 19/07/2026",
+        "prices": [{ "roomType": "Double", "price": 450 }, { "roomType": "Triple", "price": 500 }, { "roomType": "Quad", "price": 550 }]
+      }
+    ]
+  },
+  {
+    "id": "al-massa-dar-al-fayzeen-konoz",
+    "name": "Al Massa Dar Al Fayzeen",
+    "city": "Makkah",
+    "vendor": "Konoz",
+    "mealPlan": "FB",
+    "stars": 4,
+    "seasons": [
+      {
+        "range": "16/06/2026 TO 19/07/2026",
+        "prices": [{ "roomType": "Double", "price": 420 }, { "roomType": "Triple", "price": 470 }, { "roomType": "Quad", "price": 520 }]
+      }
+    ]
+  },
+  {
+    "id": "snood-ajyad-konoz",
+    "name": "Snood Ajyad",
+    "city": "Makkah",
+    "vendor": "Konoz",
+    "mealPlan": "FB",
+    "stars": 3,
+    "seasons": [
+      {
+        "range": "16/06/2026 TO 19/07/2026",
+        "prices": [{ "roomType": "Double", "price": 450 }, { "roomType": "Triple", "price": 495 }, { "roomType": "Quad", "price": 540 }]
+      }
+    ]
+  },
+  {
+    "id": "sawaed-al-khair-konoz",
+    "name": "Sawaed Al Khair",
+    "city": "Makkah",
+    "vendor": "Konoz",
+    "mealPlan": "FB",
+    "stars": 3,
+    "seasons": [
+      {
+        "range": "16/06/2026 TO 19/07/2026",
+        "prices": [{ "roomType": "Double", "price": 420 }, { "roomType": "Triple", "price": 465 }, { "roomType": "Quad", "price": 510 }]
+      }
+    ]
+  },
+  {
+    "id": "maysan-al-maqam-konoz",
+    "name": "Maysan Al Maqam",
+    "city": "Makkah",
+    "vendor": "Konoz",
+    "mealPlan": "FB",
+    "stars": 4,
+    "seasons": [
+      {
+        "range": "16/06/2026 TO 19/07/2026",
+        "prices": [{ "roomType": "Double", "price": 450 }, { "roomType": "Triple", "price": 500 }, { "roomType": "Quad", "price": 550 }]
+      }
+    ]
+  },
+  {
+    "id": "nada-ajyad-konoz",
+    "name": "Nada Ajyad",
+    "city": "Makkah",
+    "vendor": "Konoz",
+    "mealPlan": "FB",
+    "stars": 3,
+    "seasons": [
+      {
+        "range": "16/06/2026 TO 19/07/2026",
+        "prices": [{ "roomType": "Double", "price": 350 }, { "roomType": "Triple", "price": 395 }, { "roomType": "Quad", "price": 440 }]
+      }
+    ]
+  },
+  {
+    "id": "talal-ajyad-konoz",
+    "name": "Talal Ajyad",
+    "city": "Makkah",
+    "vendor": "Konoz",
+    "mealPlan": "FB",
+    "stars": 3,
+    "seasons": [
+      {
+        "range": "16/06/2026 TO 19/07/2026",
+        "prices": [{ "roomType": "Double", "price": 310 }, { "roomType": "Triple", "price": 355 }, { "roomType": "Quad", "price": 400 }]
+      }
+    ]
+  },
+  {
+    "id": "badr-al-massah-konoz",
+    "name": "Badr Al Massah",
+    "city": "Makkah",
+    "vendor": "Konoz",
+    "mealPlan": "FB",
+    "stars": 3,
+    "seasons": [
+      {
+        "range": "16/06/2026 TO 19/07/2026",
+        "prices": [{ "roomType": "Double", "price": 270 }, { "roomType": "Triple", "price": 315 }, { "roomType": "Quad", "price": 360 }]
+      }
+    ]
+  },
+  {
+    "id": "nawazi-towers-konoz",
+    "name": "Nawazi Towers",
+    "city": "Makkah",
+    "vendor": "Konoz",
+    "mealPlan": "FB",
+    "stars": 3,
+    "seasons": [
+      {
+        "range": "16/06/2026 TO 19/07/2026",
+        "prices": [{ "roomType": "Double", "price": 190 }, { "roomType": "Triple", "price": 235 }, { "roomType": "Quad", "price": 280 }]
+      }
+    ]
+  },
+  {
+    "id": "snood-al-rayyan-konoz",
+    "name": "Snood Al Rayyan",
+    "city": "Makkah",
+    "vendor": "Konoz",
+    "mealPlan": "FB",
+    "stars": 3,
+    "seasons": [
+      {
+        "range": "16/06/2026 TO 19/07/2026",
+        "prices": [{ "roomType": "Double", "price": 170 }, { "roomType": "Triple", "price": 210 }, { "roomType": "Quad", "price": 250 }]
+      }
+    ]
+  },
+  {
+    "id": "al-barakah-mawddah-konoz",
+    "name": "Al Barakah Mawddah",
+    "city": "Makkah",
+    "vendor": "Konoz",
+    "mealPlan": "FB",
+    "stars": 3,
+    "seasons": [
+      {
+        "range": "16/06/2026 TO 19/07/2026",
+        "prices": [{ "roomType": "Double", "price": 380 }, { "roomType": "Triple", "price": 420 }, { "roomType": "Quad", "price": 460 }]
+      }
+    ]
+  },
+  {
+    "id": "maather-al-jiwaar-konoz",
+    "name": "Maather Al Jiwaar",
+    "city": "Makkah",
+    "vendor": "Konoz",
+    "mealPlan": "FB",
+    "stars": 3,
+    "seasons": [
+      {
+        "range": "16/06/2026 TO 19/07/2026",
+        "prices": [{ "roomType": "Double", "price": 250 }, { "roomType": "Triple", "price": 290 }, { "roomType": "Quad", "price": 330 }]
+      }
+    ]
+  },
+  {
+    "id": "durrat-al-madinah-konoz",
+    "name": "Durrat Al Madinah",
+    "city": "Madinah",
+    "vendor": "Konoz",
+    "mealPlan": "FB",
+    "stars": 3,
+    "seasons": [
+      {
+        "range": "16/06/2026 TO 19/07/2026",
+        "prices": [{ "roomType": "Quad", "price": 530 }]
+      }
+    ]
+  },
+  {
+    "id": "ruaa-international-konoz",
+    "name": "Ruaa International",
+    "city": "Madinah",
+    "vendor": "Konoz",
+    "mealPlan": "FB",
+    "stars": 3,
+    "seasons": [
+      {
+        "range": "16/06/2026 TO 19/07/2026",
+        "prices": [{ "roomType": "Double", "price": 490 }, { "roomType": "Triple", "price": 535 }, { "roomType": "Quad", "price": 580 }]
+      }
+    ]
+  },
+  {
+    "id": "kayan-international-konoz",
+    "name": "Kayan International",
+    "city": "Madinah",
+    "vendor": "Konoz",
+    "mealPlan": "FB",
+    "stars": 3,
+    "seasons": [
+      {
+        "range": "16/06/2026 TO 19/07/2026",
+        "prices": [{ "roomType": "Double", "price": 470 }, { "roomType": "Triple", "price": 515 }, { "roomType": "Quad", "price": 560 }]
+      }
+    ]
+  },
+  {
+    "id": "al-madinah-azhar-salsabil-konoz",
+    "name": "Al Madinah Azhar Salsabil",
+    "city": "Madinah",
+    "vendor": "Konoz",
+    "mealPlan": "FB",
+    "stars": 3,
+    "seasons": [
+      {
+        "range": "16/06/2026 TO 19/07/2026",
+        "prices": [{ "roomType": "Double", "price": 360 }, { "roomType": "Triple", "price": 405 }, { "roomType": "Quad", "price": 460 }]
+      }
+    ]
   }
 ];
 

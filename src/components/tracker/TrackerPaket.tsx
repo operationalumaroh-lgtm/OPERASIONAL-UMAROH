@@ -7,6 +7,9 @@ import { TrackerTimeline } from './TrackerTimeline';
 import { ProgressSummary } from './ProgressSummary';
 import { AlertBox } from './AlertBox';
 import { MapTracking } from './MapTracking';
+import { ChecklistOperasional } from './ChecklistOperasional';
+import { RoomingList } from './RoomingList';
+import { ManifestGenerator } from './ManifestGenerator';
 import { handleFirestoreError, OperationType } from '../../utils/firestoreErrorHandler';
 
 export const TrackerPaket: React.FC = () => {
@@ -173,6 +176,16 @@ export const TrackerPaket: React.FC = () => {
         </div>
 
         <AlertBox jamaahs={jamaahs} estimasi={selectedPaket.timeline_estimasi} actual={computedActual} tanggalBerangkat={selectedPaket.tanggalBerangkat} />
+
+        <ChecklistOperasional paket={selectedPaket} />
+
+        <RoomingList paketId={selectedPaket.id} jamaahs={jamaahs} />
+
+        <ManifestGenerator 
+          paket={selectedPaket} 
+          jamaahs={jamaahs} 
+          keberangkatan={keberangkatans.find(k => k.paketId === selectedPaket.id)} 
+        />
 
         <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
           <div className="xl:col-span-2 space-y-6">

@@ -1,8 +1,12 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { LayoutDashboard, TrendingUp, Users, Package, AlertCircle, Hotel, ArrowRight, MessageCircle, Clock, Plane, Calendar, Users2 } from 'lucide-react';
 import { TabType } from './Navbar';
 import { format, subDays, differenceInDays, parseISO, startOfDay } from 'date-fns';
 import { id as idLocale } from 'date-fns/locale';
+import { collection, onSnapshot } from 'firebase/firestore';
+import { db } from '../firebase';
+import { getTransactions } from '../data/transactions';
+import { PaketTracker, JamaahTracker } from './tracker/types';
 
 interface DashboardViewProps {
   onNavigate?: (tab: TabType) => void;
@@ -27,19 +31,41 @@ interface VendorService {
 }
 
 export const DashboardView: React.FC<DashboardViewProps> = ({ onNavigate }) => {
+  const [pakets, setPakets] = useState<PaketTracker[]>([]);
+  const [jamaahs, setJamaahs] = useState<JamaahTracker[]>([]);
+  const [totalOmzet, setTotalOmzet] = useState(0);
+
+  useEffect(() => {
+    const unsubPaket = onSnapshot(collection(db, 'tracker_paket'), (snapshot) => {
+      setPakets(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as PaketTracker)));
+    });
+    const unsubJamaah = onSnapshot(collection(db, 'tracker_jamaah'), (snapshot) => {
+      setJamaahs(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as JamaahTracker)));
+    });
+
+    const transactions = getTransactions();
+    const omzet = transactions.reduce((sum, t) => sum + t.totalOmzet, 0);
+    setTotalOmzet(omzet);
+
+    return () => { unsubPaket(); unsubJamaah(); };
+  }, []);
+
+  const activePakets = pakets.filter(p => p.status !== 'Selesai').length;
+  const totalJamaah = jamaahs.length;
+  const pendingJamaahPayments = jamaahs.filter(j => j.statusPembayaran !== 'Lunas').length;
+
   const stats = [
-    { label: 'Tagihan ke Vendor', value: 'Rp 1.250.000.000', icon: TrendingUp, color: 'text-emerald-600', bg: 'bg-emerald-50', tab: 'sales-order' as TabType },
-    { label: 'Paket Umroh Aktif', value: '42', icon: Package, color: 'text-amber-600', bg: 'bg-amber-50', tab: 'sales-order' as TabType },
-    { label: 'Total Customers', value: '1,284', icon: Users, color: 'text-blue-600', bg: 'bg-blue-50', tab: 'database' as TabType },
-    { label: 'Pending Payments', value: '4 Tagihan', icon: Hotel, color: 'text-rose-600', bg: 'bg-rose-50', tab: 'mapping' as TabType },
+    { label: 'Total Omzet (Sales)', value: `Rp ${totalOmzet.toLocaleString('id-ID')}`, icon: TrendingUp, color: 'text-emerald-600', bg: 'bg-emerald-50', tab: 'revenue' as TabType },
+    { label: 'Paket Umroh Aktif', value: activePakets.toString(), icon: Package, color: 'text-amber-600', bg: 'bg-amber-50', tab: 'tracker' as TabType },
+    { label: 'Total Jamaah', value: totalJamaah.toString(), icon: Users, color: 'text-blue-600', bg: 'bg-blue-50', tab: 'tracker' as TabType },
+    { label: 'Pending Payments', value: `${pendingJamaahPayments} Jamaah`, icon: AlertCircle, color: 'text-rose-600', bg: 'bg-rose-50', tab: 'tracker' as TabType },
   ];
 
+  // We can keep airlineInfo and vendorServices static for now, or remove them if not needed.
+  // Let's keep them static as placeholders for future development.
   const airlineInfo = [
     { id: 'promo-ga-1', airline: 'Garuda (Promo Juli)', departure: '12 Jul 2026', return: '19 Jul 2026', availableSeats: 80, totalSeats: 80 },
     { id: 'promo-sv-1', airline: 'Saudia (Promo Juli)', departure: '09 Jul 2026', return: '18 Jul 2026', availableSeats: 40, totalSeats: 40 },
-    { id: 'promo-in-1', airline: 'Indigo (Promo Jun-Jul)', departure: '21 Jun 2026', return: '29 Jun 2026', availableSeats: 90, totalSeats: 90 },
-    { id: 'promo-wy-sep', airline: 'Oman Air (Promo Sep)', departure: '03 Sep 2026', return: '11 Sep 2026', availableSeats: 15, totalSeats: 15 },
-    { id: 'promo-qr-jun', airline: 'Qatar (Promo Jun)', departure: '18 Jun 2026', return: '27 Jun 2026', availableSeats: 30, totalSeats: 30 },
   ];
 
   const vendorServices: VendorService[] = [
