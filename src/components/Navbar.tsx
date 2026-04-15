@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Database, FileSpreadsheet, ShoppingCart, LayoutDashboard, Hotel, Bell, Plane, Menu, X, MapPin, FileText, TrendingUp } from 'lucide-react';
 import { Role } from './LoginView';
 
-export type TabType = 'dashboard' | 'database' | 'templates' | 'mapping' | 'sales-order' | 'flights' | 'tracker' | 'manifest' | 'revenue' | 'tl-portal';
+export type TabType = 'dashboard' | 'database' | 'templates' | 'mapping' | 'sales-order' | 'flights' | 'tracker' | 'manifest' | 'revenue' | 'tl-portal' | 'inventory' | 'finance';
 
 interface NavbarProps {
   activeTab: TabType;
@@ -24,6 +24,8 @@ export const Navbar: React.FC<NavbarProps> = ({ activeTab, onTabChange, userRole
     { id: 'manifest', label: 'Generate Manifest', icon: FileText },
     { id: 'revenue', label: 'Laporan Pendapatan', icon: TrendingUp },
     { id: 'tl-portal', label: 'Portal TL (Mobile)', icon: MapPin },
+    { id: 'inventory', label: 'Inventory & Gudang', icon: Database },
+    { id: 'finance', label: 'Tagihan Vendor (AP)', icon: TrendingUp },
   ];
 
   const navItems = userRole === 'mitra' 

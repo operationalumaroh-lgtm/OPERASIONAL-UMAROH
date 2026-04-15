@@ -78,6 +78,11 @@ export interface JamaahTracker {
   dokumenPaspor?: boolean;
   dokumenBukuKuning?: boolean;
   dokumenFoto?: boolean;
+
+  // Perlengkapan fields
+  perlengkapanKoper?: boolean;
+  perlengkapanIhramMukena?: boolean;
+  perlengkapanBuku?: boolean;
 }
 
 export interface KeberangkatanTracker {

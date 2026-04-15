@@ -16,6 +16,8 @@ import { TrackerView } from './components/TrackerView';
 import { TourLeaderPortal } from './components/TourLeaderPortal';
 import { ManifestPage } from './components/manifest/ManifestPage';
 import { RevenueReport } from './components/RevenueReport';
+import { InventoryView } from './components/inventory/InventoryView';
+import { VendorPayables } from './components/finance/VendorPayables';
 import { LoginView, Role } from './components/LoginView';
 import { ErrorBoundary } from './components/ErrorBoundary';
 import { logoBase64 } from './utils/logoBase64';
@@ -104,6 +106,10 @@ function App() {
         return <RevenueReport />;
       case 'tl-portal':
         return <TourLeaderPortal />;
+      case 'inventory':
+        return <InventoryView />;
+      case 'finance':
+        return <VendorPayables />;
       default:
         return <DashboardView onNavigate={handleTabChange} />;
     }

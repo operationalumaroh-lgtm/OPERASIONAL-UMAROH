@@ -68,91 +68,34 @@ export const DashboardView: React.FC<DashboardViewProps> = ({ onNavigate }) => {
     { id: 'promo-sv-1', airline: 'Saudia (Promo Juli)', departure: '09 Jul 2026', return: '18 Jul 2026', availableSeats: 40, totalSeats: 40 },
   ];
 
-  const vendorServices: VendorService[] = [
-    {
-      id: '1',
-      paketId: 'P1',
-      namaPaket: 'UMRAH REGULER 9 HARI',
-      namaLayanan: 'Maskapai',
-      vendor: 'Lion Air',
-      tanggalKeberangkatan: '2026-05-15',
-      tanggalKepulangan: '2026-05-24',
-      reminderDPHMinus: 45,
-      reminderPelunasanHMinus: 14,
-      estimasiBiaya: 675000000,
-      statusPembayaran: 'Belum Bayar',
-      pic: 'Rinaldi',
-      catatan: 'Booking 45 seat'
-    },
-    {
-      id: '2',
-      paketId: 'P1',
-      namaPaket: 'UMRAH REGULER 9 HARI',
-      namaLayanan: 'Hotel Makkah',
-      vendor: 'Emaar Andalusia',
-      tanggalKeberangkatan: '2026-05-15',
-      tanggalKepulangan: '2026-05-24',
-      reminderDPHMinus: 40,
-      reminderPelunasanHMinus: 10,
-      estimasiBiaya: 250000000,
-      statusPembayaran: 'DP',
-      pic: 'Seruni',
-      catatan: '20 Kamar Quad'
-    },
-    {
-      id: '4',
-      paketId: 'P2',
-      namaPaket: 'UMRAH PROMO 12 HARI',
-      namaLayanan: 'Handling Saudi',
-      vendor: 'Saudi Handling Co',
-      tanggalKeberangkatan: '2026-04-10',
-      tanggalKepulangan: '2026-04-22',
-      reminderDPHMinus: 14,
-      reminderPelunasanHMinus: 7,
-      estimasiBiaya: 15000000,
-      statusPembayaran: 'Belum Bayar',
-      pic: 'Rinaldi',
-      catatan: 'Bus & Mutawif'
-    },
-    {
-      id: '5',
-      paketId: 'P3',
-      namaPaket: 'UMRAH PLUS TURKI 12 HARI',
-      namaLayanan: 'Perlengkapan Jamaah',
-      vendor: 'Koperasi Umroh',
-      tanggalKeberangkatan: '2026-03-20',
-      tanggalKepulangan: '2026-04-01',
-      reminderDPHMinus: 60,
-      reminderPelunasanHMinus: 30,
-      estimasiBiaya: 45000000,
-      statusPembayaran: 'Belum Bayar',
-      pic: 'Mirna',
-      catatan: 'Koper, Kain Ihram, Mukena'
+  const [vendorInvoices, setVendorInvoices] = useState<any[]>([]);
+
+  useEffect(() => {
+    const savedInvoices = localStorage.getItem('vendor_invoices');
+    if (savedInvoices) {
+      setVendorInvoices(JSON.parse(savedInvoices));
     }
-  ];
+  }, []);
 
   const today = startOfDay(new Date());
 
-  const pendingPayments = vendorServices
-    .filter(s => s.statusPembayaran !== 'Lunas')
+  const pendingPayments = vendorInvoices
+    .filter(s => s.status !== 'Lunas')
     .map(s => {
-      const departureDate = startOfDay(parseISO(s.tanggalKeberangkatan));
-      const isDP = s.statusPembayaran === 'Belum Bayar';
-      const hMinus = isDP ? s.reminderDPHMinus : s.reminderPelunasanHMinus;
-      const dueDate = subDays(departureDate, hMinus);
+      const dueDate = startOfDay(parseISO(s.dueDate));
       const daysRemaining = differenceInDays(dueDate, today);
       
       return {
         id: s.id,
-        package: s.namaPaket,
-        type: s.namaLayanan,
-        item: s.catatan,
-        vendor: s.vendor,
-        amount: new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(s.estimasiBiaya),
+        package: s.paketName,
+        type: s.serviceType,
+        item: s.notes,
+        vendor: s.vendorName,
+        amount: new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(s.amount),
         dueDate: format(dueDate, 'dd MMM yyyy', { locale: idLocale }),
         daysRemaining,
-        paymentType: isDP ? 'DP' : 'Pelunasan',
-        pic: s.pic
+        paymentType: s.status,
+        pic: 'Admin'
       };
     })
     .sort((a, b) => a.daysRemaining - b.daysRemaining);

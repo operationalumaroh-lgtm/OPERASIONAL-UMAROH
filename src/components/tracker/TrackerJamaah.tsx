@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { collection, onSnapshot, addDoc, updateDoc, deleteDoc, doc, db } from '../../firebase';
-import { Plus, Edit2, Trash2, Save, X, FileText, FolderOpen } from 'lucide-react';
+import { Plus, Edit2, Trash2, Save, X, FileText, FolderOpen, Package, MessageCircle } from 'lucide-react';
 import { PaketTracker, JamaahTracker } from './types';
 import { handleFirestoreError, OperationType } from '../../utils/firestoreErrorHandler';
+import { generateWALink, getWATemplate } from '../../utils/whatsapp';
 
 export const TrackerJamaah: React.FC = () => {
   const [jamaahs, setJamaahs] = useState<JamaahTracker[]>([]);
@@ -21,6 +22,11 @@ export const TrackerJamaah: React.FC = () => {
   const [isDokumenModalOpen, setIsDokumenModalOpen] = useState(false);
   const [dokumenData, setDokumenData] = useState<Partial<JamaahTracker>>({});
   const [dokumenJamaahId, setDokumenJamaahId] = useState<string | null>(null);
+
+  // Perlengkapan Modal State
+  const [isPerlengkapanModalOpen, setIsPerlengkapanModalOpen] = useState(false);
+  const [perlengkapanData, setPerlengkapanData] = useState<Partial<JamaahTracker>>({});
+  const [perlengkapanJamaahId, setPerlengkapanJamaahId] = useState<string | null>(null);
 
   useEffect(() => {
     const unsubJamaah = onSnapshot(collection(db, 'tracker_jamaah'), (snapshot) => {
@@ -113,6 +119,29 @@ export const TrackerJamaah: React.FC = () => {
       
       await updateDoc(doc(db, 'tracker_jamaah', dokumenJamaahId), dataToSave);
       setIsDokumenModalOpen(false);
+    } catch (error) {
+      handleFirestoreError(error, OperationType.WRITE, 'tracker_jamaah');
+    }
+  };
+
+  const openPerlengkapanModal = (jamaah: JamaahTracker) => {
+    setPerlengkapanJamaahId(jamaah.id);
+    setPerlengkapanData(jamaah);
+    setIsPerlengkapanModalOpen(true);
+  };
+
+  const savePerlengkapanData = async () => {
+    if (!perlengkapanJamaahId) return;
+    try {
+      const dataToSave = { ...perlengkapanData };
+      delete (dataToSave as any).id;
+      Object.keys(dataToSave).forEach(key => (dataToSave as any)[key] === undefined && delete (dataToSave as any)[key]);
+      
+      await updateDoc(doc(db, 'tracker_jamaah', perlengkapanJamaahId), dataToSave);
+      setIsPerlengkapanModalOpen(false);
+      
+      // Update inventory (simplified: we should ideally check diff, but for now we just trust the state)
+      // In a real app, we'd need a backend transaction to ensure inventory consistency.
     } catch (error) {
       handleFirestoreError(error, OperationType.WRITE, 'tracker_jamaah');
     }
@@ -282,6 +311,17 @@ export const TrackerJamaah: React.FC = () => {
                     </div>
                   ) : (
                     <div className="flex justify-end items-center">
+                      <button 
+                        onClick={() => {
+                          const msg = getWATemplate('GENERAL_INFO', { nama: jamaah.namaLengkap });
+                          window.open(generateWALink('08123456789', msg), '_blank'); // Dummy phone for now
+                        }} 
+                        title="Kirim Pesan WA" 
+                        className="p-1.5 text-emerald-600 hover:bg-emerald-50 rounded mr-1"
+                      >
+                        <MessageCircle className="w-4 h-4" />
+                      </button>
+                      <button onClick={() => openPerlengkapanModal(jamaah)} title="Manajemen Perlengkapan" className="p-1.5 text-indigo-600 hover:bg-indigo-50 rounded mr-1"><Package className="w-4 h-4" /></button>
                       <button onClick={() => openDokumenModal(jamaah)} title="Manajemen Dokumen" className="p-1.5 text-amber-600 hover:bg-amber-50 rounded mr-1"><FolderOpen className="w-4 h-4" /></button>
                       <button onClick={() => openManifestModal(jamaah)} title="Data Manifest" className="p-1.5 text-purple-600 hover:bg-purple-50 rounded mr-1"><FileText className="w-4 h-4" /></button>
                       <button onClick={() => startEdit(jamaah)} className="p-1.5 text-blue-600 hover:bg-blue-50 rounded mr-1"><Edit2 className="w-4 h-4" /></button>
@@ -380,6 +420,71 @@ export const TrackerJamaah: React.FC = () => {
                 className="px-4 py-2 text-sm font-medium text-white bg-emerald-600 hover:bg-emerald-700 rounded-lg flex items-center gap-2"
               >
                 <Save className="w-4 h-4" /> Simpan Dokumen
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Perlengkapan Modal */}
+      {isPerlengkapanModalOpen && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-xl shadow-xl w-full max-w-md max-h-[90vh] overflow-y-auto">
+            <div className="p-6 border-b border-gray-100 flex justify-between items-center sticky top-0 bg-white z-10">
+              <h3 className="text-lg font-semibold text-gray-900">Manajemen Perlengkapan</h3>
+              <button onClick={() => setIsPerlengkapanModalOpen(false)} className="text-gray-400 hover:text-gray-600">
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+            
+            <div className="p-6 space-y-4">
+              <p className="text-sm text-gray-600 mb-4">Centang perlengkapan yang sudah diserahkan ke jamaah.</p>
+              
+              <div className="space-y-3">
+                <label className="flex items-center gap-3 p-3 border rounded-lg hover:bg-gray-50 cursor-pointer">
+                  <input 
+                    type="checkbox" 
+                    className="w-5 h-5 text-indigo-600 rounded border-gray-300 focus:ring-indigo-500"
+                    checked={perlengkapanData.perlengkapanKoper || false}
+                    onChange={e => setPerlengkapanData({...perlengkapanData, perlengkapanKoper: e.target.checked})}
+                  />
+                  <span className="font-medium text-gray-700">Koper (Bagasi & Kabin)</span>
+                </label>
+                
+                <label className="flex items-center gap-3 p-3 border rounded-lg hover:bg-gray-50 cursor-pointer">
+                  <input 
+                    type="checkbox" 
+                    className="w-5 h-5 text-indigo-600 rounded border-gray-300 focus:ring-indigo-500"
+                    checked={perlengkapanData.perlengkapanIhramMukena || false}
+                    onChange={e => setPerlengkapanData({...perlengkapanData, perlengkapanIhramMukena: e.target.checked})}
+                  />
+                  <span className="font-medium text-gray-700">Kain Ihram / Mukena</span>
+                </label>
+
+                <label className="flex items-center gap-3 p-3 border rounded-lg hover:bg-gray-50 cursor-pointer">
+                  <input 
+                    type="checkbox" 
+                    className="w-5 h-5 text-indigo-600 rounded border-gray-300 focus:ring-indigo-500"
+                    checked={perlengkapanData.perlengkapanBuku || false}
+                    onChange={e => setPerlengkapanData({...perlengkapanData, perlengkapanBuku: e.target.checked})}
+                  />
+                  <span className="font-medium text-gray-700">Buku Panduan & ID Card</span>
+                </label>
+              </div>
+            </div>
+            
+            <div className="p-6 border-t border-gray-100 flex justify-end gap-3 sticky bottom-0 bg-white">
+              <button 
+                onClick={() => setIsPerlengkapanModalOpen(false)}
+                className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-lg"
+              >
+                Batal
+              </button>
+              <button 
+                onClick={savePerlengkapanData}
+                className="px-4 py-2 text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 rounded-lg flex items-center gap-2"
+              >
+                <Save className="w-4 h-4" /> Simpan Perlengkapan
               </button>
             </div>
           </div>
