@@ -17,51 +17,84 @@ import { TourLeaderPortal } from './components/TourLeaderPortal';
 import { ManifestPage } from './components/manifest/ManifestPage';
 import { RevenueReport } from './components/RevenueReport';
 import { InventoryView } from './components/inventory/InventoryView';
-import { VendorPayables } from './components/finance/VendorPayables';
+import { FinanceDashboard } from './components/finance/FinanceDashboard';
 import { LoginView, Role } from './components/LoginView';
 import { ErrorBoundary } from './components/ErrorBoundary';
+import { DashboardOperasional } from './components/DashboardOperasional';
+import { DashboardMitra } from './components/DashboardMitra';
+import { DashboardJamaah } from './components/DashboardJamaah';
+import { RegisterMitraView } from './components/RegisterMitraView';
+import { ValidasiMitraView } from './components/ValidasiMitraView';
 import { logoBase64 } from './utils/logoBase64';
-import { LogOut, User } from 'lucide-react';
-import { auth } from './firebase';
+import { LogOut, User, Settings, Users } from 'lucide-react';
+import { auth, db } from './firebase';
 import { onAuthStateChanged, signOut } from 'firebase/auth';
+import { doc, getDoc } from 'firebase/firestore';
 
 function App() {
   const [isAuthReady, setIsAuthReady] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const [userRole, setUserRole] = useState<Role | null>(() => {
-    return localStorage.getItem('userRole') as Role | null;
-  });
-  const [activeTab, setActiveTab] = useState<TabType>(() => {
-    return (localStorage.getItem('activeTab') as TabType) || 'dashboard';
-  });
+  const [userRole, setUserRole] = useState<Role | null>(null);
+  const [subRole, setSubRole] = useState<string | null>(null);
+  const [userEmail, setUserEmail] = useState<string | null>(null);
+  const [activeTab, setActiveTab] = useState<TabType>('dashboard');
+  const [adminViewMode, setAdminViewMode] = useState<'operasional' | 'mitra' | 'jamaah'>('operasional');
+  const [showRegisterMitra, setShowRegisterMitra] = useState(false);
 
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (user) => {
+    const unsubscribe = onAuthStateChanged(auth, async (user) => {
       if (user) {
         setIsLoggedIn(true);
+        setUserEmail(user.email);
+        // Fetch user role from Firestore
+        try {
+          const userDoc = await getDoc(doc(db, 'users', user.uid));
+          if (userDoc.exists()) {
+            const data = userDoc.data();
+            setUserRole(data.role as Role);
+            setSubRole(data.subRole || null);
+            
+            // Set initial tab based on role
+            if (data.role === 'mitra') setActiveTab('dashboard-mitra' as any);
+            else if (data.role === 'jamaah') setActiveTab('dashboard-jamaah' as any);
+            else setActiveTab('dashboard');
+          } else {
+            // If user doc doesn't exist yet (during registration), we wait for onLogin
+            setIsLoggedIn(false);
+          }
+        } catch (error) {
+          console.error("Error fetching user role:", error);
+        }
       } else {
         setIsLoggedIn(false);
+        setUserRole(null);
+        setSubRole(null);
+        setUserEmail(null);
       }
       setIsAuthReady(true);
     });
     return () => unsubscribe();
   }, []);
 
-  const handleLogin = (role: Role) => {
+  const isMasterAdmin = userEmail === 'operationalumaroh@gmail.com';
+
+  const handleLogin = (role: Role, subRole?: string) => {
     setUserRole(role);
-    localStorage.setItem('userRole', role);
+    if (subRole) setSubRole(subRole);
     
-    const initialTab = role === 'mitra' ? 'templates' : 'dashboard';
-    setActiveTab(initialTab);
-    localStorage.setItem('activeTab', initialTab);
+    if (role === 'mitra') setActiveTab('dashboard-mitra' as any);
+    else if (role === 'jamaah') setActiveTab('dashboard-jamaah' as any);
+    else setActiveTab('dashboard');
+    
+    setIsLoggedIn(true);
   };
 
   const handleLogout = async () => {
     try {
       await signOut(auth);
       setUserRole(null);
-      localStorage.removeItem('userRole');
-      localStorage.removeItem('activeTab');
+      setSubRole(null);
+      setUserEmail(null);
     } catch (error) {
       console.error('Error signing out:', error);
     }
@@ -69,7 +102,6 @@ function App() {
 
   const handleTabChange = (tab: TabType) => {
     setActiveTab(tab);
-    localStorage.setItem('activeTab', tab);
   };
 
   if (!isAuthReady) {
@@ -80,14 +112,30 @@ function App() {
     );
   }
 
-  if (!isLoggedIn) {
-    return <LoginView onLogin={handleLogin} />;
+  if (!isLoggedIn || (!userRole && !isMasterAdmin)) {
+    if (showRegisterMitra) {
+      return <RegisterMitraView onBack={() => setShowRegisterMitra(false)} />;
+    }
+    return <LoginView onLogin={handleLogin} onGoToRegister={() => setShowRegisterMitra(true)} />;
   }
 
   const renderContent = () => {
+    if (isMasterAdmin) {
+      if (adminViewMode === 'mitra') return <DashboardMitra />;
+      if (adminViewMode === 'jamaah') return <DashboardJamaah />;
+      // else fall through to operasional routes
+    } else {
+      // Route based on role first
+      if (userRole === 'mitra') return <DashboardMitra />;
+      if (userRole === 'jamaah') return <DashboardJamaah />;
+    }
+
+    // Operasional / Admin routes
     switch (activeTab) {
       case 'dashboard':
         return <DashboardView onNavigate={handleTabChange} />;
+      case 'validasi-mitra':
+        return <ValidasiMitraView />;
       case 'database':
         return <DatabaseView />;
       case 'templates':
@@ -109,14 +157,25 @@ function App() {
       case 'inventory':
         return <InventoryView />;
       case 'finance':
-        return <VendorPayables />;
+        return <FinanceDashboard />;
       default:
         return <DashboardView onNavigate={handleTabChange} />;
     }
   };
 
+  const getRoleDisplay = () => {
+    if (isMasterAdmin) return 'Master Admin';
+    if (userRole === 'admin') return 'Administrator';
+    if (userRole === 'mitra') return 'Mitra Travel';
+    if (userRole === 'jamaah') return 'Jamaah';
+    if (userRole === 'operasional') {
+      return subRole ? `Ops - ${subRole}` : 'Operasional';
+    }
+    return 'User';
+  };
+
   return (
-    <div className="min-h-screen bg-gray-50 font-sans text-gray-900 flex flex-col">
+    <div className="min-h-screen bg-gray-50 font-sans text-gray-900 flex flex-col relative pb-20">
       {/* Hero Section */}
       <header className="bg-white text-gray-900 py-12 relative overflow-hidden border-b border-gray-100">
         <div className="absolute inset-0 opacity-5 bg-[url('https://images.unsplash.com/photo-1591604129939-f1efa4d9f7fa?q=80&w=2574&auto=format&fit=crop')] bg-cover bg-center" />
@@ -126,7 +185,7 @@ function App() {
           <div className="flex items-center gap-2 bg-white/80 backdrop-blur-sm px-3 py-1.5 rounded-full border border-gray-200 shadow-sm">
             <User className="w-4 h-4 text-gray-500" />
             <span className="text-xs font-bold text-gray-700 uppercase tracking-wider">
-              {userRole === 'operasional' ? 'Operasional' : 'Mitra Dev'}
+              {getRoleDisplay()}
             </span>
           </div>
           <button 
@@ -146,16 +205,13 @@ function App() {
             <p className="text-gray-500 text-lg max-w-2xl font-medium">
               Platform Digital Penyedia Layanan Satu Atap Bisnis Perjalanan Umrah
             </p>
-            <div className="mt-6 flex gap-4">
-              <div className="bg-amber-500 text-black px-4 py-1.5 rounded-full text-sm font-bold uppercase tracking-wider shadow-sm">
-                pricelist dan sales order
-              </div>
-            </div>
           </div>
         </div>
       </header>
 
-      <Navbar activeTab={activeTab} onTabChange={handleTabChange} userRole={userRole} />
+      {(userRole === 'operasional' || userRole === 'admin' || isMasterAdmin) && (!isMasterAdmin || adminViewMode === 'operasional') && (
+        <Navbar activeTab={activeTab} onTabChange={handleTabChange} userRole={userRole || 'admin'} />
+      )}
 
       {/* Main Content */}
       <main className="flex-grow bg-gray-50">
@@ -165,6 +221,33 @@ function App() {
       </main>
 
       <Footer />
+
+      {/* Master Admin Switcher */}
+      {isMasterAdmin && (
+        <div className="fixed bottom-6 right-6 z-50 bg-white rounded-full shadow-[0_8px_30px_rgb(0,0,0,0.12)] border border-gray-200 p-1.5 flex gap-1 items-center">
+          <div className="px-3 text-xs font-bold text-gray-400 uppercase tracking-wider border-r border-gray-200 mr-1">
+            View As
+          </div>
+          <button
+            onClick={() => setAdminViewMode('operasional')}
+            className={`px-4 py-2 rounded-full text-sm font-bold flex items-center gap-2 transition-colors ${adminViewMode === 'operasional' ? 'bg-amber-500 text-white' : 'text-gray-600 hover:bg-gray-100'}`}
+          >
+            <Settings className="w-4 h-4" /> Operasional
+          </button>
+          <button
+            onClick={() => setAdminViewMode('mitra')}
+            className={`px-4 py-2 rounded-full text-sm font-bold flex items-center gap-2 transition-colors ${adminViewMode === 'mitra' ? 'bg-blue-600 text-white' : 'text-gray-600 hover:bg-gray-100'}`}
+          >
+            <Users className="w-4 h-4" /> Mitra
+          </button>
+          <button
+            onClick={() => setAdminViewMode('jamaah')}
+            className={`px-4 py-2 rounded-full text-sm font-bold flex items-center gap-2 transition-colors ${adminViewMode === 'jamaah' ? 'bg-emerald-600 text-white' : 'text-gray-600 hover:bg-gray-100'}`}
+          >
+            <User className="w-4 h-4" /> Jamaah
+          </button>
+        </div>
+      )}
     </div>
   );
 }

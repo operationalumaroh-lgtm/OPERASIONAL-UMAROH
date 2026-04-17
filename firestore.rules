@@ -1,44 +1,29 @@
 // ===============================================================
 // Assumed Data Model
 // ===============================================================
+// Collection: users
+// Fields: uid, name, email, role (operasional, mitra, jamaah, admin), subRole, uplineId, createdAt
+//
+// Collection: wallets
+// Fields: userId, balance, updatedAt
+//
+// Collection: transactions
+// Fields: id, userId, type, amount, status, description, createdAt
+//
+// Collection: paket_master
+// Fields: id, nama, deskripsi, hargaDasar, maskapaiId, kuota, sisaKuota, status, createdAt
+//
+// Collection: paket_mitra
+// Fields: id, mitraId, paketMasterId, namaCustom, hargaJual, komisiSponsor, status
+//
+// Collection: bookings
+// Fields: id, jamaahId, paketId, jenisPaket, mitraId, statusPembayaran, statusKeberangkatan, totalHarga, createdAt
 //
 // Collection: maskapai
-// Document ID: auto-generated or custom id
-// Fields:
-//   - id: string (required)
-//   - name: string (required)
-//   - hargaJual: number
-//   - hargaBeli: number
-//   - margin: number
-//   - persen: number
-//   - programDays: number
-//   - tanggalKeberangkatan: string (ISO date)
-//   - tanggalKepulangan: string (ISO date)
-//   - originCityName: string
-//   - destinationCityName: string
-//   - namaVendor: string
-//   - totalSeat: number (required)
-//   - remainingSeat: number (required)
+// Fields: id, name, hargaJual, hargaBeli, margin, persen, programDays, tanggalKeberangkatan, tanggalKepulangan, originCityName, destinationCityName, namaVendor, totalSeat, remainingSeat
 //
 // Collection: vendor_services
-// Document ID: auto-generated or custom id
-// Fields:
-//   - id: string (required)
-//   - paketId: string (required)
-//   - namaPaket: string (required)
-//   - namaLayanan: string (required)
-//   - vendor: string (required)
-//   - tanggalKeberangkatan: string (ISO date)
-//   - tanggalKepulangan: string (ISO date)
-//   - reminderDPHMinus: number
-//   - reminderPelunasanHMinus: number
-//   - estimasiBiaya: number
-//   - statusPembayaran: string (Belum Bayar, DP, Lunas)
-//   - pic: string (required)
-//   - catatan: string
-//   - isManualDate: boolean
-//   - manualPelunasanDate: string (ISO date)
-//
+// Fields: id, paketId, namaPaket, namaLayanan, vendor, tanggalKeberangkatan, tanggalKepulangan, reminderDPHMinus, reminderPelunasanHMinus, estimasiBiaya, statusPembayaran, pic, catatan, isManualDate, manualPelunasanDate
 // ===============================================================
 
 rules_version = '2';
@@ -50,68 +35,112 @@ service cloud.firestore {
       return request.auth != null;
     }
 
+    function getUserData() {
+      return exists(/databases/$(database)/documents/users/$(request.auth.uid)) 
+             ? get(/databases/$(database)/documents/users/$(request.auth.uid)).data 
+             : null;
+    }
+
     function isAdmin() {
       return isAuthenticated() && 
-        (get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin' ||
+        ((getUserData() != null && getUserData().role == 'admin') ||
          (request.auth.token.email == "operationalumaroh@gmail.com" && request.auth.token.email_verified == true));
     }
 
-    function isValidMaskapai(data) {
-      return data.keys().hasAll(['id', 'name', 'tanggalKeberangkatan', 'tanggalKepulangan', 'totalSeat', 'remainingSeat']) &&
-             data.id is string &&
-             data.name is string && data.name.size() < 200 &&
-             data.totalSeat is number && data.totalSeat >= 0 &&
-             data.remainingSeat is number && data.remainingSeat >= 0 &&
-             data.remainingSeat <= data.totalSeat;
+    function isOperasional() {
+      return isAuthenticated() && ((getUserData() != null && getUserData().role == 'operasional') || isAdmin());
     }
 
-    function isValidVendorService(data) {
-      return data.keys().hasAll(['id', 'paketId', 'namaPaket', 'namaLayanan', 'vendor', 'tanggalKeberangkatan', 'tanggalKepulangan', 'statusPembayaran', 'pic']) &&
-             data.id is string &&
-             data.paketId is string &&
-             data.namaPaket is string && data.namaPaket.size() < 200 &&
-             data.namaLayanan is string && data.namaLayanan.size() < 100 &&
-             data.vendor is string && data.vendor.size() < 100 &&
-             data.statusPembayaran in ['Belum Bayar', 'DP', 'Lunas'] &&
-             data.pic is string && data.pic.size() < 100;
+    function isFinance() {
+      return isAuthenticated() && ((getUserData() != null && getUserData().role == 'operasional' && getUserData().subRole == 'finance') || isAdmin());
+    }
+
+    function isMitra() {
+      return isAuthenticated() && ((getUserData() != null && getUserData().role == 'mitra') || isAdmin());
+    }
+
+    function isJamaah() {
+      return isAuthenticated() && getUserData() != null && getUserData().role == 'jamaah';
+    }
+
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+
+    // Rules per collection
+    match /users/{userId} {
+      allow read: if isAuthenticated() || resource.data.role == 'mitra';
+      allow create: if isAuthenticated() && isOwner(userId) && 
+                    (request.resource.data.role in ['mitra', 'jamaah'] || isAdmin());
+      allow update: if isAuthenticated() && (isOwner(userId) || isAdmin()) &&
+                    (request.resource.data.role == resource.data.role || isAdmin());
+      allow delete: if isAdmin();
+    }
+
+    match /wallets/{walletId} {
+      allow read: if isAuthenticated() && (isOwner(walletId) || isFinance());
+      allow write: if isFinance();
+    }
+
+    match /transactions/{transactionId} {
+      allow read: if isAuthenticated() && (isOwner(resource.data.userId) || isFinance());
+      allow create: if isAuthenticated() && request.resource.data.userId == request.auth.uid && 
+                    request.resource.data.type == 'withdraw' && request.resource.data.status == 'pending';
+      allow update, delete: if isFinance();
+      allow create: if isFinance();
+    }
+
+    match /paket_master/{paketId} {
+      allow read: if isAuthenticated();
+      allow write: if isOperasional();
+    }
+
+    match /paket_mitra/{paketId} {
+      allow read: if isAuthenticated();
+      allow create: if isMitra() && request.resource.data.mitraId == request.auth.uid;
+      allow update: if (isMitra() && resource.data.mitraId == request.auth.uid) || isOperasional();
+      allow delete: if (isMitra() && resource.data.mitraId == request.auth.uid) || isOperasional();
+    }
+
+    match /bookings/{bookingId} {
+      allow read: if isAuthenticated() && 
+                  (resource.data.jamaahId == request.auth.uid || 
+                   resource.data.mitraId == request.auth.uid || 
+                   isOperasional());
+      allow create: if isAuthenticated() && 
+                    (request.resource.data.jamaahId == request.auth.uid || 
+                     (isMitra() && request.resource.data.mitraId == request.auth.uid));
+      allow update: if isOperasional() || 
+                    (isOwner(resource.data.jamaahId) && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['statusPembayaran']));
+      allow delete: if isOperasional();
     }
 
     match /maskapai/{maskapaiId} {
       allow read: if isAuthenticated();
-      allow create: if isAdmin() && isValidMaskapai(request.resource.data);
-      allow delete: if isAdmin();
-      allow update: if isAuthenticated() && 
-        (isAdmin() || 
-         (request.resource.data.diff(resource.data).affectedKeys().hasOnly(['remainingSeat']) &&
-          request.resource.data.remainingSeat < resource.data.remainingSeat &&
-          request.resource.data.remainingSeat >= 0));
+      allow write: if isOperasional();
     }
 
     match /vendor_services/{serviceId} {
       allow read: if isAuthenticated();
-      allow write: if isAuthenticated() && isValidVendorService(request.resource.data);
+      allow write: if isOperasional();
     }
 
-    match /tracker_paket/{paketId} {
-      allow read, write: if isAuthenticated();
-    }
-    
-    match /tracker_jamaah/{jamaahId} {
-      allow read, write: if isAuthenticated();
-    }
-    
-    match /tracker_keberangkatan/{keberangkatanId} {
-      allow read, write: if isAuthenticated();
+    match /paket_kemitraan/{paketId} {
+      allow read: if true; // Anyone can read partnership packages
+      allow write: if isOperasional();
     }
 
-    match /tracking_group/{groupId} {
-      allow read, write: if isAuthenticated();
+    match /pendaftaran_mitra/{pendaftaranId} {
+      allow read: if isOperasional() || (isAuthenticated() && resource.data.email == request.auth.token.email);
+      allow create: if true; // Anyone can submit a registration
+      allow update: if isOperasional();
+      allow delete: if isOperasional();
     }
 
-    match /users/{userId} {
-      allow read: if isAuthenticated() && request.auth.uid == userId;
-      allow write: if isAuthenticated() && request.auth.uid == userId && 
-                    !request.resource.data.keys().contains('role');
-    }
+    // Legacy trackers
+    match /tracker_paket/{paketId} { allow read, write: if isAuthenticated(); }
+    match /tracker_jamaah/{jamaahId} { allow read, write: if isAuthenticated(); }
+    match /tracker_keberangkatan/{keberangkatanId} { allow read, write: if isAuthenticated(); }
+    match /tracking_group/{groupId} { allow read, write: if isAuthenticated(); }
   }
 }

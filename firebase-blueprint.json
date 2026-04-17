@@ -1,5 +1,95 @@
 {
   "entities": {
+    "UserProfile": {
+      "title": "UserProfile",
+      "description": "Data pengguna termasuk role dan hierarki MLM",
+      "type": "object",
+      "properties": {
+        "uid": { "type": "string" },
+        "name": { "type": "string" },
+        "email": { "type": "string", "format": "email" },
+        "role": { "type": "string", "enum": ["operasional", "mitra", "jamaah", "admin"] },
+        "subRole": { "type": "string", "enum": ["development", "operasional", "finance", "marketing", ""] },
+        "uplineId": { "type": "string", "description": "UID mitra yang merekrut (jika ada)" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["uid", "name", "email", "role"]
+    },
+    "Wallet": {
+      "title": "Wallet",
+      "description": "Dompet saldo pengguna (terutama Mitra)",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string" },
+        "balance": { "type": "number" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["userId", "balance"]
+    },
+    "Transaction": {
+      "title": "Transaction",
+      "description": "Riwayat transaksi dompet (komisi, withdraw, dll)",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "userId": { "type": "string" },
+        "type": { "type": "string", "enum": ["komisi", "withdraw", "pembayaran", "bonus_rekrut"] },
+        "amount": { "type": "number" },
+        "status": { "type": "string", "enum": ["pending", "approved", "rejected", "success"] },
+        "description": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["id", "userId", "type", "amount", "status"]
+    },
+    "PaketMaster": {
+      "title": "PaketMaster",
+      "description": "Paket umroh utama yang dibuat oleh Operasional",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "nama": { "type": "string" },
+        "deskripsi": { "type": "string" },
+        "hargaDasar": { "type": "number" },
+        "maskapaiId": { "type": "string" },
+        "kuota": { "type": "number" },
+        "sisaKuota": { "type": "number" },
+        "status": { "type": "string", "enum": ["draft", "published", "closed"] },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["id", "nama", "hargaDasar", "kuota", "sisaKuota", "status"]
+    },
+    "PaketMitra": {
+      "title": "PaketMitra",
+      "description": "Paket umroh yang di-markup/dicustom oleh Mitra",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "mitraId": { "type": "string" },
+        "paketMasterId": { "type": "string" },
+        "namaCustom": { "type": "string" },
+        "hargaJual": { "type": "number" },
+        "komisiSponsor": { "type": "number" },
+        "status": { "type": "string", "enum": ["active", "inactive"] }
+      },
+      "required": ["id", "mitraId", "paketMasterId", "namaCustom", "hargaJual", "status"]
+    },
+    "Booking": {
+      "title": "Booking",
+      "description": "Data pemesanan paket oleh Jamaah",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "jamaahId": { "type": "string" },
+        "paketId": { "type": "string" },
+        "jenisPaket": { "type": "string", "enum": ["master", "mitra"] },
+        "mitraId": { "type": "string", "description": "ID Mitra jika booking lewat paket mitra" },
+        "statusPembayaran": { "type": "string", "enum": ["pending", "dp", "lunas"] },
+        "statusKeberangkatan": { "type": "string", "enum": ["menunggu", "proses_visa", "siap_berangkat", "selesai"] },
+        "totalHarga": { "type": "number" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["id", "jamaahId", "paketId", "jenisPaket", "statusPembayaran", "totalHarga"]
+    },
     "Maskapai": {
       "title": "Maskapai",
       "description": "Informasi tiket pesawat dan ketersediaan kursi",
@@ -17,10 +107,10 @@
         "originCityName": { "type": "string" },
         "destinationCityName": { "type": "string" },
         "namaVendor": { "type": "string" },
-        "totalSeat": { "type": "number", "description": "Total kursi yang tersedia" },
-        "remainingSeat": { "type": "number", "description": "Sisa kursi yang tersedia" }
+        "totalSeats": { "type": "number" },
+        "availableSeats": { "type": "number" }
       },
-      "required": ["id", "name", "tanggalKeberangkatan", "tanggalKepulangan", "totalSeat", "remainingSeat"]
+      "required": ["id", "name", "tanggalKeberangkatan", "tanggalKepulangan", "totalSeats", "availableSeats"]
     },
     "VendorService": {
       "title": "VendorService",
@@ -47,13 +137,13 @@
     }
   },
   "firestore": {
-    "/maskapai": {
-      "schema": "Maskapai",
-      "description": "Koleksi data maskapai penerbangan"
-    },
-    "/vendor_services": {
-      "schema": "VendorService",
-      "description": "Koleksi data mapping pembayaran vendor"
-    }
+    "/users/{userId}": { "schema": "UserProfile", "description": "Koleksi data pengguna" },
+    "/wallets/{walletId}": { "schema": "Wallet", "description": "Koleksi dompet pengguna" },
+    "/transactions/{transactionId}": { "schema": "Transaction", "description": "Koleksi riwayat transaksi" },
+    "/paket_master/{paketId}": { "schema": "PaketMaster", "description": "Koleksi paket utama" },
+    "/paket_mitra/{paketId}": { "schema": "PaketMitra", "description": "Koleksi paket custom mitra" },
+    "/bookings/{bookingId}": { "schema": "Booking", "description": "Koleksi pemesanan jamaah" },
+    "/maskapai/{maskapaiId}": { "schema": "Maskapai", "description": "Koleksi data maskapai penerbangan" },
+    "/vendor_services/{serviceId}": { "schema": "VendorService", "description": "Koleksi data mapping pembayaran vendor" }
   }
 }

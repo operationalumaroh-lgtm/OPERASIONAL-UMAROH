@@ -10,14 +10,18 @@ import { HandlingDomestikView } from './HandlingDomestikView';
 import { ManasikView } from './ManasikView';
 import { ZiarahView } from './ZiarahView';
 import { KeretaCepatView } from './KeretaCepatView';
-import { Building2, Plane, Bus, Briefcase, FileText, Users, PlaneTakeoff, BookOpen, Map, Train } from 'lucide-react';
+import { PaketMasterView } from './PaketMasterView';
+import { KemitraanAdminView } from './database/KemitraanAdminView';
+import { Building2, Plane, Bus, Briefcase, FileText, Users, PlaneTakeoff, BookOpen, Map, Train, Package, Handshake } from 'lucide-react';
 
-type DatabaseTab = 'hotel' | 'handling' | 'transport' | 'equipment' | 'visa' | 'mutawif' | 'maskapai' | 'handlingDomestik' | 'manasik' | 'ziarah' | 'keretaCepat';
+type DatabaseTab = 'paketMaster' | 'kemitraan' | 'hotel' | 'handling' | 'transport' | 'equipment' | 'visa' | 'mutawif' | 'maskapai' | 'handlingDomestik' | 'manasik' | 'ziarah' | 'keretaCepat';
 
 export const DatabaseView: React.FC = () => {
-  const [activeTab, setActiveTab] = useState<DatabaseTab>('hotel');
+  const [activeTab, setActiveTab] = useState<DatabaseTab>('paketMaster');
 
   const tabs = [
+    { id: 'paketMaster', label: 'Paket Master', icon: Package },
+    { id: 'kemitraan', label: 'Kemitraan', icon: Handshake },
     { id: 'hotel', label: 'Hotel', icon: Building2 },
     { id: 'maskapai', label: 'Maskapai', icon: PlaneTakeoff },
     { id: 'handling', label: 'Handling Saudi', icon: Plane },
@@ -33,6 +37,8 @@ export const DatabaseView: React.FC = () => {
 
   const renderContent = () => {
     switch (activeTab) {
+      case 'paketMaster': return <PaketMasterView />;
+      case 'kemitraan': return <KemitraanAdminView />;
       case 'hotel': return <HotelView />;
       case 'maskapai': return <MaskapaiView />;
       case 'handling': return <HandlingSaudiView />;
@@ -44,7 +50,7 @@ export const DatabaseView: React.FC = () => {
       case 'manasik': return <ManasikView />;
       case 'ziarah': return <ZiarahView />;
       case 'mutawif': return <MutawifView />;
-      default: return <HotelView />;
+      default: return <PaketMasterView />;
     }
   };
 

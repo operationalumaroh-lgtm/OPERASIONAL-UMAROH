@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
-import { Database, FileSpreadsheet, ShoppingCart, LayoutDashboard, Hotel, Bell, Plane, Menu, X, MapPin, FileText, TrendingUp } from 'lucide-react';
+import { Database, FileSpreadsheet, ShoppingCart, LayoutDashboard, Hotel, Bell, Plane, Menu, X, MapPin, FileText, TrendingUp, Users } from 'lucide-react';
 import { Role } from './LoginView';
 
-export type TabType = 'dashboard' | 'database' | 'templates' | 'mapping' | 'sales-order' | 'flights' | 'tracker' | 'manifest' | 'revenue' | 'tl-portal' | 'inventory' | 'finance';
+export type TabType = 'dashboard' | 'database' | 'templates' | 'mapping' | 'sales-order' | 'flights' | 'tracker' | 'manifest' | 'revenue' | 'tl-portal' | 'inventory' | 'finance' | 'validasi-mitra';
 
 interface NavbarProps {
   activeTab: TabType;
@@ -15,6 +15,7 @@ export const Navbar: React.FC<NavbarProps> = ({ activeTab, onTabChange, userRole
 
   const allNavItems: { id: TabType; label: string; icon: React.ElementType }[] = [
     { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
+    { id: 'validasi-mitra', label: 'Validasi Mitra', icon: Users },
     { id: 'database', label: 'Database', icon: Database },
     { id: 'templates', label: 'Templates', icon: FileSpreadsheet },
     { id: 'mapping', label: 'Mapping Pembayaran & Booking', icon: Hotel },
@@ -25,7 +26,7 @@ export const Navbar: React.FC<NavbarProps> = ({ activeTab, onTabChange, userRole
     { id: 'revenue', label: 'Laporan Pendapatan', icon: TrendingUp },
     { id: 'tl-portal', label: 'Portal TL (Mobile)', icon: MapPin },
     { id: 'inventory', label: 'Inventory & Gudang', icon: Database },
-    { id: 'finance', label: 'Tagihan Vendor (AP)', icon: TrendingUp },
+    { id: 'finance', label: 'Finance & Keuangan', icon: TrendingUp },
   ];
 
   const navItems = userRole === 'mitra' 

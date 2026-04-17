@@ -1,5 +1,6 @@
 {
   "name": "Booking & Payment Mapper",
   "description": "Aplikasi untuk mapping pembayaran dan booking layanan menggunakan penyimpanan lokal.",
-  "requestFramePermissions": []
+  "requestFramePermissions": [],
+  "majorCapabilities": []
 }
