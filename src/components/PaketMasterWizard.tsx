@@ -21,6 +21,7 @@ const getSteps = (kategori: string) => {
       'LAYANAN',
       'HARGA & REVIEW',
       'REVIEW FASILITAS',
+      'PUBLIKASI & DESKRIPSI',
       'VALIDASI AKHIR'
     ];
   }
@@ -31,6 +32,7 @@ const getSteps = (kategori: string) => {
     'LAYANAN',
     'HARGA & REVIEW',
     'REVIEW FASILITAS',
+    'PUBLIKASI & DESKRIPSI',
     'VALIDASI AKHIR'
   ];
 };
@@ -128,6 +130,9 @@ export const PaketMasterWizard: React.FC<PaketMasterWizardProps> = ({ initialDat
     maskapaiId: '',
     hargaDasar: 0,
     deskripsi: '',
+    tipePublikasi: 'B2C (PUBLIC)',
+    tipePenjualan: 'INDIVIDUAL',
+    photoUtama: null,
     tipePenerbangan: 'DIRECT',
     kelasPenerbangan: 'Ekonomi',
     estimasiHargaMaskapai: 0,
@@ -143,8 +148,6 @@ export const PaketMasterWizard: React.FC<PaketMasterWizardProps> = ({ initialDat
     selectedLayanan: LAYANAN_ITEMS.map(i => i.id), // By default mostly all selected based on mock
     selectedWisata: ['City Tour Makkah', 'City Tour Madinah'], // some mock selections
     marginBersih: 1000000, // default profit 1jt
-    tipePublikasi: 'pribadi',
-    tipePenjualan: 'sendiri',
     ujrohPartner: 0
   });
 
@@ -179,6 +182,8 @@ export const PaketMasterWizard: React.FC<PaketMasterWizardProps> = ({ initialDat
       const dataToSave = {
         nama: formData.nama || 'Paket Umroh Tanpa Nama',
         deskripsi: formData.deskripsi || '',
+        tipePublikasi: formData.tipePublikasi || 'B2C',
+        tipePenjualan: formData.tipePenjualan || 'INDIVIDUAL',
         hargaDasar: Number(formData.hargaDasar || 0),
         maskapaiId: formData.maskapaiId || '',
         kuota: Number(formData.targetJamaah || 0),
@@ -206,7 +211,8 @@ export const PaketMasterWizard: React.FC<PaketMasterWizardProps> = ({ initialDat
           createdAt: serverTimestamp()
         });
       }
-      onSuccess();
+      // Instead of onSuccess, go to the final validation step
+      handleNext();
     } catch (e) {
       console.error(e);
       alert('Gagal menyimpan data');
@@ -1585,6 +1591,98 @@ export const PaketMasterWizard: React.FC<PaketMasterWizardProps> = ({ initialDat
           </div>
         )}
 
+        {currentStepName === 'PUBLIKASI & DESKRIPSI' && (
+          <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500 pb-20">
+            {/* 1. UPLOAD FOTO UTAMA */}
+            <div className="space-y-4">
+              <div className="flex items-start gap-3">
+                <span className="w-6 h-6 rounded-md bg-blue-600 text-white flex items-center justify-center text-[10px] font-black mt-0.5">1.</span>
+                <div className="flex flex-col">
+                  <h3 className="font-black text-gray-900 text-sm tracking-widest uppercase">UPLOAD FOTO UTAMA PAKET</h3>
+                  <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mt-1">GUNAKAN FOTO TERBAIK UNTUK MENARIK JAMAAH</p>
+                </div>
+              </div>
+
+              <div className="mt-6">
+                <div className="w-full h-80 border-2 border-dashed border-gray-200 rounded-[2rem] flex flex-col items-center justify-center bg-gray-50/50 hover:bg-gray-50 transition-colors cursor-pointer group relative overflow-hidden">
+                  <div className="w-16 h-16 rounded-2xl bg-white shadow-sm flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+                    <ImagePlus className="w-8 h-8 text-gray-300" />
+                  </div>
+                  <p className="text-xs font-black text-gray-700 uppercase tracking-wider">Klik atau seret foto ke sini</p>
+                  <p className="text-[10px] font-bold text-gray-400 mt-2">PNG, JPG (MAX 5MB)</p>
+                  <input type="file" className="absolute inset-0 opacity-0 cursor-pointer" accept="image/*" />
+                </div>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8 pt-6">
+              {/* 2. TIPE PUBLIKASI */}
+              <div className="space-y-4">
+                <div className="flex items-start gap-3">
+                  <span className="w-6 h-6 rounded-md bg-blue-600 text-white flex items-center justify-center text-[10px] font-black mt-0.5">2.</span>
+                  <div className="flex flex-col">
+                    <h3 className="font-black text-gray-900 text-sm tracking-widest uppercase">TIPE PUBLIKASI</h3>
+                  </div>
+                </div>
+                
+                <div className="grid grid-cols-2 gap-3 mt-4">
+                  {['B2C (PUBLIC)', 'B2B (MITRA)', 'INTERNAL ONLY', 'PRIVATE'].map(item => (
+                    <button
+                      key={item}
+                      onClick={() => setFormData({...formData, tipePublikasi: item})}
+                      className={`p-4 rounded-2xl border-2 text-[10px] font-black tracking-widest uppercase text-left transition-all ${
+                        formData.tipePublikasi === item 
+                          ? 'border-blue-600 bg-blue-50 text-blue-600 shadow-md' 
+                          : 'border-gray-100 bg-white text-gray-400 hover:border-gray-200'
+                      }`}
+                    >
+                      {item}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* 3. TIPE PENJUALAN */}
+              <div className="space-y-4">
+                <div className="flex items-start gap-3">
+                  <span className="w-6 h-6 rounded-md bg-blue-600 text-white flex items-center justify-center text-[10px] font-black mt-0.5">3.</span>
+                  <div className="flex flex-col">
+                    <h3 className="font-black text-gray-900 text-sm tracking-widest uppercase">TIPE PENJUALAN</h3>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-2 gap-3 mt-4">
+                  {['INDIVIDUAL', 'GROUP/COMMUNITY', 'FAMILY PACKAGE', 'CORPORATE'].map(item => (
+                    <button
+                      key={item}
+                      onClick={() => setFormData({...formData, tipePenjualan: item})}
+                      className={`p-4 rounded-2xl border-2 text-[10px] font-black tracking-widest uppercase text-left transition-all ${
+                        formData.tipePenjualan === item 
+                          ? 'border-blue-600 bg-blue-50 text-blue-600 shadow-md' 
+                          : 'border-gray-100 bg-white text-gray-400 hover:border-gray-200'
+                      }`}
+                    >
+                      {item}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            {/* Deskripsi Lengkap Paket (Optional but Good here) */}
+            <div className="bg-white rounded-3xl p-6 md:p-8 border-2 border-gray-50 shadow-sm mt-6">
+              <label className="block text-xs font-bold text-gray-400 mb-4 uppercase tracking-widest italic">Deskripsi lengkap atau syarat & ketentuan khusus:</label>
+              <textarea
+                rows={4}
+                placeholder="Deskripsikan paket secara detail, keunggulan, atau catatan tambahan..."
+                value={formData.deskripsi || ''}
+                onChange={(e) => setFormData({...formData, deskripsi: e.target.value})}
+                className="w-full p-4 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none text-gray-800 font-medium transition-all"
+              />
+            </div>
+          </div>
+        )}
+
         {currentStepName === 'VALIDASI AKHIR' && (
           <div className="flex flex-col items-center justify-center py-16 text-center animate-in zoom-in-95 duration-500">
             <div className="w-32 h-32 bg-emerald-50 rounded-[3rem] flex items-center justify-center mb-0 relative">
@@ -1629,15 +1727,15 @@ export const PaketMasterWizard: React.FC<PaketMasterWizardProps> = ({ initialDat
           ) : <div />}
 
           <button 
-            onClick={currentStepName === 'REVIEW FASILITAS' ? handleSave : handleNext}
+            onClick={currentStepName === 'PUBLIKASI & DESKRIPSI' ? handleSave : handleNext}
             disabled={isSaving}
             className={`flex items-center gap-2 px-8 py-3 font-bold rounded-xl transition-colors shadow-lg disabled:opacity-50 ${
-              currentStepName === 'REVIEW FASILITAS' 
+              currentStepName === 'PUBLIKASI & DESKRIPSI' 
                 ? 'bg-emerald-600 text-white hover:bg-emerald-700 shadow-emerald-600/20 uppercase text-xs tracking-wider' 
                 : 'bg-emerald-600 text-white hover:bg-emerald-700 shadow-emerald-600/20'
             }`}
           >
-            {isSaving ? 'MENYIMPAN...' : (currentStepName === 'REVIEW FASILITAS' ? 'SIMPAN & AKTIFKAN' : 'Lanjutkan')}
+            {isSaving ? 'MENYIMPAN...' : (currentStepName === 'PUBLIKASI & DESKRIPSI' ? 'SIMPAN & AKTIFKAN' : 'Lanjutkan')}
             {isSaving ? null : <ChevronRight className="w-5 h-5" />}
           </button>
         </div>
