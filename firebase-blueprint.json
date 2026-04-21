@@ -134,6 +134,49 @@
         "manualPelunasanDate": { "type": "string", "format": "date" }
       },
       "required": ["id", "paketId", "namaPaket", "namaLayanan", "vendor", "tanggalKeberangkatan", "tanggalKepulangan", "statusPembayaran", "pic"]
+    },
+    "MasterHotel": {
+      "title": "MasterHotel",
+      "description": "Katalog master hotel untuk Makkah, Madinah, dll",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "nama": { "type": "string" },
+        "kota": { "type": "string", "enum": ["Makkah", "Madinah", "Lainnya"] },
+        "bintang": { "type": "number" },
+        "priceQuad": { "type": "number" },
+        "priceTriple": { "type": "number" },
+        "priceDouble": { "type": "number" },
+        "isActive": { "type": "boolean" }
+      },
+      "required": ["id", "nama", "kota", "bintang", "priceQuad", "isActive"]
+    },
+    "MasterLayanan": {
+      "title": "MasterLayanan",
+      "description": "Katalog master layanan tambahan (Mutawwif, Kereta, dll)",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "nama": { "type": "string" },
+        "deskripsi": { "type": "string" },
+        "harga": { "type": "number" },
+        "kategori": { "type": "string" },
+        "isActive": { "type": "boolean" }
+      },
+      "required": ["id", "nama", "harga", "isActive"]
+    },
+    "MasterMerchandise": {
+      "title": "MasterMerchandise",
+      "description": "Katalog master merchandise (Koper, Tas, dll)",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "nama": { "type": "string" },
+        "deskripsi": { "type": "string" },
+        "harga": { "type": "number" },
+        "isActive": { "type": "boolean" }
+      },
+      "required": ["id", "nama", "harga", "isActive"]
     }
   },
   "firestore": {
@@ -144,6 +187,9 @@
     "/paket_mitra/{paketId}": { "schema": "PaketMitra", "description": "Koleksi paket custom mitra" },
     "/bookings/{bookingId}": { "schema": "Booking", "description": "Koleksi pemesanan jamaah" },
     "/maskapai/{maskapaiId}": { "schema": "Maskapai", "description": "Koleksi data maskapai penerbangan" },
-    "/vendor_services/{serviceId}": { "schema": "VendorService", "description": "Koleksi data mapping pembayaran vendor" }
+    "/vendor_services/{serviceId}": { "schema": "VendorService", "description": "Koleksi data mapping pembayaran vendor" },
+    "/master_hotels/{hotelId}": { "schema": "MasterHotel", "description": "Koleksi katalog hotel" },
+    "/master_layanan/{layananId}": { "schema": "MasterLayanan", "description": "Koleksi katalog layanan tambahan" },
+    "/master_merchandise/{merchId}": { "schema": "MasterMerchandise", "description": "Koleksi katalog merchandise" }
   }
 }

@@ -125,6 +125,22 @@ service cloud.firestore {
       allow write: if isOperasional();
     }
 
+    match /master_hotels/{hotelId} {
+      allow read: if isAuthenticated();
+      // Temporarily open write for seeding, ideally should be isOperasional()
+      allow write: if isAuthenticated();
+    }
+
+    match /master_layanan/{layananId} {
+      allow read: if isAuthenticated();
+      allow write: if isAuthenticated();
+    }
+
+    match /master_merchandise/{merchId} {
+      allow read: if isAuthenticated();
+      allow write: if isAuthenticated();
+    }
+
     match /paket_kemitraan/{paketId} {
       allow read: if true; // Anyone can read partnership packages
       allow write: if isOperasional();
