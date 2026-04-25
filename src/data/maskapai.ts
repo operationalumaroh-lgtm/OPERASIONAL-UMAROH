@@ -13,6 +13,8 @@ export interface Maskapai {
   namaVendor: string;
   totalSeats: number;
   availableSeats: number;
+  ruteLabel?: string;
+  hargaSetoran?: number;
 }
 
 export const maskapaiData: Maskapai[] = [

@@ -177,6 +177,48 @@
         "isActive": { "type": "boolean" }
       },
       "required": ["id", "nama", "harga", "isActive"]
+    },
+    "MasterBandara": {
+      "title": "MasterBandara",
+      "description": "Katalog data bandara dan kota",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "kode": { "type": "string" },
+        "nama": { "type": "string" },
+        "kota": { "type": "string" },
+        "negara": { "type": "string" }
+      },
+      "required": ["id", "kode", "nama", "kota", "negara"]
+    },
+    "MasterPaketWisata": {
+      "title": "MasterPaketWisata",
+      "description": "Katalog wisata halal",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "nama": { "type": "string" },
+        "deskripsi": { "type": "string" },
+        "durasiHari": { "type": "number" },
+        "lokasi": { "type": "string" },
+        "img": { "type": "string" },
+        "hargaStart": { "type": "number" }
+      },
+      "required": ["id", "nama", "deskripsi", "durasiHari", "lokasi", "img", "hargaStart"]
+    },
+    "HotelMetadata": {
+      "title": "HotelMetadata",
+      "description": "Additional hotel information such as distance and photo",
+      "type": "object",
+      "properties": {
+        "hotelId": { "type": "string" },
+        "hotelName": { "type": "string" },
+        "city": { "type": "string" },
+        "photoUrl": { "type": "string" },
+        "distance": { "type": "string" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["hotelId", "hotelName"]
     }
   },
   "firestore": {
@@ -190,6 +232,9 @@
     "/vendor_services/{serviceId}": { "schema": "VendorService", "description": "Koleksi data mapping pembayaran vendor" },
     "/master_hotels/{hotelId}": { "schema": "MasterHotel", "description": "Koleksi katalog hotel" },
     "/master_layanan/{layananId}": { "schema": "MasterLayanan", "description": "Koleksi katalog layanan tambahan" },
-    "/master_merchandise/{merchId}": { "schema": "MasterMerchandise", "description": "Koleksi katalog merchandise" }
+    "/master_merchandise/{merchId}": { "schema": "MasterMerchandise", "description": "Koleksi katalog merchandise" },
+    "/master_bandara/{bandaraId}": { "schema": "MasterBandara", "description": "Koleksi katalog bandara" },
+    "/master_paket_wisata/{paketWisataId}": { "schema": "MasterPaketWisata", "description": "Koleksi katalog paket wisata" },
+    "/hotel_metadata/{mediaId}": { "schema": "HotelMetadata", "description": "Koleksi media dan jarak hotel" }
   }
 }

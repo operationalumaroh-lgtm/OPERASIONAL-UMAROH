@@ -1,14 +1,30 @@
 import React, { useState, useEffect } from 'react';
-import { Search, Plus, Edit2, Trash2, PlaneTakeoff, RefreshCw } from 'lucide-react';
+import { Search, Plus, Edit2, Trash2, PlaneTakeoff, RefreshCw, X, Download } from 'lucide-react';
 import { Maskapai, maskapaiData as initialData } from '../data/maskapai';
+import * as XLSX from 'xlsx';
 import { db } from '../firebase';
-import { collection, onSnapshot, writeBatch, doc } from 'firebase/firestore';
+import { collection, onSnapshot, writeBatch, doc, addDoc, updateDoc, deleteDoc } from 'firebase/firestore';
 
 export const MaskapaiView: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [data, setData] = useState<Maskapai[]>([]);
   const [loading, setLoading] = useState(true);
   const [migrationStatus, setMigrationStatus] = useState<'idle' | 'confirm' | 'migrating' | 'success' | 'error'>('idle');
+
+  const [isFormOpen, setIsFormOpen] = useState(false);
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [formData, setFormData] = useState<Partial<Maskapai>>({
+    name: '',
+    originCityName: '',
+    destinationCityName: '',
+    ruteLabel: '',
+    tanggalKeberangkatan: '',
+    tanggalKepulangan: '',
+    hargaSetoran: 0,
+    hargaJual: 0,
+    availableSeats: 0,
+    namaVendor: ''
+  });
 
   useEffect(() => {
     const unsubscribe = onSnapshot(collection(db, 'maskapai'), (snapshot) => {
@@ -37,6 +53,59 @@ export const MaskapaiView: React.FC = () => {
     return () => unsubscribe();
   }, []);
 
+  const handleOpenForm = (item?: Maskapai) => {
+    if (item) {
+      setEditingId(item.id);
+      setFormData({
+        name: item.name,
+        originCityName: item.originCityName,
+        destinationCityName: item.destinationCityName,
+        ruteLabel: item.ruteLabel,
+        tanggalKeberangkatan: item.tanggalKeberangkatan,
+        tanggalKepulangan: item.tanggalKepulangan,
+        hargaSetoran: item.hargaSetoran,
+        hargaJual: item.hargaJual,
+        availableSeats: item.availableSeats,
+        namaVendor: item.namaVendor
+      });
+    } else {
+      setEditingId(null);
+      setFormData({
+        name: '',
+        originCityName: '',
+        destinationCityName: '',
+        ruteLabel: '',
+        tanggalKeberangkatan: '',
+        tanggalKepulangan: '',
+        hargaSetoran: 0,
+        hargaJual: 0,
+        availableSeats: 45,
+        namaVendor: ''
+      });
+    }
+    setIsFormOpen(true);
+  };
+
+  const handleCloseForm = () => {
+    setIsFormOpen(false);
+    setEditingId(null);
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    try {
+      if (editingId) {
+        await updateDoc(doc(db, 'maskapai', editingId), formData);
+      } else {
+        await addDoc(collection(db, 'maskapai'), formData);
+      }
+      handleCloseForm();
+    } catch (error) {
+      console.error("Error saving maskapai:", error);
+      alert('Gagal menyimpan data maskapai.');
+    }
+  };
+
   const handleMigrateData = async () => {
     if (migrationStatus === 'idle') {
       setMigrationStatus('confirm');
@@ -59,6 +128,42 @@ export const MaskapaiView: React.FC = () => {
       setMigrationStatus('error');
       setTimeout(() => setMigrationStatus('idle'), 3000);
     }
+  };
+
+  const handleExportExcel = () => {
+    const excelData = data.map(item => {
+      let kode = '';
+      const nameUpper = item.name.toUpperCase();
+      if (nameUpper.includes('GARUDA')) kode = 'GA';
+      else if (nameUpper.includes('SAUDIA')) kode = 'SV';
+      else if (nameUpper.includes('INDIGO')) kode = '6E';
+      else if (nameUpper.includes('HAINAN')) kode = 'HU';
+      else if (nameUpper.includes('LION')) kode = 'JT';
+      else if (nameUpper.includes('QATAR')) kode = 'QR';
+      else if (nameUpper.includes('EMIRATES')) kode = 'EK';
+      else if (nameUpper.includes('ETIHAD')) kode = 'EY';
+      else if (nameUpper.includes('BATIC') || nameUpper.includes('BATIK')) kode = 'ID';
+      
+      return {
+        'nama_maskapai': item.name,
+        'kode_maskapai': kode,
+        'harga_maskapai': item.hargaJual || item.hargaBeli,
+        'durasi_program_hari': item.programDays,
+        'nama_periode': `${item.tanggalKeberangkatan} - ${item.tanggalKepulangan}`,
+        'kota_berangkat': item.originCityName || 'Jakarta',
+        'kota_tujuan_umrah': item.destinationCityName || 'Jeddah / Madinah',
+        'umrah_la': 'false',
+        'kota_wisata_lanjutan': '',
+        'tipe_penerbangan': item.ruteLabel && item.ruteLabel.toLowerCase().includes('transit') ? 'transit' : 'direct',
+        'kelas_penerbangan': 'economy',
+        'logo_url': ''
+      };
+    });
+
+    const worksheet = XLSX.utils.json_to_sheet(excelData);
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, 'Maskapai');
+    XLSX.writeFile(workbook, 'template_maskapai.xlsx');
   };
 
   const formatCurrency = (amount: number) => {
@@ -109,7 +214,14 @@ export const MaskapaiView: React.FC = () => {
               {migrationStatus === 'error' && 'Gagal!'}
             </button>
           )}
-          <button className="bg-emerald-600 text-white px-4 py-2 rounded-lg flex items-center gap-2 hover:bg-emerald-700 transition-colors">
+          <button 
+            onClick={handleExportExcel}
+            className="bg-emerald-100 text-emerald-700 px-4 py-2 rounded-lg flex items-center gap-2 hover:bg-emerald-200 transition-colors"
+          >
+            <Download className="w-4 h-4" />
+            Download Excel
+          </button>
+          <button className="bg-emerald-600 text-white px-4 py-2 rounded-lg flex items-center gap-2 hover:bg-emerald-700 transition-colors" onClick={() => handleOpenForm()}>
             <Plus className="w-4 h-4" />
             Tambah Maskapai
           </button>
@@ -217,10 +329,15 @@ export const MaskapaiView: React.FC = () => {
                       <td className="px-4 py-3 text-gray-600">{item.destinationCityName}</td>
                       <td className="px-4 py-3">
                         <div className="flex items-center justify-end gap-2">
-                          <button className="p-1 text-blue-600 hover:bg-blue-50 rounded">
+                          <button className="p-1 text-blue-600 hover:bg-blue-50 rounded" onClick={() => handleOpenForm(item)}>
                             <Edit2 className="w-4 h-4" />
                           </button>
-                          <button className="p-1 text-red-600 hover:bg-red-50 rounded">
+                          <button className="p-1 text-red-600 hover:bg-red-50 rounded" onClick={async () => {
+                            const confirmed = window.confirm ? window.confirm('Yakin ingin menghapus data ini?') : true;
+                            if(confirmed) {
+                              await deleteDoc(doc(db, 'maskapai', item.id));
+                            }
+                          }}>
                             <Trash2 className="w-4 h-4" />
                           </button>
                         </div>
@@ -291,11 +408,16 @@ export const MaskapaiView: React.FC = () => {
                   </div>
 
                   <div className="flex items-center justify-end gap-3 pt-3 border-t border-gray-50">
-                    <button className="flex items-center gap-1 text-blue-600 hover:bg-blue-50 px-3 py-1.5 rounded-lg text-sm font-medium transition-colors">
+                    <button className="flex items-center gap-1 text-blue-600 hover:bg-blue-50 px-3 py-1.5 rounded-lg text-sm font-medium transition-colors" onClick={() => handleOpenForm(item)}>
                       <Edit2 className="w-4 h-4" />
                       Edit
                     </button>
-                    <button className="flex items-center gap-1 text-red-600 hover:bg-red-50 px-3 py-1.5 rounded-lg text-sm font-medium transition-colors">
+                    <button className="flex items-center gap-1 text-red-600 hover:bg-red-50 px-3 py-1.5 rounded-lg text-sm font-medium transition-colors" onClick={async () => {
+                      const confirmed = window.confirm ? window.confirm('Yakin ingin menghapus data ini?') : true;
+                      if(confirmed) {
+                        await deleteDoc(doc(db, 'maskapai', item.id));
+                      }
+                    }}>
                       <Trash2 className="w-4 h-4" />
                       Hapus
                     </button>
@@ -311,6 +433,187 @@ export const MaskapaiView: React.FC = () => {
           </>
         )}
       </div>
+
+      {/* Form Modal */}
+      {isFormOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm overflow-y-auto">
+          <div className="bg-white rounded-2xl shadow-xl w-full max-w-4xl overflow-hidden animate-in fade-in zoom-in-95 duration-200 mt-10 mb-10">
+            <div className="flex justify-between items-center p-6 border-b border-gray-100 sticky top-0 bg-white z-10">
+              <h3 className="text-lg font-bold text-gray-900">
+                {editingId ? 'Edit Maskapai' : 'Tambah Maskapai Baru'}
+              </h3>
+              <button 
+                onClick={handleCloseForm}
+                className="text-gray-400 hover:text-gray-500 hover:bg-gray-100 p-2 rounded-full transition-colors"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+            
+            <form onSubmit={handleSubmit} className="p-6 space-y-5">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-1">Nama Maskapai</label>
+                  <input 
+                    type="text" 
+                    required
+                    value={formData.name}
+                    onChange={(e) => setFormData({...formData, name: e.target.value.toUpperCase()})}
+                    className="w-full p-2.5 border border-gray-300 rounded-xl focus:ring-2 focus:ring-emerald-500 outline-none font-bold uppercase"
+                    placeholder="SAUDIA AIRLINES"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-1">Nama Vendor / Travel</label>
+                  <input 
+                    type="text" 
+                    required
+                    value={formData.namaVendor}
+                    onChange={(e) => setFormData({...formData, namaVendor: e.target.value})}
+                    className="w-full p-2.5 border border-gray-300 rounded-xl focus:ring-2 focus:ring-emerald-500 outline-none"
+                    placeholder="PT MADINAH IMAN WISATA"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-1">Rute / Label</label>
+                  <input 
+                    type="text" 
+                    required
+                    value={formData.ruteLabel}
+                    onChange={(e) => setFormData({...formData, ruteLabel: e.target.value})}
+                    className="w-full p-2.5 border border-gray-300 rounded-xl focus:ring-2 focus:ring-emerald-500 outline-none"
+                    placeholder="CGK - JED / MED - CGK"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-1">Kota Keberangkatan</label>
+                  <input 
+                    type="text" 
+                    required
+                    value={formData.originCityName}
+                    onChange={(e) => setFormData({...formData, originCityName: e.target.value.toUpperCase()})}
+                    className="w-full p-2.5 border border-gray-300 rounded-xl focus:ring-2 focus:ring-emerald-500 outline-none uppercase"
+                    placeholder="JAKARTA (CGK)"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-1">Kota Tujuan</label>
+                  <input 
+                    type="text" 
+                    required
+                    value={formData.destinationCityName}
+                    onChange={(e) => setFormData({...formData, destinationCityName: e.target.value.toUpperCase()})}
+                    className="w-full p-2.5 border border-gray-300 rounded-xl focus:ring-2 focus:ring-emerald-500 outline-none uppercase"
+                    placeholder="JEDDAH (JED)"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-1">Available Seats / Total Seats</label>
+                  <input 
+                    type="number" 
+                    required
+                    min={0}
+                    value={formData.availableSeats}
+                    onChange={(e) => setFormData({...formData, availableSeats: parseInt(e.target.value) || 0, totalSeats: Math.max(parseInt(e.target.value) || 0, formData.totalSeats || 45)})}
+                    className="w-full p-2.5 border border-gray-300 rounded-xl focus:ring-2 focus:ring-emerald-500 outline-none"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-1">Tgl Keberangkatan</label>
+                  <input 
+                    type="date" 
+                    required
+                    value={formData.tanggalKeberangkatan}
+                    onChange={(e) => setFormData({...formData, tanggalKeberangkatan: e.target.value})}
+                    className="w-full p-2.5 border border-gray-300 rounded-xl focus:ring-2 focus:ring-emerald-500 outline-none"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-1">Tgl Kepulangan</label>
+                  <input 
+                    type="date" 
+                    required
+                    value={formData.tanggalKepulangan}
+                    onChange={(e) => setFormData({...formData, tanggalKepulangan: e.target.value})}
+                    className="w-full p-2.5 border border-gray-300 rounded-xl focus:ring-2 focus:ring-emerald-500 outline-none"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-1">Program Hari (Auto dari Tgl)</label>
+                  <input 
+                    type="number" 
+                    required
+                    min={1}
+                    value={formData.tanggalKeberangkatan && formData.tanggalKepulangan ? Math.round((new Date(formData.tanggalKepulangan).getTime() - new Date(formData.tanggalKeberangkatan).getTime()) / (1000 * 3600 * 24)) + 1 : 9}
+                    onChange={(e) => setFormData({...formData, programDays: parseInt(e.target.value) || 9})}
+                    className="w-full p-2.5 border border-gray-300 rounded-xl focus:ring-2 focus:ring-emerald-500 outline-none bg-gray-50"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-1">Harga Beli (Modal/Setoran)</label>
+                  <input 
+                    type="number" 
+                    required
+                    min={0}
+                    value={formData.hargaBeli || formData.hargaSetoran}
+                    onChange={(e) => {
+                      const beli = parseFloat(e.target.value) || 0;
+                      const jual = formData.hargaJual || 0;
+                      const margin = jual - beli;
+                      const persen = beli > 0 ? Number(((margin / beli) * 100).toFixed(1)) : 0;
+                      setFormData({...formData, hargaBeli: beli, hargaSetoran: beli, margin, persen});
+                    }}
+                    className="w-full p-2.5 border border-gray-300 rounded-xl focus:ring-2 focus:ring-emerald-500 outline-none"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-1">Harga Jual</label>
+                  <input 
+                    type="number" 
+                    required
+                    min={0}
+                    value={formData.hargaJual}
+                    onChange={(e) => {
+                      const jual = parseFloat(e.target.value) || 0;
+                      const beli = formData.hargaBeli || formData.hargaSetoran || 0;
+                      const margin = jual - beli;
+                      const persen = beli > 0 ? Number(((margin / beli) * 100).toFixed(1)) : 0;
+                      setFormData({...formData, hargaJual: jual, margin, persen});
+                    }}
+                    className="w-full p-2.5 border border-gray-300 rounded-xl focus:ring-2 focus:ring-emerald-500 outline-none font-bold text-emerald-600"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-1">Preview Margin</label>
+                  <div className="w-full p-2.5 border border-gray-200 bg-gray-50 rounded-xl outline-none font-medium text-gray-500">
+                    Rp {(formData.margin || 0).toLocaleString('id-ID')} ({formData.persen || 0}%)
+                  </div>
+                </div>
+
+              </div>
+
+              <div className="flex justify-end gap-3 pt-4 font-medium border-t border-gray-100">
+                <button 
+                  type="button" 
+                  onClick={handleCloseForm}
+                  className="px-5 py-2.5 text-gray-600 hover:bg-gray-100 rounded-xl transition-colors"
+                >
+                  Batal
+                </button>
+                <button 
+                  type="submit" 
+                  className="px-5 py-2.5 bg-emerald-600 text-white rounded-xl hover:bg-emerald-700 transition-colors shadow-lg shadow-emerald-200"
+                >
+                  Simpan Data
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

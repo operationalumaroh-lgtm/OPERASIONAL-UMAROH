@@ -12,18 +12,25 @@ import { ZiarahView } from './ZiarahView';
 import { KeretaCepatView } from './KeretaCepatView';
 import { PaketMasterView } from './PaketMasterView';
 import { KemitraanAdminView } from './database/KemitraanAdminView';
-import { Building2, Plane, Bus, Briefcase, FileText, Users, PlaneTakeoff, BookOpen, Map, Train, Package, Handshake } from 'lucide-react';
+import { BandaraView } from './BandaraView';
+import { PaketWisataView } from './PaketWisataView';
+import { HotelMediaView } from './database/HotelMediaView';
+import { Building2, Plane, Bus, Briefcase, FileText, Users, PlaneTakeoff, BookOpen, Map, Train, Package, Handshake, MapPin, Image as ImageIcon } from 'lucide-react';
 
-type DatabaseTab = 'paketMaster' | 'kemitraan' | 'hotel' | 'handling' | 'transport' | 'equipment' | 'visa' | 'mutawif' | 'maskapai' | 'handlingDomestik' | 'manasik' | 'ziarah' | 'keretaCepat';
+type DatabaseTab = 'paketMaster' | 'kemitraan' | 'hotel' | 'hotelMedia' | 'maskapai' | 'bandara' | 'paketWisata' | 'handling' | 'transport' | 'equipment' | 'visa' | 'mutawif' | 'handlingDomestik' | 'manasik' | 'ziarah' | 'keretaCepat';
 
 export const DatabaseView: React.FC = () => {
   const [activeTab, setActiveTab] = useState<DatabaseTab>('paketMaster');
 
-  const tabs = [
+  const tabs: { id: DatabaseTab; label: string; icon: React.ElementType }[] = [
     { id: 'paketMaster', label: 'Paket Master', icon: Package },
     { id: 'kemitraan', label: 'Kemitraan', icon: Handshake },
     { id: 'hotel', label: 'Hotel', icon: Building2 },
+    { id: 'hotelMedia', label: 'Foto & Jarak Hotel', icon: ImageIcon },
     { id: 'maskapai', label: 'Maskapai', icon: PlaneTakeoff },
+
+    { id: 'bandara', label: 'Bandara & Kota', icon: MapPin },
+    { id: 'paketWisata', label: 'Paket Wisata', icon: Map },
     { id: 'handling', label: 'Handling Saudi', icon: Plane },
     { id: 'handlingDomestik', label: 'Handling Domestik', icon: Plane },
     { id: 'transport', label: 'Transportasi', icon: Bus },
@@ -33,14 +40,17 @@ export const DatabaseView: React.FC = () => {
     { id: 'manasik', label: 'Manasik', icon: BookOpen },
     { id: 'ziarah', label: 'Ziarah Tambahan', icon: Map },
     { id: 'mutawif', label: 'Data Mutawif', icon: Users },
-  ] as const;
+  ];
 
   const renderContent = () => {
     switch (activeTab) {
       case 'paketMaster': return <PaketMasterView />;
       case 'kemitraan': return <KemitraanAdminView />;
       case 'hotel': return <HotelView />;
+      case 'hotelMedia': return <HotelMediaView />;
       case 'maskapai': return <MaskapaiView />;
+      case 'bandara': return <BandaraView />;
+      case 'paketWisata': return <PaketWisataView />;
       case 'handling': return <HandlingSaudiView />;
       case 'handlingDomestik': return <HandlingDomestikView />;
       case 'transport': return <TransportView />;

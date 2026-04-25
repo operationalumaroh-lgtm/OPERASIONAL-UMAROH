@@ -141,6 +141,21 @@ service cloud.firestore {
       allow write: if isAuthenticated();
     }
 
+    match /master_bandara/{bandaraId} {
+      allow read: if isAuthenticated();
+      allow write: if isAuthenticated();
+    }
+
+    match /master_paket_wisata/{paketWisataId} {
+      allow read: if isAuthenticated();
+      allow write: if isAuthenticated();
+    }
+
+    match /hotel_metadata/{mediaId} {
+      allow read: if isAuthenticated();
+      allow write: if isOperasional();
+    }
+
     match /paket_kemitraan/{paketId} {
       allow read: if true; // Anyone can read partnership packages
       allow write: if isOperasional();

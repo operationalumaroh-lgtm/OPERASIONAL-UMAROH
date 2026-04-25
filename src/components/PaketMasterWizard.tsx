@@ -1,7 +1,70 @@
-import React, { useState, useEffect } from 'react';
-import { ChevronRight, ChevronLeft, ArrowLeft, Check, Search, Building2, MapPin, Star, Calendar, Minus, Plus, User, Smartphone, FileText, Bus, Shield, BookOpen, Home, Map, Train, Users, UserCheck, Receipt, Download, Sparkles, Layers, ImagePlus, Lock, Globe, ArrowRightLeft, MessageCircle, Plane, PlaneTakeoff, ListCheck, ArrowRight, X, Briefcase, ShoppingBag, Shirt } from 'lucide-react';
-import { db } from '../firebase';
-import { addDoc, collection, serverTimestamp, updateDoc, doc, onSnapshot, writeBatch, setDoc } from 'firebase/firestore';
+import React, { useState, useEffect, useMemo } from "react";
+import { isDateInRange } from "../utils/dateUtils";
+import {
+  ChevronRight,
+  ChevronLeft,
+  ArrowLeft,
+  Check,
+  Search,
+  Building2,
+  MapPin,
+  Star,
+  Calendar,
+  Minus,
+  Plus,
+  User,
+  Smartphone,
+  FileText,
+  Bus,
+  Shield,
+  BookOpen,
+  Home,
+  Map,
+  Train,
+  Users,
+  UserCheck,
+  Receipt,
+  Download,
+  Sparkles,
+  Layers,
+  ImagePlus,
+  Lock,
+  Globe,
+  ArrowRightLeft,
+  MessageCircle,
+  Plane,
+  PlaneTakeoff,
+  ListCheck,
+  ArrowRight,
+  X,
+  Briefcase,
+  ShoppingBag,
+  Shirt,
+} from "lucide-react";
+import { db } from "../firebase";
+import {
+  addDoc,
+  collection,
+  serverTimestamp,
+  updateDoc,
+  doc,
+  onSnapshot,
+  writeBatch,
+  setDoc,
+} from "firebase/firestore";
+import {
+  handleFirestoreError,
+  OperationType,
+} from "../utils/firestoreErrorHandler";
+import { hotels } from "../data/hotels";
+import { equipmentData } from "../data/equipment";
+import { handlingDomestikData } from "../data/handlingDomestik";
+import { visaData } from "../data/visa";
+import { keretaCepatData } from "../data/keretaCepat";
+import { manasikData } from "../data/manasik";
+import { ziarahData } from "../data/ziarah";
+import { HANDLING_TIERS, HANDLING_CONSTANTS } from "../data/handlingSaudi";
+import { transportData } from "../data/transport";
 
 interface PaketMasterWizardProps {
   initialData?: any;
@@ -9,169 +72,623 @@ interface PaketMasterWizardProps {
   onSuccess: () => void;
 }
 
-const KATEGORI_PROGRAM = ['UMRAH REGULAR', 'UMRAH PLUS', 'UMRAH LA', 'WISATA HALAL'];
+const KATEGORI_PROGRAM = [
+  "UMRAH REGULAR",
+  "UMRAH PLUS",
+  "UMRAH LA",
+  "WISATA HALAL",
+];
 
 const getSteps = (kategori: string) => {
-  if (kategori === 'WISATA HALAL') {
+  if (kategori === "WISATA HALAL") {
     return [
-      'INFORMASI DASAR',
-      'PILIH PAKET WISATA',
-      'DETAIL INFO',
-      'LAYANAN TAMBAHAN',
-      'REVIEW FASILITAS',
-      'RINGKASAN HARGA',
-      'VALIDASI AKHIR'
+      "INFORMASI DASAR",
+      "PILIH PAKET WISATA",
+      "DETAIL INFO",
+      "LAYANAN TAMBAHAN",
+      "REVIEW FASILITAS",
+      "RINGKASAN HARGA",
+      "VALIDASI AKHIR",
     ];
   }
-  if (kategori === 'UMRAH PLUS') {
+  if (kategori === "UMRAH PLUS") {
     return [
-      'INFORMASI DASAR',
-      'MASKAPAI',
-      'HOTEL WISATA',
-      'HOTEL UMRAH',
-      'LAYANAN',
-      'HARGA & REVIEW',
-      'REVIEW FASILITAS',
-      'PUBLIKASI & DESKRIPSI',
-      'VALIDASI AKHIR'
+      "INFORMASI DASAR",
+      "MASKAPAI",
+      "HOTEL WISATA",
+      "HOTEL UMRAH",
+      "LAYANAN",
+      "HARGA & REVIEW",
+      "REVIEW FASILITAS",
+      "PUBLIKASI & DESKRIPSI",
+      "VALIDASI AKHIR",
     ];
   }
-  if (kategori === 'UMRAH LA') {
+  if (kategori === "UMRAH LA") {
     return [
-      'INFORMASI DASAR',
-      'INFO LAND ARRANGEMENT',
-      'HOTEL',
-      'LAYANAN',
-      'HARGA & REVIEW',
-      'REVIEW FASILITAS',
-      'PUBLIKASI & DESKRIPSI',
-      'VALIDASI AKHIR'
+      "INFORMASI DASAR",
+      "INFO LAND ARRANGEMENT",
+      "HOTEL",
+      "LAYANAN",
+      "HARGA & REVIEW",
+      "REVIEW FASILITAS",
+      "PUBLIKASI & DESKRIPSI",
+      "VALIDASI AKHIR",
     ];
   }
   return [
-    'INFORMASI DASAR',
-    'MASKAPAI',
-    'HOTEL',
-    'LAYANAN',
-    'HARGA & REVIEW',
-    'REVIEW FASILITAS',
-    'PUBLIKASI & DESKRIPSI',
-    'VALIDASI AKHIR'
+    "INFORMASI DASAR",
+    "MASKAPAI",
+    "HOTEL",
+    "LAYANAN",
+    "HARGA & REVIEW",
+    "REVIEW FASILITAS",
+    "PUBLIKASI & DESKRIPSI",
+    "VALIDASI AKHIR",
   ];
 };
 
 const WISATA_OPTIONS = [
-  { category: 'MAKKAH', items: ['City Tour Makkah', 'Jabal Nur', 'Jabal Tsur', 'Museum Makkah'] },
-  { category: 'MADINAH', items: ['City Tour Madinah', 'Jabal Uhud', 'Masjid Quba', 'Kebun Kurma', 'Percetakan Al-Quran'] }
+  {
+    category: "MAKKAH",
+    items: ["City Tour Makkah", "Jabal Nur", "Jabal Tsur", "Museum Makkah"],
+  },
+  {
+    category: "MADINAH",
+    items: [
+      "City Tour Madinah",
+      "Jabal Uhud",
+      "Masjid Quba",
+      "Kebun Kurma",
+      "Percetakan Al-Quran",
+    ],
+  },
 ];
 
-const DESTINASI_WISATA = [
-  { id: 'TURKEY', name: 'TURKEY', available: 4, img: 'https://images.unsplash.com/photo-1524231757912-21f4fe3a7200?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80' },
-  { id: 'JAPAN', name: 'JAPAN', available: 2, img: 'https://images.unsplash.com/photo-1493976040374-85c8e12f0c0e?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80' },
-  { id: 'EUROPE', name: 'EUROPE', available: 1, img: 'https://images.unsplash.com/photo-1499856871958-5b9627545d1a?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80' },
-  { id: 'KOREA', name: 'KOREA', available: 0, img: 'https://images.unsplash.com/photo-1517154421773-0529f29ea451?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80' },
-  { id: 'UZBEKISTAN', name: 'UZBEKISTAN', available: 0, img: 'https://images.unsplash.com/photo-1563223771-5fe4038fbfc9?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80' },
-  { id: 'AQSA', name: 'AQSA / JORDAN', available: 0, img: 'https://images.unsplash.com/photo-1585255474641-fc8789500078?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80' },
-];
+const getHotelImage = (id: string, nama?: string, kota?: string) => {
+  // Try to match by name (case insensitive, removing spaces/dashes)
+  const normalizedName = (nama || "").toLowerCase().replace(/[^a-z0-9]/g, "");
 
-const DUMMY_PAKET_WISATA: Record<string, any[]> = {
-  'TURKEY': [
-    { id: 't1', name: 'TURKEY 10D9N', rute: 'ISTANBUL - BURSA - CAPPADOCIA', img: 'https://images.unsplash.com/photo-1541432901042-2d8bd64b4a9b?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80', price: 840 },
-    { id: 't2', name: 'TURKEY 12D11N', rute: 'ISTANBUL - BURSA - CAPPADOCIA', img: 'https://images.unsplash.com/photo-1524231757912-21f4fe3a7200?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80', price: 920 },
-    { id: 't3', name: 'TURKEY 8D7N', rute: 'ISTANBUL - BURSA - ANKARA', img: 'https://images.unsplash.com/photo-1506459312158-1c469f697dbb?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80', price: 750 },
-    { id: 't4', name: 'TURKEY 14D13N', rute: 'ISTANBUL - BURSA - CAPPADOCIA', img: 'https://images.unsplash.com/photo-1533140920038-7fba022f778d?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80', price: 1100 },
-  ],
-  'JAPAN': [
-    { id: 'j1', name: 'HONSHU EXPLORER 8D7N', rute: 'TOKYO - KYOTO - OSAKA', img: 'https://images.unsplash.com/photo-1493976040374-85c8e12f0c0e?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80', price: 1250 },
-    { id: 'j2', name: 'HOKKAIDO WINTER 9D8N', rute: 'SAPPORO - OTARU - HAKODATE', img: 'https://images.unsplash.com/photo-1522204523234-8729aa6e3d5f?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80', price: 1400 },
-  ],
-  'EUROPE': [
-    { id: 'e1', name: 'WEST EUROPE 12D11N', rute: 'PARIS - BRUSSELS - AMSTERDAM', img: 'https://images.unsplash.com/photo-1499856871958-5b9627545d1a?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80', price: 1650 },
-  ]
+  // Create a reverse lookup dictionary based on slug-like keys
+  // This allows us to match even if the ID is a random Firebase string
+  const customHotelImagesRaw: Record<string, string> = {
+    daraleimanalharamdiar:
+      "https://cf.bstatic.com/xdata/images/hotel/max1024x768/192664537.jpg?k=db1de05ffc3ec1e89ce24b0de5eb4d8eeef24a1b55979f64db58cf1ce24f11fd&o=&hp=1",
+    millenniumalaqeeqdiar:
+      "https://cf.bstatic.com/xdata/images/hotel/max1024x768/43360875.jpg?k=3ce9ab0d5ab9bf8bdc6d32fe5a7aee3bda1a6c11fcbae7326da35154316a3bc9&o=&hp=1",
+    almarwarotanadiar:
+      "https://cf.bstatic.com/xdata/images/hotel/max1024x768/33054199.jpg?k=b42023d8c117e3f89fd925904593f6310243be44fbb7dc3f837bd636bc40b3ff&o=&hp=1",
+    movenpickhajardiar:
+      "https://cf.bstatic.com/xdata/images/hotel/max1024x768/15646194.jpg?k=8050e68f3aedeaddfdedb1d5be7fa6a77d1ca45cfec60b0ba5232ee34d168541&o=&hp=1",
+    safwatowerdiar:
+      "https://cf.bstatic.com/xdata/images/hotel/max1024x768/119933583.jpg?k=7f88dafaecddf0ba722428584dc74c2fa5727beaa5c317fdb0e729a433f48a60&o=&hp=1",
+    alharithiadiar:
+      "https://cf.bstatic.com/xdata/images/hotel/max1024x768/25078563.jpg?k=b4fffc6b943dcd3e125ab9afb53db9aef299a416a2202b8dff28eff40f090538&o=&hp=1",
+    taibafrontdiar:
+      "https://cf.bstatic.com/xdata/images/hotel/max1024x768/388481309.jpg?k=b7dc66ad0f531d0fe539de5d57b1029ba7d9bc26322ad1ebfb6cce1fd4585db5&o=&hp=1",
+    shazaregencydiar:
+      "https://cf.bstatic.com/xdata/images/hotel/max1024x768/226027376.jpg?k=9882aee6587394aaee1be008c2a3e0fec7dcb6ab7c2e09dd78b2d1844bdfeb09&o=&hp=1",
+    ruvediar:
+      "https://cf.bstatic.com/xdata/images/hotel/max1024x768/204229641.jpg?k=8bc78ed4d4850de485c2763f35dc2b0be8a1ea522ed1a8ec902c114cb3d1bc8d&o=&hp=1",
+    makkahtowershoteldiar:
+      "https://cf.bstatic.com/xdata/images/hotel/max1024x768/281140026.jpg?k=cf6a65520a40f80695029e0758dd0624bbdafd1ba82be3c90e8c8959eb4e5e48&o=&hp=1",
+    makkahtowersownerdiar:
+      "https://cf.bstatic.com/xdata/images/hotel/max1024x768/281139414.jpg?k=42f46eab0f279be78171d9894e1d533ce1d3f9af479c3b879ecaa58826d9e1f5&o=&hp=1",
+    azkaalsafadiar:
+      "https://cf.bstatic.com/xdata/images/hotel/max1024x768/88746738.jpg?k=66a3d9b0ca5c81de4fbc40d6c5c0d2df5eafe69528fbbcc053b841cd0b2401f8&o=&hp=1",
+    azkaalmaqamdiar:
+      "https://cf.bstatic.com/xdata/images/hotel/max1024x768/193245229.jpg?k=6cb43c9ba8b8c2be4171dc82c5f1c5f3e9c5225bfeb1e27a1bfe12bbbb8def9e&o=&hp=1",
+    grandalmassadiar:
+      "https://cf.bstatic.com/xdata/images/hotel/max1024x768/172230623.jpg?k=b4d8d172ae3755cfccb5dc2bd2d5345a909ac4ce726055d78ba7a54460fba4bf&o=&hp=1",
+    grandplazaalmadinahdiar:
+      "https://cf.bstatic.com/xdata/images/hotel/max1024x768/388485121.jpg?k=75e630cc2f168f0efd927a3ed17d727b140cc5367611a2f6fb3fbb959a72dfc4&o=&hp=1",
+    winnerinnalkhairdiar:
+      "https://cf.bstatic.com/xdata/images/hotel/max1024x768/498863618.jpg?k=e1d6d871e4ccfe1fc56a42a033c4f74d0d08c5c7d0a7a0300dedde0cb27d3c0e&o=&hp=1",
+    alansargoldentulipdiar:
+      "https://cf.bstatic.com/xdata/images/hotel/max1024x768/223788057.jpg?k=69d7c0f13f1ba5e022f462bb9def0fc78bceaf776b26d83bb3aaac7de1ddc1fa&o=&hp=1",
+    deyaraleimandiar:
+      "https://cf.bstatic.com/xdata/images/hotel/max1024x768/119934579.jpg?k=ae3d3b76cf515433144171adfb4db7ce8544e3d36b282ea8dc844bbcf3eb79e7&o=&hp=1",
+    durrataleimandiar:
+      "https://cf.bstatic.com/xdata/images/hotel/max1024x768/24719036.jpg?k=7f3747ebc6a1e948ff11e5f5f4c52f6fbfb83d1c1a01103f56ceb2e6988891cf&o=&hp=1",
+    maysanalmashaerdiar:
+      "https://cf.bstatic.com/xdata/images/hotel/max1024x768/291689252.jpg?k=cf9b441a140f0c0ae16538c64227c81d3976cd8d207dfbc52140810db68e64c3&o=&hp=1",
+  };
+
+  // Find by partial string matching against the hotel name + vendor
+  const matchingKey = Object.keys(customHotelImagesRaw).find((key) =>
+    normalizedName.includes(key.replace("diar", "")),
+  );
+
+  if (matchingKey) {
+    return customHotelImagesRaw[matchingKey];
+  }
+
+  const hash = id.split("").reduce((acc, char) => acc + char.charCodeAt(0), 0);
+
+  const makkahImages = [
+    "https://images.unsplash.com/photo-1565552643983-6597af594348?auto=format&fit=crop&w=800&q=80",
+    "https://images.unsplash.com/photo-1591814603953-294bdfc919d3?auto=format&fit=crop&w=800&q=80",
+    "https://images.unsplash.com/photo-1580418827464-3b2d184eb4ed?auto=format&fit=crop&w=800&q=80",
+    "https://images.unsplash.com/photo-1604169727725-709de7d4fb77?auto=format&fit=crop&w=800&q=80",
+  ];
+
+  const madinahImages = [
+    "https://images.unsplash.com/photo-1591604129939-f1efa4d9f7fa?auto=format&fit=crop&w=800&q=80",
+    "https://images.unsplash.com/photo-1585036156171-384164a8c675?auto=format&fit=crop&w=800&q=80",
+    "https://images.unsplash.com/photo-1565561085289-54fb296adff4?auto=format&fit=crop&w=800&q=80",
+    "https://images.unsplash.com/photo-1584347713837-14238eeb59be?auto=format&fit=crop&w=800&q=80",
+  ];
+
+  const wisataImages = [
+    "https://images.unsplash.com/photo-1524231757912-21f4fe3a7200?auto=format&fit=crop&w=800&q=80",
+    "https://images.unsplash.com/photo-1526392060635-9d60198810b7?auto=format&fit=crop&w=800&q=80",
+    "https://images.unsplash.com/photo-1541432901042-2d8bd64b4e9c?auto=format&fit=crop&w=800&q=80",
+    "https://images.unsplash.com/photo-1577931818228-56f8f74a0aa2?auto=format&fit=crop&w=800&q=80",
+  ];
+
+  if (kota?.toLowerCase() === "makkah") {
+    return makkahImages[hash % makkahImages.length];
+  } else if (kota?.toLowerCase() === "madinah") {
+    return madinahImages[hash % madinahImages.length];
+  } else {
+    return wisataImages[hash % wisataImages.length];
+  }
 };
 
-export const PaketMasterWizard: React.FC<PaketMasterWizardProps> = ({ initialData, onCancel, onSuccess }) => {
+export const PaketMasterWizard: React.FC<PaketMasterWizardProps> = ({
+  initialData,
+  onCancel,
+  onSuccess,
+}) => {
   const [currentStep, setCurrentStep] = useState(1);
-  const [hotelStep, setHotelStep] = useState<'madinah' | 'makkah'>('madinah');
+  const [hotelStep, setHotelStep] = useState<"madinah" | "makkah">("madinah");
   const [maskapaiList, setMaskapaiList] = useState<any[]>([]);
   const [hotelsList, setHotelsList] = useState<any[]>([]);
-  const [layananList, setLayananList] = useState<any[]>([]);
-  
-  const [formData, setFormData] = useState<any>(initialData || {
-    kategori: 'UMRAH REGULAR',
-    nama: '',
-    periode: '',
-    durasiHari: 9,
-    durasiWisata: 2, // New logic
-    negaraWisata: 'TURKEY', // New logic
-    alurPerjalanan: 'WISATA TERLEBIH DAHULU', // New logic
-    kotaKeberangkatan: '',
-    kotaTujuan: '',
-    urutanKunjungan: '',
-    tglBerangkat: '',
-    tglKepulangan: '',
-    targetJamaah: 45,
-    maskapaiId: '',
-    hargaDasar: 0,
-    deskripsi: '',
-    tipePublikasi: 'B2C (PUBLIC)',
-    tipePenjualan: 'INDIVIDUAL',
-    photoUtama: null,
-    tipePenerbangan: 'DIRECT',
-    kelasPenerbangan: 'Ekonomi',
-    estimasiHargaMaskapai: 0,
-    hotelMadinahId: '', 
-    chkInMadinah: '',
-    durasiMadinah: 3,
-    chkOutMadinah: '',
-    hotelMakkahId: '', 
-    chkInMakkah: '',
-    durasiMakkah: 4,
-    chkOutMakkah: '',
-    hotelWisataId: '',
-    selectedLayanan: [], 
-    selectedWisata: [], 
-    marginBersih: 1000000, 
-    ujrohPartner: 0
-  });
+  const [dbLayananList, setDbLayananList] = useState<any[]>([]);
+  const [bandaraList, setBandaraList] = useState<any[]>([]);
+  const [paketWisataList, setPaketWisataList] = useState<any[]>([]);
+
+  const [formData, setFormData] = useState<any>(
+    initialData || {
+      kategori: "UMRAH REGULAR",
+      nama: "",
+      periode: "",
+      durasiHari: 9,
+      durasiWisata: 2,
+      negaraWisata: "TURKEY",
+      alurPerjalanan: "WISATA TERLEBIH DAHULU",
+      kotaKeberangkatan: "",
+      kotaTujuan: "",
+      urutanKunjungan: "",
+      tglBerangkat: "",
+      tglKepulangan: "",
+      targetJamaah: 45,
+      maskapaiId: "",
+      hargaDasar: 0,
+      deskripsi: "",
+      tipePublikasi: "B2C (PUBLIC)",
+      tipePenjualan: "INDIVIDUAL",
+      photoUtama: null,
+      tipePenerbangan: "DIRECT",
+      kelasPenerbangan: "Ekonomi",
+      estimasiHargaMaskapai: 0,
+      hotelMadinahId: "",
+      chkInMadinah: "",
+      durasiMadinah: 3,
+      chkOutMadinah: "",
+      hotelMakkahId: "",
+      chkInMakkah: "",
+      durasiMakkah: 4,
+      chkOutMakkah: "",
+      hotelWisataId: "",
+      selectedLayanan: [],
+      selectedWisata: [],
+      marginBersih: 1000000,
+      ujrohPartner: 0,
+    },
+  );
+
+  // Filter maskapai
+  const filteredMaskapaiList = useMemo(() => {
+    let list = maskapaiList;
+    if (formData.durasiHari) {
+      list = list.filter(
+        (m) =>
+          !m.programDays ||
+          Number(m.programDays) === Number(formData.durasiHari),
+      );
+    }
+    if (!formData.tglBerangkat) return list;
+    const baseDate = new Date(formData.tglBerangkat);
+    if (isNaN(baseDate.getTime())) return list;
+    const maxDate = new Date(baseDate);
+    maxDate.setDate(maxDate.getDate() + 30);
+    return list.filter((m) => {
+      if (!m.tanggalKeberangkatan) return false;
+      const mDate = new Date(m.tanggalKeberangkatan);
+      if (isNaN(mDate.getTime())) return false;
+      return mDate >= baseDate && mDate <= maxDate;
+    });
+  }, [maskapaiList, formData.tglBerangkat, formData.durasiHari]);
+
+  // Synchronize Hotel Dates based on tglBerangkat and durations
+  useEffect(() => {
+    if (!formData.tglBerangkat) return;
+    try {
+      const baseDate = new Date(formData.tglBerangkat);
+      if (isNaN(baseDate.getTime())) return;
+
+      const inMadinah = formData.tglBerangkat;
+      const outMadinahDate = new Date(baseDate);
+      outMadinahDate.setDate(
+        outMadinahDate.getDate() + (formData.durasiMadinah || 3),
+      );
+      const outMadinah = outMadinahDate.toISOString().split("T")[0];
+
+      const inMakkah = outMadinah;
+      const outMakkahDate = new Date(outMadinahDate);
+      outMakkahDate.setDate(
+        outMakkahDate.getDate() + (formData.durasiMakkah || 4),
+      );
+      const outMakkah = outMakkahDate.toISOString().split("T")[0];
+
+      if (
+        formData.chkInMadinah !== inMadinah ||
+        formData.chkOutMadinah !== outMadinah ||
+        formData.chkInMakkah !== inMakkah ||
+        formData.chkOutMakkah !== outMakkah
+      ) {
+        setFormData((prev: any) => ({
+          ...prev,
+          chkInMadinah: inMadinah,
+          chkOutMadinah: outMadinah,
+          chkInMakkah: inMakkah,
+          chkOutMakkah: outMakkah,
+        }));
+      }
+    } catch (e) {}
+  }, [formData.tglBerangkat, formData.durasiMadinah, formData.durasiMakkah]);
 
   const [isSaving, setIsSaving] = useState(false);
+  const [hotelSearchTerm, setHotelSearchTerm] = useState("");
+  const [hotelFilterBintang, setHotelFilterBintang] = useState("ALL");
+  const [hotelPage, setHotelPage] = useState(1);
+
+  const targetJamaah = Number(formData.targetJamaah) || 35;
+  const durasiHari = Number(formData.durasiHari) || 9;
+  const maskapaiPrice = Number(formData.estimasiHargaMaskapai) || 0;
+
+  let hQuadMakkah = 0,
+    hQuadMadinah = 0;
+  if (formData.hotelMakkahId) {
+    const m = hotelsList.find((h) => h.id === formData.hotelMakkahId);
+    if (m) hQuadMakkah = (m.priceQuad || 0) * (formData.durasiMakkah || 4);
+  }
+  if (formData.hotelMadinahId) {
+    const m = hotelsList.find((h) => h.id === formData.hotelMadinahId);
+    if (m) hQuadMadinah = (m.priceQuad || 0) * (formData.durasiMadinah || 3);
+  }
+  const baseBelanja = maskapaiPrice + hQuadMakkah + hQuadMadinah;
+  const tourLeaderPrice =
+    targetJamaah > 0 ? Math.round(baseBelanja / targetJamaah) : 0;
+
+  let visaPrice = 0;
+  let visaName = "Visa Umrah";
+  if (targetJamaah <= 34) {
+    const v =
+      visaData.find((v) => v.paxRange === "1-34 PAX") ||
+      visaData[0] ||
+      ({} as any);
+    visaPrice = v.sellingPrice || 0;
+    visaName = `Visa Umrah (${v.paxRange || "1-34 PAX"})`;
+  } else {
+    const v =
+      visaData.find((v) => v.paxRange === "35-55 PAX") ||
+      visaData[1] ||
+      ({} as any);
+    visaPrice = v.sellingPrice || 0;
+    visaName = `Visa Umrah (${v.paxRange || "35-55 PAX"})`;
+  }
+
+  const saudiTier = HANDLING_TIERS.find(
+    (t) => targetJamaah >= t.minPax && targetJamaah <= t.maxPax,
+  ) ||
+    HANDLING_TIERS[HANDLING_TIERS.length - 1] || { hpp: 43 };
+  const saudiHppUsd = saudiTier.hpp;
+  const saudiSell = Math.round(
+    (saudiHppUsd + HANDLING_CONSTANTS.adminFee) *
+      HANDLING_CONSTANTS.defaultKurs *
+      (1 + HANDLING_CONSTANTS.defaultMarginPercent / 100),
+  );
+
+  const kangAsep = transportData.find((t) => t.id === "kang-asep");
+  const busPriceSar =
+    kangAsep && kangAsep.routes.length > 0 ? kangAsep.routes[0].price : 2500;
+  const transportBeli =
+    targetJamaah > 0 ? (busPriceSar * 4700) / targetJamaah : 0;
+  const transportPrice = Math.round(transportBeli * 1.4);
+
+  const mutawwifDays = Math.max(1, durasiHari - 1);
+  const mutawwifPrice =
+    targetJamaah > 0
+      ? Math.round(((300 * 4700 * mutawwifDays) / targetJamaah) * 1.8)
+      : 0;
+
+  const ziarahOptions = ziarahData.map((item) => {
+    const margin = 0.2;
+    const computedPrice =
+      targetJamaah > 0
+        ? Math.round(((item.hargaAsing * 4700) / targetJamaah) * (1 + margin))
+        : 0;
+    return {
+      id: `ziarah_${item.id}`,
+      label: `${item.item} (${item.hargaAsing} SAR / ${targetJamaah} Pax)`,
+      price: computedPrice,
+    };
+  });
+
+  // Filter out db items that might overlap with our auto-generated ones by name
+  const staticNameKeywords = [
+    "handling domestik",
+    "perlengkapan",
+    "visa",
+    "tour leader",
+    "asuransi",
+    "handling saudi",
+    "transportasi",
+    "mutawwif",
+    "muthawif",
+    "muthawwif",
+    "kereta cepat",
+    "manasik",
+    "ziarah",
+    "wisata",
+  ];
+
+  const filteredDbLayananList = dbLayananList.filter((item) => {
+    const dbName = (item.nama || "").toLowerCase();
+    // Only keep it if it does NOT match any of the static keywords
+    return !staticNameKeywords.some((keyword) => dbName.includes(keyword));
+  });
+
+  const layananList = [
+    ...filteredDbLayananList,
+    {
+      id: "group_hdomestik",
+      nama: "Handling Domestik",
+      deskripsi: "Layanan Elevasi Bandara & Lounge Keberangkatan",
+      isGroup: true,
+      options: handlingDomestikData.map((item) => ({
+        id: `hdomestik_${item.id}`,
+        label: item.item,
+        price: item.hargaJual,
+      })),
+    },
+    {
+      id: "group_equip",
+      nama: "Perlengkapan",
+      deskripsi: "Perlindungan Jamaah & Paket Travel Kit",
+      isGroup: true,
+      options: equipmentData.map((item) => ({
+        id: `equip_${item.id}`,
+        label: item.name,
+        price: item.roundedPrice,
+      })),
+    },
+    {
+      id: "visa_auto",
+      nama: visaName,
+      deskripsi: `Layanan Pengurusan Dokumen Keimigrasian (${targetJamaah} Pax)`,
+      harga: visaPrice,
+    },
+    {
+      id: "asuransi",
+      nama: "Asuransi",
+      deskripsi: "Asuransi Perjalanan Umrah & Kesehatan",
+      harga: 65000,
+    },
+    {
+      id: "hsaudi_auto",
+      nama: `Handling Saudi`,
+      deskripsi: `Kedatangan & Keberangkatan`,
+      harga: saudiSell,
+    },
+    {
+      id: "transportasi_auto",
+      nama: `Transportasi Bus`,
+      deskripsi: `Rekomendasi Bus Full Trip Kang Asep`,
+      harga: transportPrice,
+    },
+    {
+      id: "mutawwif_auto",
+      nama: `Mutawwif (${mutawwifDays} Hari)`,
+      deskripsi: `Pemandu Ibadah Selama Program`,
+      harga: mutawwifPrice,
+    },
+    {
+      id: "group_kereta",
+      nama: "Kereta Cepat",
+      deskripsi: "Layanan Transportasi Kereta Cepat Haramain",
+      isGroup: true,
+      options: keretaCepatData.map((item) => ({
+        id: `kc_${item.id}`,
+        label: item.item,
+        price: item.hargaJual,
+      })),
+    },
+    {
+      id: "group_manasik",
+      nama: "Manasik",
+      deskripsi: "Bimbingan Ibadah Umrah Offline/Online",
+      isGroup: true,
+      options: manasikData.map((item) => ({
+        id: `manasik_${item.id}`,
+        label: `Manasik ${item.item}`,
+        price: item.hargaJual,
+      })),
+    },
+    {
+      id: "group_ziarah",
+      nama: "Ziarah Tambahan",
+      deskripsi: `Pilihan Ziarah`,
+      isGroup: true,
+      options: ziarahOptions,
+    },
+    {
+      id: "tour_leader",
+      nama: "Tour Leader",
+      deskripsi: "Biaya Subsidi Tour Leader (Pembagian Beli / Pax)",
+      harga: tourLeaderPrice,
+    },
+  ];
 
   useEffect(() => {
-    const unsubMaskapai = onSnapshot(collection(db, 'maskapai'), (snapshot) => {
-      const data = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-      setMaskapaiList(data);
-    });
-    
-    const unsubHotels = onSnapshot(collection(db, 'master_hotels'), (snapshot) => {
-      const data = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-      setHotelsList(data);
+    setHotelPage(1);
+  }, [hotelSearchTerm, hotelFilterBintang, hotelStep]);
+
+  useEffect(() => {
+    const unsubMaskapai = onSnapshot(
+      collection(db, "maskapai"),
+      (snapshot) => {
+        const data = snapshot.docs.map((doc) => ({
+          id: doc.id,
+          ...doc.data(),
+        }));
+        setMaskapaiList(data);
+      },
+      (error) => handleFirestoreError(error, OperationType.GET, "maskapai"),
+    );
+
+    const staticHotels = hotels.map((h) => {
+      const quad =
+        h.seasons[0]?.prices.find((p: any) => p.roomType === "Quad")?.price ||
+        0;
+      const triple =
+        h.seasons[0]?.prices.find((p: any) => p.roomType === "Triple")?.price ||
+        0;
+      const double =
+        h.seasons[0]?.prices.find((p: any) => p.roomType === "Double")?.price ||
+        0;
+
+      const kurs = 4700;
+      const margin = 1.1;
+
+      return {
+        id: h.id,
+        nama: h.name,
+        kota: h.city.toLowerCase(),
+        bintang: h.stars || 5,
+        priceQuad: quad ? ((quad * kurs) / 4) * margin : 0,
+        priceTriple: triple ? ((triple * kurs) / 3) * margin : 0,
+        priceDouble: double ? ((double * kurs) / 2) * margin : 0,
+        vendor: h.vendor,
+        seasons: h.seasons,
+      };
     });
 
-    const unsubLayanan = onSnapshot(collection(db, 'master_layanan'), (snapshot) => {
-      const data = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-      setLayananList(data);
-    });
+    const unsubHotels = onSnapshot(
+      collection(db, "master_hotels"),
+      (snapshot) => {
+        const data = snapshot.docs.map((doc) => ({
+          id: doc.id,
+          ...doc.data(),
+        }));
+        setHotelsList([...staticHotels, ...data]);
+      },
+      (error) =>
+        handleFirestoreError(error, OperationType.GET, "master_hotels"),
+    );
+
+    const unsubLayanan = onSnapshot(
+      collection(db, "master_layanan"),
+      (snapshot) => {
+        const dbData = snapshot.docs.map((doc) => ({
+          id: doc.id,
+          ...doc.data(),
+        }));
+        setDbLayananList(dbData);
+      },
+      (error) =>
+        handleFirestoreError(error, OperationType.GET, "master_layanan"),
+    );
+
+    const unsubBandara = onSnapshot(
+      collection(db, "master_bandara"),
+      (snapshot) => {
+        const data = snapshot.docs.map((doc) => ({
+          id: doc.id,
+          ...doc.data(),
+        }));
+        setBandaraList(data);
+      },
+      (error) =>
+        handleFirestoreError(error, OperationType.GET, "master_bandara"),
+    );
+
+    const unsubPaketWisata = onSnapshot(
+      collection(db, "master_paket_wisata"),
+      (snapshot) => {
+        const data = snapshot.docs.map((doc) => ({
+          id: doc.id,
+          ...doc.data(),
+        }));
+        setPaketWisataList(data);
+      },
+      (error) =>
+        handleFirestoreError(error, OperationType.GET, "master_paket_wisata"),
+    );
 
     return () => {
       unsubMaskapai();
       unsubHotels();
       unsubLayanan();
+      unsubBandara();
+      unsubPaketWisata();
     };
   }, []);
 
   const currentStepsList = getSteps(formData.kategori);
-  const currentStepName = currentStepsList[currentStep - 1] || currentStepsList[0];
+  const currentStepName =
+    currentStepsList[currentStep - 1] || currentStepsList[0];
+
+  useEffect(() => {
+    if (bandaraList.length > 0) {
+      setFormData((prev: any) => ({
+        ...prev,
+        kotaKeberangkatan:
+          prev.kotaKeberangkatan || bandaraList[0]?.kota.toUpperCase() || "",
+        kotaTujuan:
+          prev.kotaTujuan ||
+          bandaraList
+            .find((b) => b.negara?.toUpperCase() === "ARAB SAUDI")
+            ?.kota.toUpperCase() ||
+          "",
+      }));
+    }
+  }, [bandaraList]);
 
   const handleNext = () => {
+    if (currentStepName === "HOTEL" || currentStepName === "HOTEL UMRAH") {
+      if (!formData.hotelMadinahId) {
+        alert("Hotel Madinah wajib dipilih!");
+        setHotelStep("madinah");
+        return;
+      }
+      if (!formData.hotelMakkahId) {
+        alert("Hotel Makkah wajib dipilih!");
+        setHotelStep("makkah");
+        return;
+      }
+    }
+
     if (currentStep < currentStepsList.length) {
-      setCurrentStep(prev => prev + 1);
+      setCurrentStep((prev) => prev + 1);
     }
   };
 
   const handlePrev = () => {
     if (currentStep > 1) {
-      setCurrentStep(prev => prev - 1);
+      setCurrentStep((prev) => prev - 1);
     }
   };
 
@@ -179,20 +696,20 @@ export const PaketMasterWizard: React.FC<PaketMasterWizardProps> = ({ initialDat
     setIsSaving(true);
     try {
       const dataToSave = {
-        nama: formData.nama || 'Paket Umroh Tanpa Nama',
-        deskripsi: formData.deskripsi || '',
-        tipePublikasi: formData.tipePublikasi || 'B2C',
-        tipePenjualan: formData.tipePenjualan || 'INDIVIDUAL',
+        nama: formData.nama || "Paket Umroh Tanpa Nama",
+        deskripsi: formData.deskripsi || "",
+        tipePublikasi: formData.tipePublikasi || "B2C",
+        tipePenjualan: formData.tipePenjualan || "INDIVIDUAL",
         hargaDasar: Number(formData.hargaDasar || 0),
-        maskapaiId: formData.maskapaiId || '',
-        hotelMadinahId: formData.hotelMadinahId || '',
-        hotelMakkahId: formData.hotelMakkahId || '',
-        hotelWisataId: formData.hotelWisataId || '',
+        maskapaiId: formData.maskapaiId || "",
+        hotelMadinahId: formData.hotelMadinahId || "",
+        hotelMakkahId: formData.hotelMakkahId || "",
+        hotelWisataId: formData.hotelWisataId || "",
         selectedLayanan: formData.selectedLayanan || [],
         selectedWisata: formData.selectedWisata || [],
         kuota: Number(formData.targetJamaah || 0),
         sisaKuota: Number(formData.targetJamaah || 0),
-        status: 'draft',
+        status: "draft",
         // Additional meta
         kategori: formData.kategori,
         periode: formData.periode,
@@ -210,22 +727,24 @@ export const PaketMasterWizard: React.FC<PaketMasterWizardProps> = ({ initialDat
         durasiMadinah: Number(formData.durasiMadinah || 3),
         durasiMakkah: Number(formData.durasiMakkah || 4),
         durasiWisata: Number(formData.durasiWisata || 0),
+        paketWisataId: formData.paketWisataId || "",
+        negaraWisata: formData.negaraWisata || "",
       };
 
       if (initialData?.id) {
-        await updateDoc(doc(db, 'paket_master', initialData.id), dataToSave);
+        await updateDoc(doc(db, "paket_master", initialData.id), dataToSave);
       } else {
-        await addDoc(collection(db, 'paket_master'), {
+        await addDoc(collection(db, "paket_master"), {
           ...dataToSave,
-          createdAt: serverTimestamp()
+          createdAt: serverTimestamp(),
         });
       }
-      
+
       // After success save, use the explicit component property for dashboard return
       onSuccess();
     } catch (e) {
       console.error(e);
-      alert('Gagal menyimpan data');
+      alert("Gagal menyimpan data");
     } finally {
       setIsSaving(false);
     }
@@ -235,14 +754,14 @@ export const PaketMasterWizard: React.FC<PaketMasterWizardProps> = ({ initialDat
     <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 md:p-8">
       {/* Header & Back Button */}
       <div className="flex items-center gap-4 mb-8">
-        <button 
+        <button
           onClick={onCancel}
           className="p-2 bg-gray-50 text-gray-600 hover:text-emerald-600 rounded-full transition-colors font-bold"
         >
           <ArrowLeft className="w-5 h-5" />
         </button>
         <h2 className="text-xl font-bold text-gray-900">
-          {initialData ? 'Edit Paket Master' : 'Buat Paket Program Baru'}
+          {initialData ? "Edit Paket Master" : "Buat Paket Program Baru"}
         </h2>
       </div>
 
@@ -254,26 +773,43 @@ export const PaketMasterWizard: React.FC<PaketMasterWizardProps> = ({ initialDat
           const isPassed = stepNumber < currentStep;
 
           return (
-            <div key={step} className="flex flex-col items-center relative flex-1 min-w-[90px]">
+            <div
+              key={step}
+              className="flex flex-col items-center relative flex-1 min-w-[90px]"
+            >
               {/* Connecting line */}
               {index !== 0 && (
-                <div className={`absolute top-5 -left-[50%] w-full h-[2px] -m-px ${
-                  isPassed ? 'bg-emerald-500' : 'bg-gray-200'
-                }`} />
+                <div
+                  className={`absolute top-5 -left-[50%] w-full h-[2px] -m-px ${
+                    isPassed ? "bg-emerald-500" : "bg-gray-200"
+                  }`}
+                />
               )}
-              
-              <div className={`w-10 h-10 rounded-full flex items-center justify-center font-bold text-sm z-10 ${
-                isActive 
-                  ? 'bg-emerald-600 text-white ring-4 ring-emerald-50' 
-                  : isPassed
-                  ? 'bg-emerald-50 text-emerald-500 ring-2 ring-emerald-200'
-                  : 'bg-gray-100 text-gray-400'
-              }`}>
-                {isPassed ? <Check className="w-5 h-5" strokeWidth={3} /> : stepNumber}
+
+              <div
+                className={`w-10 h-10 rounded-full flex items-center justify-center font-bold text-sm z-10 ${
+                  isActive
+                    ? "bg-emerald-600 text-white ring-4 ring-emerald-50"
+                    : isPassed
+                      ? "bg-emerald-50 text-emerald-500 ring-2 ring-emerald-200"
+                      : "bg-gray-100 text-gray-400"
+                }`}
+              >
+                {isPassed ? (
+                  <Check className="w-5 h-5" strokeWidth={3} />
+                ) : (
+                  stepNumber
+                )}
               </div>
-              <span className={`text-[9px] sm:text-[10px] font-bold mt-3 text-center uppercase tracking-wider ${
-                isActive ? 'text-emerald-700' : isPassed ? 'text-emerald-600' : 'text-gray-400'
-              }`}>
+              <span
+                className={`text-[9px] sm:text-[10px] font-bold mt-3 text-center uppercase tracking-wider ${
+                  isActive
+                    ? "text-emerald-700"
+                    : isPassed
+                      ? "text-emerald-600"
+                      : "text-gray-400"
+                }`}
+              >
                 {step}
               </span>
             </div>
@@ -283,26 +819,32 @@ export const PaketMasterWizard: React.FC<PaketMasterWizardProps> = ({ initialDat
 
       {/* Mobile Stepper Text */}
       <div className="md:hidden flex items-center justify-between mb-8 bg-emerald-50 p-4 rounded-xl">
-        <span className="text-emerald-700 font-bold text-sm">Langkah {currentStep} dari {currentStepsList.length}</span>
-        <span className="text-emerald-800 font-black text-sm">{currentStepsList[currentStep - 1]}</span>
+        <span className="text-emerald-700 font-bold text-sm">
+          Langkah {currentStep} dari {currentStepsList.length}
+        </span>
+        <span className="text-emerald-800 font-black text-sm">
+          {currentStepsList[currentStep - 1]}
+        </span>
       </div>
 
       {/* Forms Area */}
       <div className="min-h-[400px]">
-        {currentStepName === 'INFORMASI DASAR' && (
+        {currentStepName === "INFORMASI DASAR" && (
           <div className="space-y-8 animate-in fade-in slide-in-from-bottom-2 duration-300">
             {/* Kategori Program */}
             <div>
-              <label className="block text-[10px] sm:text-xs font-bold text-gray-400 mb-3 uppercase tracking-wider">PILIH KATEGORI IBADAH/PERJALANAN</label>
+              <label className="block text-[10px] sm:text-xs font-bold text-gray-400 mb-3 uppercase tracking-wider">
+                PILIH KATEGORI IBADAH/PERJALANAN
+              </label>
               <div className="flex flex-wrap gap-2">
-                {KATEGORI_PROGRAM.map(kat => (
+                {KATEGORI_PROGRAM.map((kat) => (
                   <button
                     key={kat}
-                    onClick={() => setFormData({...formData, kategori: kat})}
+                    onClick={() => setFormData({ ...formData, kategori: kat })}
                     className={`flex-1 min-w-[120px] px-5 py-4 rounded-xl text-[10px] sm:text-xs font-bold transition-all border ${
-                      formData.kategori === kat 
-                        ? 'bg-blue-50 text-blue-700 border-blue-500 shadow-sm' 
-                        : 'bg-white text-gray-500 border-gray-100 hover:bg-gray-50'
+                      formData.kategori === kat
+                        ? "bg-blue-50 text-blue-700 border-blue-500 shadow-sm"
+                        : "bg-white text-gray-500 border-gray-100 hover:bg-gray-50"
                     }`}
                   >
                     <div className="flex items-center gap-2">
@@ -317,43 +859,64 @@ export const PaketMasterWizard: React.FC<PaketMasterWizardProps> = ({ initialDat
             </div>
 
             {/* Area Destinasi Wisata Halal */}
-            {formData.kategori === 'WISATA HALAL' && (
+            {formData.kategori === "WISATA HALAL" && (
               <div className="animate-in fade-in slide-in-from-top-2 duration-500">
                 <label className="block text-[10px] sm:text-xs font-bold text-blue-500 mb-4 uppercase tracking-wider">
                   PILIH NEGARA TUJUAN *
                 </label>
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                  {DESTINASI_WISATA.map((dest) => {
-                    const isSelected = formData.negaraWisata === dest.name;
+                  {Array.from(
+                    new Set(paketWisataList.map((p) => p.lokasi.toUpperCase())),
+                  ).map((negaraName) => {
+                    const isSelected = formData.negaraWisata === negaraName;
+                    const defaultImgUrl =
+                      "https://images.unsplash.com/photo-1436491865332-7a61a109cc05?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80";
+                    const listPaket = paketWisataList.filter(
+                      (p) => p.lokasi.toUpperCase() === negaraName,
+                    );
+                    // Ambil img dari paket pertama dari negara tsb jika tersedia
+                    const destImg = listPaket[0]?.img || defaultImgUrl;
+                    const availableCount = listPaket.length;
+
                     return (
                       <button
-                        key={dest.id}
-                        onClick={() => setFormData({ ...formData, negaraWisata: dest.name })}
+                        key={negaraName}
+                        onClick={() =>
+                          setFormData({ ...formData, negaraWisata: negaraName })
+                        }
                         className={`relative h-40 rounded-2xl overflow-hidden group text-left border-2 transition-all ${
-                          isSelected 
-                            ? 'border-blue-500 shadow-lg shadow-blue-500/20 scale-[1.02] z-10' 
-                            : 'border-transparent hover:border-blue-200'
+                          isSelected
+                            ? "border-blue-500 shadow-lg shadow-blue-500/20 scale-[1.02] z-10"
+                            : "border-transparent hover:border-blue-200"
                         }`}
                       >
                         {/* Background Image */}
                         <div className="absolute inset-0">
-                          <img 
-                            src={dest.img} 
-                            alt={dest.name} 
+                          <img
+                            src={destImg}
+                            alt={negaraName}
                             className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
                             referrerPolicy="no-referrer"
                           />
-                          <div className={`absolute inset-0 bg-gradient-to-t from-gray-900/90 via-gray-900/40 to-transparent transition-opacity ${
-                            isSelected ? 'opacity-90' : 'opacity-70 group-hover:opacity-80'
-                          }`} />
+                          <div
+                            className={`absolute inset-0 bg-gradient-to-t from-gray-900/90 via-gray-900/40 to-transparent transition-opacity ${
+                              isSelected
+                                ? "opacity-90"
+                                : "opacity-70 group-hover:opacity-80"
+                            }`}
+                          />
                         </div>
-                        
+
                         {/* Content */}
                         <div className="absolute inset-0 p-4 flex flex-col justify-end">
-                          <h4 className="text-white font-black text-lg mb-1 tracking-wide">{dest.name}</h4>
+                          <h4 className="text-white font-black text-lg mb-1 tracking-wide">
+                            {negaraName}
+                          </h4>
                           <div className="flex items-center gap-1.5 text-gray-300 text-[10px] sm:text-xs font-bold">
-                            <span className={`w-1.5 h-1.5 rounded-full ${dest.available > 0 ? 'bg-emerald-400' : 'bg-gray-500'}`} />
-                            {dest.available} PAKET YG TERSEDIA
+                            <span
+                              className={`w-1.5 h-1.5 rounded-full ${availableCount > 0 ? "bg-emerald-400" : "bg-gray-500"}`}
+                            />
+                            {availableCount} PAKET YG TERSEDIA
                           </div>
                         </div>
 
@@ -370,731 +933,1324 @@ export const PaketMasterWizard: React.FC<PaketMasterWizardProps> = ({ initialDat
               </div>
             )}
 
-            {formData.kategori !== 'WISATA HALAL' && (
+            {formData.kategori !== "WISATA HALAL" && (
               <>
                 {/* Nama Program Paket */}
                 <div>
-                  <label className="block text-xs font-bold text-gray-500 mb-2 uppercase tracking-wider">Nama Program Paket</label>
+                  <label className="block text-xs font-bold text-gray-500 mb-2 uppercase tracking-wider">
+                    Nama Program Paket
+                  </label>
                   <input
                     type="text"
                     placeholder="Misal: Paket Umrah Plus Turkiye 12 Hari"
                     value={formData.nama}
-                    onChange={(e) => setFormData({...formData, nama: e.target.value})}
+                    onChange={(e) =>
+                      setFormData({ ...formData, nama: e.target.value })
+                    }
                     className="w-full p-3.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none text-gray-800 font-medium transition-all"
                   />
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                   {/* Pilih Periode */}
-              <div>
-                <label className="block text-[10px] sm:text-xs font-bold text-gray-400 mb-2 uppercase tracking-wider">PILIH PERIODE *</label>
-                <select
-                  value={formData.periode}
-                  onChange={(e) => setFormData({...formData, periode: e.target.value})}
-                  className="w-full p-4 bg-gray-50/50 border border-transparent rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none text-gray-800 font-bold appearance-none transition-all"
-                >
-                  <option value="">Awal Tahun 2025</option>
-                  <option value="Awal Musim">Awal Musim (Muharram-Safar)</option>
-                  <option value="High Season">High Season (Rajab-Ramadhan)</option>
-                  <option value="Akhir Musim">Akhir Musim (Syawal-Dzulhijjah)</option>
-                </select>
-              </div>
-
-              {/* Durasi Program (Umrah Plus Wisata atau Biasa) */}
-              <div>
-                <div className="flex justify-between items-center mb-2">
-                  <label className="block text-[10px] sm:text-xs font-bold text-gray-400 uppercase tracking-wider">
-                    {formData.kategori === 'UMRAH PLUS' ? 'DURASI PROGRAM UMRAH PLUS WISATA *' : 'DURASI PROGRAM *'}
-                  </label>
-                  <span className="px-3 py-1 bg-blue-50 text-blue-700 rounded-lg text-[10px] font-black uppercase">
-                    {formData.durasiHari} HARI
-                  </span>
-                </div>
-                <div className="pt-2 pb-1 relative group">
-                  <input
-                    type="range"
-                    min="1"
-                    max="30"
-                    value={formData.durasiHari}
-                    onChange={(e) => setFormData({...formData, durasiHari: parseInt(e.target.value)})}
-                    className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-blue-600"
-                  />
-                  <div className="flex justify-between text-[9px] font-bold text-gray-300 mt-2">
-                    <span>1 Hari</span>
-                    <span>30 Hari</span>
-                  </div>
-                </div>
-              </div>
-
-              {/* === UMRAH PLUS EXCLUSIVE FIELDS === */}
-              {formData.kategori === 'UMRAH PLUS' && (
-                <>
-                  {/* Negara Wisata Tambahan */}
                   <div>
-                    <label className="block text-[10px] sm:text-xs font-bold text-gray-400 mb-2 uppercase tracking-wider">NEGARA WISATA TAMBAHAN *</label>
+                    <label className="block text-[10px] sm:text-xs font-bold text-gray-400 mb-2 uppercase tracking-wider">
+                      PILIH PERIODE *
+                    </label>
                     <select
-                      value={formData.negaraWisata}
-                      onChange={(e) => setFormData({...formData, negaraWisata: e.target.value})}
+                      value={formData.periode}
+                      onChange={(e) =>
+                        setFormData({ ...formData, periode: e.target.value })
+                      }
                       className="w-full p-4 bg-gray-50/50 border border-transparent rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none text-gray-800 font-bold appearance-none transition-all"
                     >
-                      <option value="TURKEY">TURKEY</option>
-                      <option value="DUBAI">DUBAI</option>
-                      <option value="AQSHA">AQSHA</option>
-                      <option value="MESIR">MESIR</option>
-                      <option value="UZBEKISTAN">UZBEKISTAN</option>
+                      <option value="">Awal Tahun 2025</option>
+                      <option value="Awal Musim">
+                        Awal Musim (Muharram-Safar)
+                      </option>
+                      <option value="High Season">
+                        High Season (Rajab-Ramadhan)
+                      </option>
+                      <option value="Akhir Musim">
+                        Akhir Musim (Syawal-Dzulhijjah)
+                      </option>
                     </select>
                   </div>
 
-                  {/* Durasi Program Wisata */}
+                  {/* Durasi Program (Umrah Plus Wisata atau Biasa) */}
                   <div>
                     <div className="flex justify-between items-center mb-2">
-                      <label className="block text-[10px] sm:text-xs font-bold text-gray-400 uppercase tracking-wider">DURASI PROGRAM WISATA *</label>
+                      <label className="block text-[10px] sm:text-xs font-bold text-gray-400 uppercase tracking-wider">
+                        {formData.kategori === "UMRAH PLUS"
+                          ? "DURASI PROGRAM UMRAH PLUS WISATA *"
+                          : "DURASI PROGRAM *"}
+                      </label>
                       <span className="px-3 py-1 bg-blue-50 text-blue-700 rounded-lg text-[10px] font-black uppercase">
-                        {formData.durasiWisata} HARI
+                        {formData.durasiHari} HARI
                       </span>
                     </div>
                     <div className="pt-2 pb-1 relative group">
                       <input
                         type="range"
                         min="1"
-                        max="15"
-                        value={formData.durasiWisata}
-                        onChange={(e) => setFormData({...formData, durasiWisata: parseInt(e.target.value)})}
+                        max="30"
+                        value={formData.durasiHari}
+                        onChange={(e) =>
+                          setFormData({
+                            ...formData,
+                            durasiHari: parseInt(e.target.value),
+                          })
+                        }
                         className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-blue-600"
                       />
                       <div className="flex justify-between text-[9px] font-bold text-gray-300 mt-2">
                         <span>1 Hari</span>
-                        <span>15 Hari</span>
+                        <span>30 Hari</span>
                       </div>
                     </div>
                   </div>
-                </>
-              )}
 
-              {/* Kota Keberangkatan */}
-              <div>
-                <label className="block text-[10px] sm:text-xs font-bold text-gray-400 mb-2 uppercase tracking-wider">KOTA KEBERANGKATAN *</label>
-                <select
-                  value={formData.kotaKeberangkatan}
-                  onChange={(e) => setFormData({...formData, kotaKeberangkatan: e.target.value})}
-                  className="w-full p-4 bg-gray-50/50 border border-transparent rounded-xl focus:ring-2 focus:ring-blue-500 outline-none text-gray-800 font-bold appearance-none"
-                >
-                  <option value="JAKARTA">JAKARTA</option>
-                  <option value="SURABAYA">SURABAYA</option>
-                  <option value="MEDAN">MEDAN</option>
-                  <option value="MAKASSAR">MAKASSAR</option>
-                </select>
-              </div>
+                  {/* === UMRAH PLUS EXCLUSIVE FIELDS === */}
+                  {formData.kategori === "UMRAH PLUS" && (
+                    <>
+                      {/* Negara Wisata Tambahan */}
+                      <div>
+                        <label className="block text-[10px] sm:text-xs font-bold text-gray-400 mb-2 uppercase tracking-wider">
+                          NEGARA WISATA TAMBAHAN *
+                        </label>
+                        <select
+                          value={formData.negaraWisata}
+                          onChange={(e) =>
+                            setFormData({
+                              ...formData,
+                              negaraWisata: e.target.value,
+                            })
+                          }
+                          className="w-full p-4 bg-gray-50/50 border border-transparent rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none text-gray-800 font-bold appearance-none transition-all"
+                        >
+                          <option value="">-- Pilih Negara Wisata --</option>
+                          {Array.from(
+                            new Set(
+                              paketWisataList.map((p) =>
+                                p.lokasi.toUpperCase(),
+                              ),
+                            ),
+                          ).map((negara) => (
+                            <option key={negara} value={negara}>
+                              {negara}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
 
-              {/* Alur Perjalanan & Urutan Kunjungan */}
-              {formData.kategori === 'UMRAH PLUS' ? (
-                <div>
-                  <label className="block text-[10px] sm:text-xs font-bold text-gray-400 mb-2 uppercase tracking-wider">ALUR PERJALANAN *</label>
-                  <select
-                    value={formData.alurPerjalanan}
-                    onChange={(e) => setFormData({...formData, alurPerjalanan: e.target.value})}
-                    className="w-full p-4 bg-gray-50/50 border border-transparent rounded-xl focus:ring-2 focus:ring-blue-500 outline-none text-gray-800 font-bold appearance-none"
-                  >
-                    <option value="WISATA TERLEBIH DAHULU">WISATA TERLEBIH DAHULU</option>
-                    <option value="UMRAH TERLEBIH DAHULU">UMRAH TERLEBIH DAHULU</option>
-                  </select>
-                </div>
-              ) : (
-                <div>
-                  <label className="block text-[10px] sm:text-xs font-bold text-gray-400 mb-2 uppercase tracking-wider">URUTAN KUNJUNGAN KOTA *</label>
-                  <select
-                    value={formData.urutanKunjungan}
-                    onChange={(e) => setFormData({...formData, urutanKunjungan: e.target.value})}
-                    className="w-full p-4 bg-gray-50/50 border border-transparent rounded-xl focus:ring-2 focus:ring-blue-500 outline-none text-gray-800 font-bold appearance-none"
-                  >
-                    <option value="">-- Pilih Urutan --</option>
-                    <option value="Madinah - Mekkah">Madinah - Mekkah</option>
-                    <option value="Mekkah - Madinah">Mekkah - Madinah</option>
-                    <option value="Mekkah - Madinah - Thaif">Mekkah - Madinah - Thaif</option>
-                  </select>
-                </div>
-              )}
+                      {/* Durasi Program Wisata */}
+                      <div>
+                        <div className="flex justify-between items-center mb-2">
+                          <label className="block text-[10px] sm:text-xs font-bold text-gray-400 uppercase tracking-wider">
+                            DURASI PROGRAM WISATA *
+                          </label>
+                          <span className="px-3 py-1 bg-blue-50 text-blue-700 rounded-lg text-[10px] font-black uppercase">
+                            {formData.durasiWisata} HARI
+                          </span>
+                        </div>
+                        <div className="pt-2 pb-1 relative group">
+                          <input
+                            type="range"
+                            min="1"
+                            max="15"
+                            value={formData.durasiWisata}
+                            onChange={(e) =>
+                              setFormData({
+                                ...formData,
+                                durasiWisata: parseInt(e.target.value),
+                              })
+                            }
+                            className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-blue-600"
+                          />
+                          <div className="flex justify-between text-[9px] font-bold text-gray-300 mt-2">
+                            <span>1 Hari</span>
+                            <span>15 Hari</span>
+                          </div>
+                        </div>
+                      </div>
+                    </>
+                  )}
 
-              {/* Kota Tujuan Utama */}
-              <div>
-                <label className="block text-[10px] sm:text-xs font-bold text-gray-400 mb-2 uppercase tracking-wider">KOTA TUJUAN UTAMA *</label>
-                <div className="w-full p-4 bg-gray-50/50 border border-transparent rounded-xl text-gray-800 font-bold">
-                  {formData.kategori === 'UMRAH PLUS' 
-                    ? (formData.negaraWisata === 'TURKEY' ? 'ISTANBUL' 
-                      : formData.negaraWisata === 'DUBAI' ? 'DUBAI'
-                      : formData.negaraWisata === 'MESIR' ? 'CAIRO' : '-')
-                    : 'JEDDAH / MADINAH'
-                  }
-                </div>
-              </div>
+                  {/* Kota Keberangkatan */}
+                  <div>
+                    <label className="block text-[10px] sm:text-xs font-bold text-gray-400 mb-2 uppercase tracking-wider">
+                      KOTA KEBERANGKATAN *
+                    </label>
+                    <select
+                      value={formData.kotaKeberangkatan}
+                      onChange={(e) =>
+                        setFormData({
+                          ...formData,
+                          kotaKeberangkatan: e.target.value,
+                        })
+                      }
+                      className="w-full p-4 bg-gray-50/50 border border-transparent rounded-xl focus:ring-2 focus:ring-blue-500 outline-none text-gray-800 font-bold appearance-none"
+                    >
+                      <option value="">-- Pilih Kota --</option>
+                      {bandaraList.map((b) => (
+                        <option key={b.id} value={b.kota.toUpperCase()}>
+                          {b.kota.toUpperCase()} ({b.kode})
+                        </option>
+                      ))}
+                    </select>
+                  </div>
 
-              {/* Tanggal Berangkat */}
-              <div>
-                <label className="block text-[10px] sm:text-xs font-bold text-gray-400 mb-2 uppercase tracking-wider">TANGGAL KEBERANGKATAN *</label>
-                <input
-                  type="date"
-                  value={formData.tglBerangkat}
-                  onChange={(e) => {
-                    const newTglBerangkat = e.target.value;
-                    let newTglPulang = formData.tglKepulangan;
-                    if(newTglBerangkat) {
-                      const dt = new Date(newTglBerangkat);
-                      dt.setDate(dt.getDate() + formData.durasiHari);
-                      newTglPulang = dt.toISOString().split('T')[0];
-                    }
-                    setFormData({...formData, tglBerangkat: newTglBerangkat, tglKepulangan: newTglPulang});
-                  }}
-                  className="w-full p-4 bg-gray-50/50 border border-transparent rounded-xl focus:ring-2 focus:ring-blue-500 outline-none text-gray-800 font-bold"
-                />
-              </div>
+                  {/* Alur Perjalanan & Urutan Kunjungan */}
+                  {formData.kategori === "UMRAH PLUS" ? (
+                    <div>
+                      <label className="block text-[10px] sm:text-xs font-bold text-gray-400 mb-2 uppercase tracking-wider">
+                        ALUR PERJALANAN *
+                      </label>
+                      <select
+                        value={formData.alurPerjalanan}
+                        onChange={(e) =>
+                          setFormData({
+                            ...formData,
+                            alurPerjalanan: e.target.value,
+                          })
+                        }
+                        className="w-full p-4 bg-gray-50/50 border border-transparent rounded-xl focus:ring-2 focus:ring-blue-500 outline-none text-gray-800 font-bold appearance-none"
+                      >
+                        <option value="WISATA TERLEBIH DAHULU">
+                          WISATA TERLEBIH DAHULU
+                        </option>
+                        <option value="UMRAH TERLEBIH DAHULU">
+                          UMRAH TERLEBIH DAHULU
+                        </option>
+                      </select>
+                    </div>
+                  ) : (
+                    <div>
+                      <label className="block text-[10px] sm:text-xs font-bold text-gray-400 mb-2 uppercase tracking-wider">
+                        URUTAN KUNJUNGAN KOTA *
+                      </label>
+                      <select
+                        value={formData.urutanKunjungan}
+                        onChange={(e) =>
+                          setFormData({
+                            ...formData,
+                            urutanKunjungan: e.target.value,
+                          })
+                        }
+                        className="w-full p-4 bg-gray-50/50 border border-transparent rounded-xl focus:ring-2 focus:ring-blue-500 outline-none text-gray-800 font-bold appearance-none"
+                      >
+                        <option value="">-- Pilih Urutan --</option>
+                        <option value="Madinah - Mekkah">
+                          Madinah - Mekkah
+                        </option>
+                        <option value="Mekkah - Madinah">
+                          Mekkah - Madinah
+                        </option>
+                        <option value="Mekkah - Madinah - Thaif">
+                          Mekkah - Madinah - Thaif
+                        </option>
+                      </select>
+                    </div>
+                  )}
 
-              {/* Tanggal Kepulangan (Otomatis) */}
-              <div>
-                <label className="block text-[10px] sm:text-xs font-bold text-gray-300 mb-2 uppercase tracking-wider">TANGGAL KEPULANGAN (OTOMATIS)</label>
-                <div className="w-full p-4 bg-gray-50/30 text-gray-400 font-bold rounded-xl border border-transparent">
-                  {formData.tglKepulangan ? new Date(formData.tglKepulangan).toLocaleDateString('id-ID', { year: 'numeric', month: 'long', day: 'numeric' }) : 'dd/mm/yyyy'}
-                </div>
-              </div>
+                  {/* Kota Tujuan Utama */}
+                  <div>
+                    <label className="block text-[10px] sm:text-xs font-bold text-gray-400 mb-2 uppercase tracking-wider">
+                      KOTA TUJUAN UTAMA *
+                    </label>
+                    {formData.kategori === "UMRAH PLUS" ||
+                    formData.kategori === "WISATA HALAL" ? (
+                      <div className="w-full p-4 bg-gray-50/50 border border-transparent rounded-xl text-gray-800 font-bold uppercase">
+                        {formData.negaraWisata || "-"}
+                      </div>
+                    ) : (
+                      <select
+                        value={formData.kotaTujuan}
+                        onChange={(e) =>
+                          setFormData({
+                            ...formData,
+                            kotaTujuan: e.target.value,
+                          })
+                        }
+                        className="w-full p-4 bg-gray-50/50 border border-transparent rounded-xl focus:ring-2 focus:ring-blue-500 outline-none text-gray-800 font-bold appearance-none"
+                      >
+                        <option value="">-- Pilih Kota Tujuan --</option>
+                        {bandaraList
+                          .filter(
+                            (b) => b.negara?.toUpperCase() === "ARAB SAUDI",
+                          )
+                          .map((b) => (
+                            <option key={b.id} value={b.kota.toUpperCase()}>
+                              {b.kota.toUpperCase()} ({b.kode})
+                            </option>
+                          ))}
+                      </select>
+                    )}
+                  </div>
 
-              {/* Durasi Umrah (Otomatis) - Only if UMRAH PLUS */}
-              {formData.kategori === 'UMRAH PLUS' && (
-                <div>
-                  <label className="block text-[10px] sm:text-xs font-bold text-gray-300 mb-2 uppercase tracking-wider">DURASI UMRAH (OTOMATIS)</label>
-                  <div className="w-full p-4 bg-gray-50/30 text-gray-400 font-bold rounded-xl border border-transparent flex justify-between items-center">
-                    <span>{Math.max(0, formData.durasiHari - formData.durasiWisata)}</span>
-                    <span className="text-[10px] tracking-widest uppercase">HARI</span>
+                  {/* Tanggal Berangkat */}
+                  <div>
+                    <label className="block text-[10px] sm:text-xs font-bold text-gray-400 mb-2 uppercase tracking-wider">
+                      TANGGAL KEBERANGKATAN *
+                    </label>
+                    <input
+                      type="date"
+                      value={formData.tglBerangkat}
+                      onChange={(e) => {
+                        const newTglBerangkat = e.target.value;
+                        let newTglPulang = formData.tglKepulangan;
+                        if (newTglBerangkat) {
+                          const dt = new Date(newTglBerangkat);
+                          dt.setDate(dt.getDate() + formData.durasiHari);
+                          newTglPulang = dt.toISOString().split("T")[0];
+                        }
+                        setFormData({
+                          ...formData,
+                          tglBerangkat: newTglBerangkat,
+                          tglKepulangan: newTglPulang,
+                        });
+                      }}
+                      className="w-full p-4 bg-gray-50/50 border border-transparent rounded-xl focus:ring-2 focus:ring-blue-500 outline-none text-gray-800 font-bold"
+                    />
+                  </div>
+
+                  {/* Tanggal Kepulangan (Otomatis) */}
+                  <div>
+                    <label className="block text-[10px] sm:text-xs font-bold text-gray-300 mb-2 uppercase tracking-wider">
+                      TANGGAL KEPULANGAN (OTOMATIS)
+                    </label>
+                    <div className="w-full p-4 bg-gray-50/30 text-gray-400 font-bold rounded-xl border border-transparent">
+                      {formData.tglKepulangan
+                        ? new Date(formData.tglKepulangan).toLocaleDateString(
+                            "id-ID",
+                            { year: "numeric", month: "long", day: "numeric" },
+                          )
+                        : "dd/mm/yyyy"}
+                    </div>
+                  </div>
+
+                  {/* Durasi Umrah (Otomatis) - Only if UMRAH PLUS */}
+                  {formData.kategori === "UMRAH PLUS" && (
+                    <div>
+                      <label className="block text-[10px] sm:text-xs font-bold text-gray-300 mb-2 uppercase tracking-wider">
+                        DURASI UMRAH (OTOMATIS)
+                      </label>
+                      <div className="w-full p-4 bg-gray-50/30 text-gray-400 font-bold rounded-xl border border-transparent flex justify-between items-center">
+                        <span>
+                          {Math.max(
+                            0,
+                            formData.durasiHari - formData.durasiWisata,
+                          )}
+                        </span>
+                        <span className="text-[10px] tracking-widest uppercase">
+                          HARI
+                        </span>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Target Jamaah Max */}
+                  <div className="md:col-span-2 mt-4">
+                    <div className="flex justify-between items-center mb-2">
+                      <label className="block text-[10px] sm:text-xs font-bold text-gray-400 uppercase tracking-wider">
+                        TARGET JAMAAH *
+                      </label>
+                      <span className="px-3 py-1 bg-blue-50 text-blue-700 rounded-lg text-[10px] font-black uppercase">
+                        {formData.targetJamaah} PAX
+                      </span>
+                    </div>
+                    <div className="pt-2 pb-1 relative group">
+                      <input
+                        type="range"
+                        min="2"
+                        max="90"
+                        value={formData.targetJamaah}
+                        onChange={(e) =>
+                          setFormData({
+                            ...formData,
+                            targetJamaah: parseInt(e.target.value),
+                          })
+                        }
+                        className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-blue-600"
+                      />
+                      <div className="flex justify-between text-[9px] font-bold text-blue-200 mt-2">
+                        <span>2 Pax</span>
+                        <span>90 Pax</span>
+                      </div>
+                    </div>
                   </div>
                 </div>
-              )}
-
-              {/* Target Jamaah Max */}
-              <div className="md:col-span-2 mt-4">
-                <div className="flex justify-between items-center mb-2">
-                  <label className="block text-[10px] sm:text-xs font-bold text-gray-400 uppercase tracking-wider">TARGET JAMAAH *</label>
-                  <span className="px-3 py-1 bg-blue-50 text-blue-700 rounded-lg text-[10px] font-black uppercase">
-                    {formData.targetJamaah} PAX
-                  </span>
-                </div>
-                <div className="pt-2 pb-1 relative group">
-                  <input
-                    type="range"
-                    min="2"
-                    max="90"
-                    value={formData.targetJamaah}
-                    onChange={(e) => setFormData({...formData, targetJamaah: parseInt(e.target.value)})}
-                    className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-blue-600"
-                  />
-                  <div className="flex justify-between text-[9px] font-bold text-blue-200 mt-2">
-                    <span>2 Pax</span>
-                    <span>90 Pax</span>
-                  </div>
-                </div>
-              </div>
-            </div>
-            </>
+              </>
             )}
           </div>
         )}
 
-        {currentStepName === 'PILIH PAKET WISATA' && formData.kategori === 'WISATA HALAL' && (
-          <div className="space-y-8 animate-in fade-in slide-in-from-right-2 duration-300">
-            <div className="flex justify-between items-center bg-gray-50 p-4 border border-gray-100 rounded-xl">
-              <div>
-                <h3 className="text-sm font-black text-gray-900 tracking-wider uppercase">PILIH PAKET WISATA</h3>
-                <p className="text-[10px] sm:text-xs font-bold text-gray-400 tracking-widest uppercase mt-1">MENAMPILKAN PAKET UNTUK {formData.negaraWisata || 'TURKEY'}</p>
-              </div>
-              <div className="px-4 py-2 bg-emerald-50 text-emerald-600 rounded-lg text-[10px] font-black uppercase tracking-widest border border-emerald-100">
-                {(DUMMY_PAKET_WISATA[formData.negaraWisata || 'TURKEY'] || []).length} PAKET TERSEDIA
-              </div>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {(DUMMY_PAKET_WISATA[formData.negaraWisata || 'TURKEY'] || []).map((paket) => {
-                const isSelected = formData.paketWisataId === paket.id;
-                return (
-                  <button
-                    key={paket.id}
-                    onClick={() => setFormData({...formData, paketWisataId: paket.id, nama: paket.name, hargaDasar: paket.price})}
-                    className={`relative rounded-2xl overflow-hidden group text-left border-2 transition-all flex flex-col bg-white ${
-                      isSelected 
-                        ? 'border-blue-500 shadow-lg shadow-blue-500/20 scale-[1.01]' 
-                        : 'border-transparent hover:border-gray-200 shadow-sm hover:shadow-md'
-                    }`}
-                  >
-                    <div className="h-48 relative overflow-hidden w-full bg-gray-100">
-                      <img 
-                        src={paket.img} 
-                        alt={paket.name} 
-                        className="w-full h-full object-cover opacity-90 transition-transform duration-700 group-hover:scale-110"
-                        referrerPolicy="no-referrer"
-                      />
-                    </div>
-                    <div className="p-5 flex flex-col items-center justify-center text-center">
-                      <h4 className="font-black text-sm text-gray-900 tracking-wider mb-2">{paket.name}</h4>
-                      <div className="text-[9px] font-bold text-gray-400 tracking-widest uppercase mb-4">{paket.rute}</div>
-                      <div className="text-xs font-black text-emerald-600 tracking-widest uppercase">
-                        START $ {paket.price.toFixed(2)}
-                      </div>
-                    </div>
-                  </button>
-                );
-              })}
-              
-              {(DUMMY_PAKET_WISATA[formData.negaraWisata || 'TURKEY'] || []).length === 0 && (
-                <div className="col-span-1 md:col-span-2 py-20 text-center text-gray-400 font-bold text-xs">
-                  Belum ada paket wisata tersedia untuk negara ini
+        {currentStepName === "PILIH PAKET WISATA" &&
+          formData.kategori === "WISATA HALAL" && (
+            <div className="space-y-8 animate-in fade-in slide-in-from-right-2 duration-300">
+              <div className="flex justify-between items-center bg-gray-50 p-4 border border-gray-100 rounded-xl">
+                <div>
+                  <h3 className="text-sm font-black text-gray-900 tracking-wider uppercase">
+                    PILIH PAKET WISATA
+                  </h3>
+                  <p className="text-[10px] sm:text-xs font-bold text-gray-400 tracking-widest uppercase mt-1">
+                    MENAMPILKAN PAKET UNTUK {formData.negaraWisata || "TURKEY"}
+                  </p>
                 </div>
-              )}
-            </div>
-          </div>
-        )}
-
-        {currentStepName === 'DETAIL INFO' && formData.kategori === 'WISATA HALAL' && (
-          <div className="space-y-8 animate-in fade-in slide-in-from-right-2 duration-300">
-            {/* Header / Rute */}
-            <div className="mb-6">
-              <h3 className="text-lg sm:text-xl font-black text-[#1A1C29] tracking-wider uppercase">
-                {formData.paketWisataId 
-                  ? (DUMMY_PAKET_WISATA[formData.negaraWisata || 'TURKEY']?.find(p => p.id === formData.paketWisataId)?.rute || 'EXPLORE ISTANBUL - BURSA - CAPPADOCIA')
-                  : 'EXPLORE ISTANBUL - BURSA - CAPPADOCIA'}
-              </h3>
-            </div>
-
-            {/* Gallery Placeholder */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-              <div className="aspect-[4/3] bg-gray-100 rounded-xl overflow-hidden border border-gray-200">
-                 <img src="https://images.unsplash.com/photo-1541432901042-2d8bd64b4a9b?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80" alt="Gallery 1" className="w-full h-full object-cover" referrerPolicy="no-referrer" />
-              </div>
-              <div className="aspect-[4/3] bg-gray-100 rounded-xl overflow-hidden border border-gray-200">
-                 <img src="https://images.unsplash.com/photo-1524231757912-21f4fe3a7200?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80" alt="Gallery 2" className="w-full h-full object-cover" referrerPolicy="no-referrer" />
-              </div>
-              <div className="aspect-[4/3] bg-gray-100 rounded-xl overflow-hidden border border-gray-200">
-                 <img src="https://images.unsplash.com/photo-1533140920038-7fba022f778d?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80" alt="Gallery 3" className="w-full h-full object-cover" referrerPolicy="no-referrer" />
-              </div>
-            </div>
-
-            {/* Banner duration and pax */}
-            <div className="flex flex-col sm:flex-row bg-white border border-gray-200 rounded-xl overflow-hidden mb-8">
-               <div className="flex-1 p-4 border-b sm:border-b-0 sm:border-r border-gray-200">
-                  <p className="text-[10px] text-blue-500 font-bold uppercase tracking-widest mb-1">DURATION</p>
-                  <p className="text-sm font-black text-gray-900 uppercase">10 HARI 9 MALAM</p>
-               </div>
-               <div className="flex-1 p-4">
-                  <p className="text-[10px] text-blue-500 font-bold uppercase tracking-widest mb-1">MIN PAX</p>
-                  <p className="text-sm font-black text-gray-900 uppercase">5 PAX</p>
-               </div>
-            </div>
-
-            {/* Pricing Tables */}
-            <div className="grid grid-cols-1 gap-6 mb-8">
-              {/* FIT Table */}
-              <div className="border border-gray-200 rounded-xl overflow-hidden bg-white">
-                <div className="flex justify-between items-center bg-[#FFFdf5] p-3 border-b border-[#fbecc8]">
-                  <span className="text-[10px] font-black uppercase text-gray-800">FIT</span>
-                  <span className="text-[10px] font-black uppercase text-gray-800">PRICE / PAX</span>
+                <div className="px-4 py-2 bg-emerald-50 text-emerald-600 rounded-lg text-[10px] font-black uppercase tracking-widest border border-emerald-100">
+                  {
+                    paketWisataList.filter(
+                      (p: any) =>
+                        p.lokasi.toUpperCase() ===
+                        (formData.negaraWisata || "TURKEY"),
+                    ).length
+                  }{" "}
+                  PAKET TERSEDIA
                 </div>
-                <div className="divide-y divide-gray-100">
-                  {[2, 4, 7, 8, 9].map(pax => (
-                    <div key={`fit-${pax}`} className="flex justify-between items-center p-4">
-                      <span className="text-xs font-bold text-gray-700 w-12">{pax}</span>
-                      <div className="flex-1 flex justify-center">
-                        <div className="w-5 h-5 border-2 border-gray-200 rounded flex items-center justify-center bg-white cursor-pointer hover:border-blue-400">
-                          {pax === 8 && <Check className="w-3 h-3 text-blue-500" strokeWidth={3} />}
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {paketWisataList
+                  .filter(
+                    (p: any) =>
+                      p.lokasi.toUpperCase() ===
+                      (formData.negaraWisata || "TURKEY"),
+                  )
+                  .map((paket) => {
+                    const isSelected = formData.paketWisataId === paket.id;
+                    return (
+                      <button
+                        key={paket.id}
+                        onClick={() =>
+                          setFormData({
+                            ...formData,
+                            paketWisataId: paket.id,
+                            nama: paket.nama,
+                            hargaDasar: paket.hargaStart,
+                          })
+                        }
+                        className={`relative rounded-2xl overflow-hidden group text-left border-2 transition-all flex flex-col bg-white ${
+                          isSelected
+                            ? "border-blue-500 shadow-lg shadow-blue-500/20 scale-[1.01]"
+                            : "border-transparent hover:border-gray-200 shadow-sm hover:shadow-md"
+                        }`}
+                      >
+                        <div className="h-48 relative overflow-hidden w-full bg-gray-100">
+                          <img
+                            src={
+                              paket.img ||
+                              "https://images.unsplash.com/photo-1541432901042-2d8bd64b4a9b?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80"
+                            }
+                            alt={paket.nama}
+                            className="w-full h-full object-cover opacity-90 transition-transform duration-700 group-hover:scale-110"
+                            referrerPolicy="no-referrer"
+                          />
                         </div>
-                      </div>
-                      <span className="text-xs font-black text-gray-900 w-28 text-right">Rp 13.850.000</span>
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              {/* GROUP Table */}
-              <div className="border border-gray-200 rounded-xl overflow-hidden bg-white">
-                <div className="flex justify-between items-center bg-[#FFFdf5] p-3 border-b border-[#fbecc8]">
-                  <span className="text-[10px] font-black uppercase text-gray-800">GROUP</span>
-                  <span className="text-[10px] font-black uppercase text-gray-800">PRICE / PAX</span>
-                </div>
-                <div className="divide-y divide-gray-100">
-                  {['10-14', '15-19', '20-24', '25-29', '30-34', '35-39', '40-49'].map(range => (
-                    <div key={`grp-${range}`} className="flex justify-between items-center p-4">
-                      <span className="text-xs font-bold text-gray-700 w-12">{range}</span>
-                      <div className="flex-1 flex justify-center">
-                        <div className="w-5 h-5 border-2 border-gray-200 rounded flex items-center justify-center bg-white cursor-pointer hover:border-blue-400">
-                          {/* Empty checkbox */}
+                        <div className="p-5 flex flex-col items-center justify-center text-center">
+                          <h4 className="font-black text-sm text-gray-900 tracking-wider mb-2">
+                            {paket.nama}
+                          </h4>
+                          <div className="text-[9px] font-bold text-gray-400 tracking-widest uppercase mb-4">
+                            {paket.deskripsi}
+                          </div>
+                          <div className="text-xs font-black text-emerald-600 tracking-widest uppercase">
+                            START $ {paket.hargaStart?.toFixed(2)}
+                          </div>
                         </div>
-                      </div>
-                      <span className="text-xs font-black text-gray-900 w-28 text-right">Rp 14.400.000</span>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </div>
+                      </button>
+                    );
+                  })}
 
-            {/* Include & Exclude */}
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-0 border border-gray-200 rounded-xl overflow-hidden mb-8 bg-white text-xs">
-               <div className="border-b lg:border-b-0 lg:border-r border-gray-200">
-                  <div className="bg-emerald-50 p-3 border-b border-gray-200 text-[10px] font-black uppercase text-emerald-900 tracking-wider">INCLUDE</div>
-                  <ul className="p-5 space-y-4 text-gray-600 font-medium leading-relaxed">
-                     <li className="flex items-start gap-3">
-                       <Check className="text-emerald-500 w-4 h-4 flex-shrink-0 mt-0.5" strokeWidth={3} />
-                       <span>Meet and greet service by our English speaking driver.</span>
-                     </li>
-                     <li className="flex items-start gap-3">
-                       <Check className="text-emerald-500 w-4 h-4 flex-shrink-0 mt-0.5" strokeWidth={3} />
-                       <span>All transfers by air conditioning coach.</span>
-                     </li>
-                     <li className="flex items-start gap-3">
-                       <Check className="text-emerald-500 w-4 h-4 flex-shrink-0 mt-0.5" strokeWidth={3} />
-                       <span>Accommodation in 4/5* Hotels based on breakfast and dinner.</span>
-                     </li>
-                     <li className="flex items-start gap-3">
-                       <Check className="text-emerald-500 w-4 h-4 flex-shrink-0 mt-0.5" strokeWidth={3} />
-                       <span>All sightseeing tours as mentioned in the itinerary.</span>
-                     </li>
-                     <li className="flex items-start gap-3">
-                       <Check className="text-emerald-500 w-4 h-4 flex-shrink-0 mt-0.5" strokeWidth={3} />
-                       <span>Entrance fees to all sites as indicated.</span>
-                     </li>
-                  </ul>
-               </div>
-               <div>
-                  <div className="bg-red-50 p-3 border-b border-gray-200 text-[10px] font-black uppercase text-red-900 tracking-wider">EXCLUDE</div>
-                  <ul className="p-5 space-y-4 text-gray-600 font-medium leading-relaxed">
-                     <li className="flex items-start gap-3">
-                       <X className="text-red-500 w-4 h-4 flex-shrink-0 mt-0.5" strokeWidth={3} />
-                       <span>International Airfare</span>
-                     </li>
-                     <li className="flex items-start gap-3">
-                       <X className="text-red-500 w-4 h-4 flex-shrink-0 mt-0.5" strokeWidth={3} />
-                       <span>Turkey entry Visa</span>
-                     </li>
-                     <li className="flex items-start gap-3">
-                       <X className="text-red-500 w-4 h-4 flex-shrink-0 mt-0.5" strokeWidth={3} />
-                       <span>Any optional tours, personal expenses</span>
-                     </li>
-                  </ul>
-               </div>
-            </div>
-
-            {/* Tentative Itinerary */}
-            <div className="border border-gray-200 rounded-xl overflow-hidden mb-8 bg-white">
-              <div className="bg-blue-50 p-3 border-b border-blue-100 text-[10px] font-black uppercase text-blue-900 tracking-wider">TENTATIVE ITINERARY</div>
-              <div className="divide-y divide-gray-100">
-                {[
-                  { day: 1, title: 'ARRIVAL ISTANBUL', desc: 'Meet & Greet, Transfer to hotel' },
-                  { day: 2, title: 'ISTANBUL - BURSA', desc: 'Grand Mosque, Green Tomb, Silk Market' },
-                  { day: 3, title: 'BURSA - KUSADASI', desc: 'Ephesus Ancient City' },
-                  { day: 4, title: 'KUSADASI - PAMUKKALE', desc: 'Hierapolis, Cotton Castle' },
-                  { day: 5, title: 'PAMUKKALE - KONYA - CAPPADOCIA', desc: 'Mevlana Museum' },
-                  { day: 6, title: 'CAPPADOCIA', desc: 'Underground City, Goreme Valley' },
-                  { day: 7, title: 'CAPPADOCIA - ANKARA - ISTANBUL', desc: 'Salt Lake, Ataturk Mausoleum' },
-                  { day: 8, title: 'ISTANBUL CITY TOUR', desc: 'Hagia Sophia, Blue Mosque, Topkapi Palace' },
-                ].map((item) => (
-                   <div key={item.day} className="p-4 sm:p-5">
-                     <p className="text-[9px] text-blue-600 font-black uppercase tracking-widest mb-1.5 flex items-center gap-1.5">
-                       <MapPin className="w-3 h-3" /> DAY {item.day}
-                     </p>
-                     <p className="text-xs sm:text-sm font-black text-gray-900 uppercase tracking-wide">{item.title}</p>
-                     <p className="text-[10px] sm:text-xs text-gray-500 mt-1 font-medium">{item.desc}</p>
-                   </div>
-                ))}
-              </div>
-            </div>
-
-          </div>
-        )}
-
-        {currentStepName === 'LAYANAN TAMBAHAN' && formData.kategori === 'WISATA HALAL' && (
-          <div className="space-y-8 animate-in fade-in slide-in-from-right-2 duration-300">
-            {/* Header */}
-            <div className="text-center mb-10">
-              <h3 className="text-lg sm:text-xl font-black text-[#1A1C29] tracking-wider uppercase mb-1">
-                ADDITIONAL & ADD ON
-              </h3>
-              <p className="text-[9px] sm:text-[10px] font-bold text-gray-400 tracking-widest uppercase">
-                PILIH LAYANAN TAMBAHAN DAN PERLENGKAPAN PAX
-              </p>
-            </div>
-
-            {/* Essential Services */}
-            <div className="space-y-4">
-               {/* Tour Leader */}
-               <div className={`border-2 rounded-[1.25rem] overflow-hidden transition-all duration-200 ${formData.wisataAddon_tourLeader ? 'border-blue-500 bg-white ring-4 ring-blue-500/10' : 'border-gray-200 bg-white hover:border-gray-300'}`}>
-                  <div 
-                    className="p-5 flex items-center cursor-pointer"
-                    onClick={() => setFormData({...formData, wisataAddon_tourLeader: !formData.wisataAddon_tourLeader})}
-                  >
-                     <div className={`w-12 h-12 rounded-xl flex items-center justify-center mr-5 transition-colors ${formData.wisataAddon_tourLeader ? 'bg-blue-500 text-white' : 'bg-gray-100 text-gray-400'}`}>
-                        <UserCheck className="w-6 h-6" />
-                     </div>
-                     <div className="flex-1">
-                        <h4 className="font-black text-xs text-[#1A1C29] uppercase tracking-wider mb-1">TOUR LEADER</h4>
-                        <p className="text-[9px] text-gray-500 font-bold uppercase tracking-widest mb-1.5">PENDAMPING DARI TANAH AIR</p>
-                        <p className="text-[10px] font-black text-blue-600">Rp 250.000</p>
-                     </div>
-                     <div className={`w-6 h-6 rounded-full flex items-center justify-center border-2 transition-colors ${formData.wisataAddon_tourLeader ? 'border-blue-500 bg-blue-500 text-white' : 'border-gray-200 bg-transparent'}`}>
-                        {formData.wisataAddon_tourLeader && <Check className="w-3.5 h-3.5" strokeWidth={3} />}
-                     </div>
+                {paketWisataList.filter(
+                  (p: any) =>
+                    p.lokasi.toUpperCase() ===
+                    (formData.negaraWisata || "TURKEY"),
+                ).length === 0 && (
+                  <div className="col-span-1 md:col-span-2 py-20 text-center text-gray-400 font-bold text-xs">
+                    Belum ada paket wisata tersedia untuk negara ini
                   </div>
-                  
+                )}
+              </div>
+            </div>
+          )}
+
+        {currentStepName === "DETAIL INFO" &&
+          formData.kategori === "WISATA HALAL" && (
+            <div className="space-y-8 animate-in fade-in slide-in-from-right-2 duration-300">
+              {/* Header / Rute */}
+              <div className="mb-6">
+                <h3 className="text-lg sm:text-xl font-black text-[#1A1C29] tracking-wider uppercase">
+                  {formData.paketWisataId
+                    ? paketWisataList.find(
+                        (p) => p.id === formData.paketWisataId,
+                      )?.deskripsi || "EXPLORE ISTANBUL - BURSA - CAPPADOCIA"
+                    : "EXPLORE ISTANBUL - BURSA - CAPPADOCIA"}
+                </h3>
+              </div>
+
+              {/* Gallery Placeholder */}
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                <div className="aspect-[4/3] bg-gray-100 rounded-xl overflow-hidden border border-gray-200">
+                  <img
+                    src={
+                      paketWisataList.find(
+                        (p) => p.id === formData.paketWisataId,
+                      )?.img ||
+                      "https://images.unsplash.com/photo-1541432901042-2d8bd64b4a9b?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80"
+                    }
+                    alt="Gallery 1"
+                    className="w-full h-full object-cover"
+                    referrerPolicy="no-referrer"
+                  />
+                </div>
+                <div className="aspect-[4/3] bg-gray-100 rounded-xl overflow-hidden border border-gray-200">
+                  <img
+                    src="https://images.unsplash.com/photo-1524231757912-21f4fe3a7200?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80"
+                    alt="Gallery 2"
+                    className="w-full h-full object-cover"
+                    referrerPolicy="no-referrer"
+                  />
+                </div>
+                <div className="aspect-[4/3] bg-gray-100 rounded-xl overflow-hidden border border-gray-200">
+                  <img
+                    src="https://images.unsplash.com/photo-1533140920038-7fba022f778d?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80"
+                    alt="Gallery 3"
+                    className="w-full h-full object-cover"
+                    referrerPolicy="no-referrer"
+                  />
+                </div>
+              </div>
+
+              {/* Banner duration and pax */}
+              <div className="flex flex-col sm:flex-row bg-white border border-gray-200 rounded-xl overflow-hidden mb-8">
+                <div className="flex-1 p-4 border-b sm:border-b-0 sm:border-r border-gray-200">
+                  <p className="text-[10px] text-blue-500 font-bold uppercase tracking-widest mb-1">
+                    DURATION
+                  </p>
+                  <p className="text-sm font-black text-gray-900 uppercase">
+                    {paketWisataList.find(
+                      (p) => p.id === formData.paketWisataId,
+                    )?.durasiHari || 10}{" "}
+                    HARI{" "}
+                    {Math.max(
+                      1,
+                      (paketWisataList.find(
+                        (p) => p.id === formData.paketWisataId,
+                      )?.durasiHari || 10) - 1,
+                    )}{" "}
+                    MALAM
+                  </p>
+                </div>
+                <div className="flex-1 p-4">
+                  <p className="text-[10px] text-blue-500 font-bold uppercase tracking-widest mb-1">
+                    MIN PAX
+                  </p>
+                  <p className="text-sm font-black text-gray-900 uppercase">
+                    2 PAX
+                  </p>
+                </div>
+              </div>
+
+              {/* Pricing Tables */}
+              <div className="grid grid-cols-1 gap-6 mb-8">
+                {(() => {
+                  const selectedPaket = paketWisataList.find(
+                    (p) => p.id === formData.paketWisataId,
+                  );
+                  const baseUSD = selectedPaket
+                    ? selectedPaket.hargaStart
+                    : 840;
+                  const multiplier = 16000;
+
+                  const fitTiers = [
+                    { label: "2", factor: 1.5 },
+                    { label: "4", factor: 1.3 },
+                    { label: "7", factor: 1.15 },
+                    { label: "8", factor: 1.05 },
+                    { label: "9", factor: 1.05 },
+                  ];
+
+                  const groupTiers = [
+                    { label: "10-14", factor: 1.1 },
+                    { label: "15-19", factor: 1.08 },
+                    { label: "20-24", factor: 1.05 },
+                    { label: "25-29", factor: 1.02 },
+                    { label: "30-34", factor: 1.0 },
+                    { label: "35-39", factor: 0.98 },
+                    { label: "40-49", factor: 0.95 },
+                  ];
+
+                  const handleSelectTier = (
+                    tierLabel: string,
+                    price: number,
+                  ) => {
+                    setFormData({
+                      ...formData,
+                      wisataTierPax: tierLabel,
+                      hargaDasar: price / multiplier, // Keep standard in USD for Step 6
+                    });
+                  };
+
+                  return (
+                    <>
+                      {/* FIT Table */}
+                      <div className="border border-gray-200 rounded-xl overflow-hidden bg-white">
+                        <div className="flex justify-between items-center bg-[#FFFdf5] p-3 border-b border-[#fbecc8]">
+                          <span className="text-[10px] font-black uppercase text-gray-800">
+                            FIT
+                          </span>
+                          <span className="text-[10px] font-black uppercase text-gray-800">
+                            PRICE / PAX
+                          </span>
+                        </div>
+                        <div className="divide-y divide-gray-100">
+                          {fitTiers.map((tier) => {
+                            const price =
+                              Math.round(
+                                (baseUSD * tier.factor * multiplier) / 50000,
+                              ) * 50000; // Round to nearest 50k
+                            const isSelected =
+                              formData.wisataTierPax === `FIT-${tier.label}` ||
+                              (!formData.wisataTierPax && tier.label === "8"); // Default 8 pax
+
+                            return (
+                              <div
+                                key={`fit-${tier.label}`}
+                                className={`flex justify-between items-center p-4 transition-colors ${isSelected ? "bg-blue-50/30" : ""}`}
+                              >
+                                <span className="text-xs font-bold text-gray-700 w-12">
+                                  {tier.label}
+                                </span>
+                                <div className="flex-1 flex justify-center">
+                                  <div
+                                    onClick={() =>
+                                      handleSelectTier(
+                                        `FIT-${tier.label}`,
+                                        price,
+                                      )
+                                    }
+                                    className={`w-5 h-5 border-2 rounded flex items-center justify-center cursor-pointer transition-colors ${isSelected ? "border-blue-500 bg-blue-500" : "border-gray-300 bg-white hover:border-blue-400"}`}
+                                  >
+                                    {isSelected && (
+                                      <Check
+                                        className="w-3 h-3 text-white"
+                                        strokeWidth={3}
+                                      />
+                                    )}
+                                  </div>
+                                </div>
+                                <span
+                                  className={`text-xs font-black w-28 text-right ${isSelected ? "text-blue-700" : "text-gray-900"}`}
+                                >
+                                  Rp {price.toLocaleString("id-ID")}
+                                </span>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      </div>
+
+                      {/* GROUP Table */}
+                      <div className="border border-gray-200 rounded-xl overflow-hidden bg-white">
+                        <div className="flex justify-between items-center bg-[#FFFdf5] p-3 border-b border-[#fbecc8]">
+                          <span className="text-[10px] font-black uppercase text-gray-800">
+                            GROUP
+                          </span>
+                          <span className="text-[10px] font-black uppercase text-gray-800">
+                            PRICE / PAX
+                          </span>
+                        </div>
+                        <div className="divide-y divide-gray-100">
+                          {groupTiers.map((tier) => {
+                            const price =
+                              Math.round(
+                                (baseUSD * tier.factor * multiplier) / 50000,
+                              ) * 50000;
+                            const isSelected =
+                              formData.wisataTierPax === `GROUP-${tier.label}`;
+
+                            return (
+                              <div
+                                key={`grp-${tier.label}`}
+                                className={`flex justify-between items-center p-4 transition-colors ${isSelected ? "bg-blue-50/30" : ""}`}
+                              >
+                                <span className="text-xs font-bold text-gray-700 w-12">
+                                  {tier.label}
+                                </span>
+                                <div className="flex-1 flex justify-center">
+                                  <div
+                                    onClick={() =>
+                                      handleSelectTier(
+                                        `GROUP-${tier.label}`,
+                                        price,
+                                      )
+                                    }
+                                    className={`w-5 h-5 border-2 rounded flex items-center justify-center cursor-pointer transition-colors ${isSelected ? "border-blue-500 bg-blue-500" : "border-gray-300 bg-white hover:border-blue-400"}`}
+                                  >
+                                    {isSelected && (
+                                      <Check
+                                        className="w-3 h-3 text-white"
+                                        strokeWidth={3}
+                                      />
+                                    )}
+                                  </div>
+                                </div>
+                                <span
+                                  className={`text-xs font-black w-28 text-right ${isSelected ? "text-blue-700" : "text-gray-900"}`}
+                                >
+                                  Rp {price.toLocaleString("id-ID")}
+                                </span>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    </>
+                  );
+                })()}
+              </div>
+
+              {/* Include & Exclude */}
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-0 border border-gray-200 rounded-xl overflow-hidden mb-8 bg-white text-xs">
+                <div className="border-b lg:border-b-0 lg:border-r border-gray-200">
+                  <div className="bg-emerald-50 p-3 border-b border-gray-200 text-[10px] font-black uppercase text-emerald-900 tracking-wider">
+                    INCLUDE
+                  </div>
+                  <ul className="p-5 space-y-4 text-gray-600 font-medium leading-relaxed">
+                    <li className="flex items-start gap-3">
+                      <Check
+                        className="text-emerald-500 w-4 h-4 flex-shrink-0 mt-0.5"
+                        strokeWidth={3}
+                      />
+                      <span>
+                        Meet and greet service by our English speaking driver.
+                      </span>
+                    </li>
+                    <li className="flex items-start gap-3">
+                      <Check
+                        className="text-emerald-500 w-4 h-4 flex-shrink-0 mt-0.5"
+                        strokeWidth={3}
+                      />
+                      <span>All transfers by air conditioning coach.</span>
+                    </li>
+                    <li className="flex items-start gap-3">
+                      <Check
+                        className="text-emerald-500 w-4 h-4 flex-shrink-0 mt-0.5"
+                        strokeWidth={3}
+                      />
+                      <span>
+                        Accommodation in 4/5* Hotels based on breakfast and
+                        dinner.
+                      </span>
+                    </li>
+                    <li className="flex items-start gap-3">
+                      <Check
+                        className="text-emerald-500 w-4 h-4 flex-shrink-0 mt-0.5"
+                        strokeWidth={3}
+                      />
+                      <span>
+                        All sightseeing tours as mentioned in the itinerary.
+                      </span>
+                    </li>
+                    <li className="flex items-start gap-3">
+                      <Check
+                        className="text-emerald-500 w-4 h-4 flex-shrink-0 mt-0.5"
+                        strokeWidth={3}
+                      />
+                      <span>Entrance fees to all sites as indicated.</span>
+                    </li>
+                  </ul>
+                </div>
+                <div>
+                  <div className="bg-red-50 p-3 border-b border-gray-200 text-[10px] font-black uppercase text-red-900 tracking-wider">
+                    EXCLUDE
+                  </div>
+                  <ul className="p-5 space-y-4 text-gray-600 font-medium leading-relaxed">
+                    <li className="flex items-start gap-3">
+                      <X
+                        className="text-red-500 w-4 h-4 flex-shrink-0 mt-0.5"
+                        strokeWidth={3}
+                      />
+                      <span>International Airfare</span>
+                    </li>
+                    <li className="flex items-start gap-3">
+                      <X
+                        className="text-red-500 w-4 h-4 flex-shrink-0 mt-0.5"
+                        strokeWidth={3}
+                      />
+                      <span>Turkey entry Visa</span>
+                    </li>
+                    <li className="flex items-start gap-3">
+                      <X
+                        className="text-red-500 w-4 h-4 flex-shrink-0 mt-0.5"
+                        strokeWidth={3}
+                      />
+                      <span>Any optional tours, personal expenses</span>
+                    </li>
+                  </ul>
+                </div>
+              </div>
+
+              {/* Tentative Itinerary */}
+              <div className="border border-gray-200 rounded-xl overflow-hidden mb-8 bg-white">
+                <div className="bg-blue-50 p-3 border-b border-blue-100 text-[10px] font-black uppercase text-blue-900 tracking-wider">
+                  TENTATIVE ITINERARY
+                </div>
+                <div className="divide-y divide-gray-100">
+                  {[
+                    {
+                      day: 1,
+                      title: "ARRIVAL ISTANBUL",
+                      desc: "Meet & Greet, Transfer to hotel",
+                    },
+                    {
+                      day: 2,
+                      title: "ISTANBUL - BURSA",
+                      desc: "Grand Mosque, Green Tomb, Silk Market",
+                    },
+                    {
+                      day: 3,
+                      title: "BURSA - KUSADASI",
+                      desc: "Ephesus Ancient City",
+                    },
+                    {
+                      day: 4,
+                      title: "KUSADASI - PAMUKKALE",
+                      desc: "Hierapolis, Cotton Castle",
+                    },
+                    {
+                      day: 5,
+                      title: "PAMUKKALE - KONYA - CAPPADOCIA",
+                      desc: "Mevlana Museum",
+                    },
+                    {
+                      day: 6,
+                      title: "CAPPADOCIA",
+                      desc: "Underground City, Goreme Valley",
+                    },
+                    {
+                      day: 7,
+                      title: "CAPPADOCIA - ANKARA - ISTANBUL",
+                      desc: "Salt Lake, Ataturk Mausoleum",
+                    },
+                    {
+                      day: 8,
+                      title: "ISTANBUL CITY TOUR",
+                      desc: "Hagia Sophia, Blue Mosque, Topkapi Palace",
+                    },
+                  ].map((item) => (
+                    <div key={item.day} className="p-4 sm:p-5">
+                      <p className="text-[9px] text-blue-600 font-black uppercase tracking-widest mb-1.5 flex items-center gap-1.5">
+                        <MapPin className="w-3 h-3" /> DAY {item.day}
+                      </p>
+                      <p className="text-xs sm:text-sm font-black text-gray-900 uppercase tracking-wide">
+                        {item.title}
+                      </p>
+                      <p className="text-[10px] sm:text-xs text-gray-500 mt-1 font-medium">
+                        {item.desc}
+                      </p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          )}
+
+        {currentStepName === "LAYANAN TAMBAHAN" &&
+          formData.kategori === "WISATA HALAL" && (
+            <div className="space-y-8 animate-in fade-in slide-in-from-right-2 duration-300">
+              {/* Header */}
+              <div className="text-center mb-10">
+                <h3 className="text-lg sm:text-xl font-black text-[#1A1C29] tracking-wider uppercase mb-1">
+                  ADDITIONAL & ADD ON
+                </h3>
+                <p className="text-[9px] sm:text-[10px] font-bold text-gray-400 tracking-widest uppercase">
+                  PILIH LAYANAN TAMBAHAN DAN PERLENGKAPAN PAX
+                </p>
+              </div>
+
+              {/* Essential Services */}
+              <div className="space-y-4">
+                {/* Tour Leader */}
+                <div
+                  className={`border-2 rounded-[1.25rem] overflow-hidden transition-all duration-200 ${formData.wisataAddon_tourLeader ? "border-blue-500 bg-white ring-4 ring-blue-500/10" : "border-gray-200 bg-white hover:border-gray-300"}`}
+                >
+                  <div
+                    className="p-5 flex items-center cursor-pointer"
+                    onClick={() =>
+                      setFormData({
+                        ...formData,
+                        wisataAddon_tourLeader:
+                          !formData.wisataAddon_tourLeader,
+                      })
+                    }
+                  >
+                    <div
+                      className={`w-12 h-12 rounded-xl flex items-center justify-center mr-5 transition-colors ${formData.wisataAddon_tourLeader ? "bg-blue-500 text-white" : "bg-gray-100 text-gray-400"}`}
+                    >
+                      <UserCheck className="w-6 h-6" />
+                    </div>
+                    <div className="flex-1">
+                      <h4 className="font-black text-xs text-[#1A1C29] uppercase tracking-wider mb-1">
+                        TOUR LEADER
+                      </h4>
+                      <p className="text-[9px] text-gray-500 font-bold uppercase tracking-widest mb-1.5">
+                        PENDAMPING DARI TANAH AIR
+                      </p>
+                      <p className="text-[10px] font-black text-blue-600">
+                        Rp 250.000
+                      </p>
+                    </div>
+                    <div
+                      className={`w-6 h-6 rounded-full flex items-center justify-center border-2 transition-colors ${formData.wisataAddon_tourLeader ? "border-blue-500 bg-blue-500 text-white" : "border-gray-200 bg-transparent"}`}
+                    >
+                      {formData.wisataAddon_tourLeader && (
+                        <Check className="w-3.5 h-3.5" strokeWidth={3} />
+                      )}
+                    </div>
+                  </div>
+
                   {/* EXPANDED CONTENT */}
                   {formData.wisataAddon_tourLeader && (
                     <div className="p-5 pt-0">
-                       <div className="bg-gray-50/50 rounded-xl p-4 border border-gray-100">
-                          <label className="block text-[9px] font-bold text-gray-500 uppercase tracking-widest mb-2">JUMLAH TOUR LEADER (PAX):</label>
-                          <input 
-                            type="number" 
-                            min="1"
-                            className="w-full border border-gray-200 rounded-lg p-2.5 text-xs font-bold focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
-                            value={formData.wisataAddon_tourLeaderCount || 1}
-                            onChange={(e) => setFormData({...formData, wisataAddon_tourLeaderCount: e.target.value})}
-                          />
-                       </div>
+                      <div className="bg-gray-50/50 rounded-xl p-4 border border-gray-100">
+                        <label className="block text-[9px] font-bold text-gray-500 uppercase tracking-widest mb-2">
+                          JUMLAH TOUR LEADER (PAX):
+                        </label>
+                        <input
+                          type="number"
+                          min="1"
+                          className="w-full border border-gray-200 rounded-lg p-2.5 text-xs font-bold focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
+                          value={formData.wisataAddon_tourLeaderCount || 1}
+                          onChange={(e) =>
+                            setFormData({
+                              ...formData,
+                              wisataAddon_tourLeaderCount: e.target.value,
+                            })
+                          }
+                        />
+                      </div>
                     </div>
                   )}
-               </div>
+                </div>
 
-               {/* Handling Domestik */}
-               <div className={`border-2 rounded-[1.25rem] overflow-hidden transition-all duration-200 ${formData.wisataAddon_handling ? 'border-blue-500 bg-white ring-4 ring-blue-500/10' : 'border-gray-200 bg-white hover:border-gray-300'}`}>
-                  <div 
+                {/* Handling Domestik */}
+                <div
+                  className={`border-2 rounded-[1.25rem] overflow-hidden transition-all duration-200 ${formData.wisataAddon_handling ? "border-blue-500 bg-white ring-4 ring-blue-500/10" : "border-gray-200 bg-white hover:border-gray-300"}`}
+                >
+                  <div
                     className="p-5 flex items-center cursor-pointer"
-                    onClick={() => setFormData({...formData, wisataAddon_handling: !formData.wisataAddon_handling})}
+                    onClick={() =>
+                      setFormData({
+                        ...formData,
+                        wisataAddon_handling: !formData.wisataAddon_handling,
+                      })
+                    }
                   >
-                     <div className={`w-12 h-12 rounded-xl flex items-center justify-center mr-5 transition-colors ${formData.wisataAddon_handling ? 'bg-blue-500 text-white' : 'bg-gray-100 text-gray-400'}`}>
-                        <Shield className="w-6 h-6" />
-                     </div>
-                     <div className="flex-1">
-                        <h4 className="font-black text-xs text-[#1A1C29] uppercase tracking-wider mb-1">HANDLING DOMESTIK</h4>
-                        <p className="text-[9px] text-gray-500 font-bold uppercase tracking-widest mb-1.5">LAYANAN BANDARA KEBERANGKATAN</p>
-                        <p className="text-[10px] font-black text-blue-600">Rp 250.000</p>
-                     </div>
-                     <div className={`w-6 h-6 rounded-full flex items-center justify-center border-2 transition-colors ${formData.wisataAddon_handling ? 'border-blue-500 bg-blue-500 text-white' : 'border-gray-200 bg-transparent'}`}>
-                        {formData.wisataAddon_handling && <Check className="w-3.5 h-3.5" strokeWidth={3} />}
-                     </div>
+                    <div
+                      className={`w-12 h-12 rounded-xl flex items-center justify-center mr-5 transition-colors ${formData.wisataAddon_handling ? "bg-blue-500 text-white" : "bg-gray-100 text-gray-400"}`}
+                    >
+                      <Shield className="w-6 h-6" />
+                    </div>
+                    <div className="flex-1">
+                      <h4 className="font-black text-xs text-[#1A1C29] uppercase tracking-wider mb-1">
+                        HANDLING DOMESTIK
+                      </h4>
+                      <p className="text-[9px] text-gray-500 font-bold uppercase tracking-widest mb-1.5">
+                        LAYANAN BANDARA KEBERANGKATAN
+                      </p>
+                      <p className="text-[10px] font-black text-blue-600">
+                        Rp 250.000
+                      </p>
+                    </div>
+                    <div
+                      className={`w-6 h-6 rounded-full flex items-center justify-center border-2 transition-colors ${formData.wisataAddon_handling ? "border-blue-500 bg-blue-500 text-white" : "border-gray-200 bg-transparent"}`}
+                    >
+                      {formData.wisataAddon_handling && (
+                        <Check className="w-3.5 h-3.5" strokeWidth={3} />
+                      )}
+                    </div>
                   </div>
-                  
+
                   {/* EXPANDED CONTENT */}
                   {formData.wisataAddon_handling && (
                     <div className="p-5 pt-0">
-                       <div className="bg-gray-50/50 rounded-xl p-4 border border-gray-100">
-                          <label className="block text-[9px] font-bold text-gray-500 uppercase tracking-widest mb-2">TIPE HANDLING:</label>
-                          <select 
-                            className="w-full bg-[#E5F3FF] border border-blue-100 rounded-lg p-2.5 text-xs font-bold text-blue-900 focus:ring-2 focus:ring-blue-500 outline-none cursor-pointer"
-                            value={formData.wisataAddon_handlingType || 'Handling domestik + Lounge'}
-                            onChange={(e) => setFormData({...formData, wisataAddon_handlingType: e.target.value})}
-                          >
-                            <option>Handling domestik + Lounge</option>
-                            <option>Handling domestik Only</option>
-                            <option>Lounge Only</option>
-                          </select>
-                       </div>
+                      <div className="bg-gray-50/50 rounded-xl p-4 border border-gray-100">
+                        <label className="block text-[9px] font-bold text-gray-500 uppercase tracking-widest mb-2">
+                          TIPE HANDLING:
+                        </label>
+                        <select
+                          className="w-full bg-[#E5F3FF] border border-blue-100 rounded-lg p-2.5 text-xs font-bold text-blue-900 focus:ring-2 focus:ring-blue-500 outline-none cursor-pointer"
+                          value={
+                            formData.wisataAddon_handlingType ||
+                            "Handling domestik + Lounge"
+                          }
+                          onChange={(e) =>
+                            setFormData({
+                              ...formData,
+                              wisataAddon_handlingType: e.target.value,
+                            })
+                          }
+                        >
+                          <option>Handling domestik + Lounge</option>
+                          <option>Handling domestik Only</option>
+                          <option>Lounge Only</option>
+                        </select>
+                      </div>
                     </div>
                   )}
-               </div>
+                </div>
 
-               {/* Travel Kits */}
-               <div className={`border-2 rounded-[1.25rem] overflow-hidden transition-all duration-200 ${formData.wisataAddon_travelKits ? 'border-blue-500 bg-white ring-4 ring-blue-500/10' : 'border-gray-200 bg-white hover:border-gray-300'}`}>
-                  <div 
+                {/* Travel Kits */}
+                <div
+                  className={`border-2 rounded-[1.25rem] overflow-hidden transition-all duration-200 ${formData.wisataAddon_travelKits ? "border-blue-500 bg-white ring-4 ring-blue-500/10" : "border-gray-200 bg-white hover:border-gray-300"}`}
+                >
+                  <div
                     className="p-5 flex items-center cursor-pointer"
-                    onClick={() => setFormData({...formData, wisataAddon_travelKits: !formData.wisataAddon_travelKits})}
+                    onClick={() =>
+                      setFormData({
+                        ...formData,
+                        wisataAddon_travelKits:
+                          !formData.wisataAddon_travelKits,
+                      })
+                    }
                   >
-                     <div className={`w-12 h-12 rounded-xl flex items-center justify-center mr-5 transition-colors ${formData.wisataAddon_travelKits ? 'bg-blue-500 text-white' : 'bg-gray-100 text-gray-400'}`}>
-                        <Briefcase className="w-6 h-6" />
-                     </div>
-                     <div className="flex-1">
-                        <h4 className="font-black text-xs text-[#1A1C29] uppercase tracking-wider mb-1">TRAVEL KITS</h4>
-                        <p className="text-[9px] text-gray-500 font-bold uppercase tracking-widest mb-1.5">NAMETAG & TAS KECIL</p>
-                        <p className="text-[10px] font-black text-blue-600">Rp 250.000</p>
-                     </div>
-                     <div className={`w-6 h-6 rounded-full flex items-center justify-center border-2 transition-colors ${formData.wisataAddon_travelKits ? 'border-blue-500 bg-blue-500 text-white' : 'border-gray-200 bg-transparent'}`}>
-                        {formData.wisataAddon_travelKits && <Check className="w-3.5 h-3.5" strokeWidth={3} />}
-                     </div>
+                    <div
+                      className={`w-12 h-12 rounded-xl flex items-center justify-center mr-5 transition-colors ${formData.wisataAddon_travelKits ? "bg-blue-500 text-white" : "bg-gray-100 text-gray-400"}`}
+                    >
+                      <Briefcase className="w-6 h-6" />
+                    </div>
+                    <div className="flex-1">
+                      <h4 className="font-black text-xs text-[#1A1C29] uppercase tracking-wider mb-1">
+                        TRAVEL KITS
+                      </h4>
+                      <p className="text-[9px] text-gray-500 font-bold uppercase tracking-widest mb-1.5">
+                        NAMETAG & TAS KECIL
+                      </p>
+                      <p className="text-[10px] font-black text-blue-600">
+                        Rp 250.000
+                      </p>
+                    </div>
+                    <div
+                      className={`w-6 h-6 rounded-full flex items-center justify-center border-2 transition-colors ${formData.wisataAddon_travelKits ? "border-blue-500 bg-blue-500 text-white" : "border-gray-200 bg-transparent"}`}
+                    >
+                      {formData.wisataAddon_travelKits && (
+                        <Check className="w-3.5 h-3.5" strokeWidth={3} />
+                      )}
+                    </div>
                   </div>
-               </div>
-            </div>
+                </div>
+              </div>
 
-            {/* Merchandise Divider */}
-            <div className="pt-8 mb-4">
-              <h4 className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-4">MERCHANDISE & ADD ONS</h4>
-              
-              <div className="grid grid-cols-1 gap-3">
-                 {[
-                   {id: 'koper', name: 'KOPER CUSTOM', desc: 'KOPER DENGAN DESAIN KHUSUS', price: 1500000, icon: Briefcase},
-                   {id: 'slingbag', name: 'SLING BAG', desc: 'TAS SELEMPANG EKSKLUSIF', price: 50000, icon: ShoppingBag},
-                   {id: 'kaos', name: 'KAOS GRUP', desc: 'KAOS SERAGAM ROMBONGAN', price: 150000, icon: Shirt},
-                   {id: 'jaket', name: 'JACKET GRUP', desc: 'JAKET SERAGAM ROMBONGAN', price: 250000, icon: Shirt},
-                   {id: 'tasserut', name: 'TAS SERUT', desc: 'TAS SERUT PRAKTIS', price: 25000, icon: ShoppingBag},
-                   {id: 'topi', name: 'TOPI', desc: 'TOPI IDENTITAS GRUP', price: 35000, icon: User},
-                   {id: 'spanduk', name: 'SPANDUK ROMBONGAN', desc: 'SPANDUK UNTUK FOTO BERSAMA', price: 150000, icon: FileText},
-                 ].map(item => {
+              {/* Merchandise Divider */}
+              <div className="pt-8 mb-4">
+                <h4 className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-4">
+                  MERCHANDISE & ADD ONS
+                </h4>
+
+                <div className="grid grid-cols-1 gap-3">
+                  {[
+                    {
+                      id: "koper",
+                      name: "KOPER CUSTOM",
+                      desc: "KOPER DENGAN DESAIN KHUSUS",
+                      price: 1500000,
+                      icon: Briefcase,
+                    },
+                    {
+                      id: "slingbag",
+                      name: "SLING BAG",
+                      desc: "TAS SELEMPANG EKSKLUSIF",
+                      price: 50000,
+                      icon: ShoppingBag,
+                    },
+                    {
+                      id: "kaos",
+                      name: "KAOS GRUP",
+                      desc: "KAOS SERAGAM ROMBONGAN",
+                      price: 150000,
+                      icon: Shirt,
+                    },
+                    {
+                      id: "jaket",
+                      name: "JACKET GRUP",
+                      desc: "JAKET SERAGAM ROMBONGAN",
+                      price: 250000,
+                      icon: Shirt,
+                    },
+                    {
+                      id: "tasserut",
+                      name: "TAS SERUT",
+                      desc: "TAS SERUT PRAKTIS",
+                      price: 25000,
+                      icon: ShoppingBag,
+                    },
+                    {
+                      id: "topi",
+                      name: "TOPI",
+                      desc: "TOPI IDENTITAS GRUP",
+                      price: 35000,
+                      icon: User,
+                    },
+                    {
+                      id: "spanduk",
+                      name: "SPANDUK ROMBONGAN",
+                      desc: "SPANDUK UNTUK FOTO BERSAMA",
+                      price: 150000,
+                      icon: FileText,
+                    },
+                  ].map((item) => {
                     const isSelected = formData[`wisataAddon_merch_${item.id}`];
                     const Icon = item.icon;
                     return (
-                       <div 
-                         key={item.id}
-                         className={`border rounded-[1rem] overflow-hidden transition-all duration-200 bg-white ${isSelected ? 'border-blue-200 ring-2 ring-blue-500/10 shadow-sm' : 'border-gray-100 hover:border-gray-200'}`}
-                       >
-                          <div 
-                            className="p-4 flex items-center cursor-pointer"
-                            onClick={() => setFormData({...formData, [`wisataAddon_merch_${item.id}`]: !isSelected})}
+                      <div
+                        key={item.id}
+                        className={`border rounded-[1rem] overflow-hidden transition-all duration-200 bg-white ${isSelected ? "border-blue-200 ring-2 ring-blue-500/10 shadow-sm" : "border-gray-100 hover:border-gray-200"}`}
+                      >
+                        <div
+                          className="p-4 flex items-center cursor-pointer"
+                          onClick={() =>
+                            setFormData({
+                              ...formData,
+                              [`wisataAddon_merch_${item.id}`]: !isSelected,
+                            })
+                          }
+                        >
+                          <div
+                            className={`w-10 h-10 rounded-lg flex items-center justify-center mr-4 transition-colors ${isSelected ? "bg-gray-50 text-gray-400" : "bg-gray-50 text-gray-300"}`}
                           >
-                             <div className={`w-10 h-10 rounded-lg flex items-center justify-center mr-4 transition-colors ${isSelected ? 'bg-gray-50 text-gray-400' : 'bg-gray-50 text-gray-300'}`}>
-                                <Icon className="w-5 h-5" /> 
-                             </div>
-                             <div className="flex-1">
-                                <h4 className="font-black text-[11px] text-[#1A1C29] uppercase tracking-wider mb-0.5">{item.name}</h4>
-                                <p className="text-[8px] text-gray-500 font-bold uppercase tracking-widest mb-1.5">{item.desc}</p>
-                                <p className="text-[10px] font-black text-gray-900">Rp {item.price.toLocaleString('id-ID')}</p>
-                             </div>
-                             <div className={`w-5 h-5 rounded-full flex items-center justify-center border transition-colors ${isSelected ? 'border-transparent bg-transparent text-blue-500' : 'border-gray-200 bg-transparent text-transparent'}`}>
-                                {isSelected ? <Check className="w-4 h-4" strokeWidth={4} /> : <div className="w-full h-full rounded-full" />}
-                             </div>
+                            <Icon className="w-5 h-5" />
                           </div>
-                       </div>
+                          <div className="flex-1">
+                            <h4 className="font-black text-[11px] text-[#1A1C29] uppercase tracking-wider mb-0.5">
+                              {item.name}
+                            </h4>
+                            <p className="text-[8px] text-gray-500 font-bold uppercase tracking-widest mb-1.5">
+                              {item.desc}
+                            </p>
+                            <p className="text-[10px] font-black text-gray-900">
+                              Rp {item.price.toLocaleString("id-ID")}
+                            </p>
+                          </div>
+                          <div
+                            className={`w-5 h-5 rounded-full flex items-center justify-center border transition-colors ${isSelected ? "border-transparent bg-transparent text-blue-500" : "border-gray-200 bg-transparent text-transparent"}`}
+                          >
+                            {isSelected ? (
+                              <Check className="w-4 h-4" strokeWidth={4} />
+                            ) : (
+                              <div className="w-full h-full rounded-full" />
+                            )}
+                          </div>
+                        </div>
+                      </div>
                     );
-                 })}
+                  })}
+                </div>
               </div>
             </div>
+          )}
 
-          </div>
-        )}
+        {currentStepName === "REVIEW FASILITAS" &&
+          formData.kategori === "WISATA HALAL" &&
+          (() => {
+            const baseIDR = (formData.hargaDasar || 1350) * 16000;
+            let addonsTotal = 0;
+            if (formData.wisataAddon_tourLeader)
+              addonsTotal +=
+                250000 * (Number(formData.wisataAddon_tourLeaderCount) || 1);
+            if (formData.wisataAddon_handling) addonsTotal += 250000;
+            if (formData.wisataAddon_travelKits) addonsTotal += 250000;
+            if (formData.wisataAddon_merch_koper) addonsTotal += 1500000;
+            if (formData.wisataAddon_merch_slingbag) addonsTotal += 50000;
+            if (formData.wisataAddon_merch_kaos) addonsTotal += 150000;
+            if (formData.wisataAddon_merch_jaket) addonsTotal += 250000;
+            if (formData.wisataAddon_merch_tasserut) addonsTotal += 25000;
+            if (formData.wisataAddon_merch_topi) addonsTotal += 35000;
+            if (formData.wisataAddon_merch_spanduk) addonsTotal += 150000;
 
-        {currentStepName === 'REVIEW FASILITAS' && formData.kategori === 'WISATA HALAL' && (() => {
-          const baseIDR = (formData.hargaDasar || 1350) * 16000;
-          let addonsTotal = 0;
-          if (formData.wisataAddon_tourLeader) addonsTotal += 250000 * (Number(formData.wisataAddon_tourLeaderCount) || 1);
-          if (formData.wisataAddon_handling) addonsTotal += 250000;
-          if (formData.wisataAddon_travelKits) addonsTotal += 250000;
-          if (formData.wisataAddon_merch_koper) addonsTotal += 1500000;
-          if (formData.wisataAddon_merch_slingbag) addonsTotal += 50000;
-          if (formData.wisataAddon_merch_kaos) addonsTotal += 150000;
-          if (formData.wisataAddon_merch_jaket) addonsTotal += 250000;
-          if (formData.wisataAddon_merch_tasserut) addonsTotal += 25000;
-          if (formData.wisataAddon_merch_topi) addonsTotal += 35000;
-          if (formData.wisataAddon_merch_spanduk) addonsTotal += 150000;
-          
-          const hppTotal = baseIDR + addonsTotal;
-          const currentMargin = formData.wisataMargin !== undefined ? formData.wisataMargin : 100000;
-          const adminFee = currentMargin * 0.1;
-          const totalMarkup = currentMargin + adminFee;
-          const finalPrice = hppTotal + totalMarkup;
+            const hppTotal = baseIDR + addonsTotal;
+            const currentMargin =
+              formData.wisataMargin !== undefined
+                ? formData.wisataMargin
+                : 100000;
+            const adminFee = currentMargin * 0.1;
+            const totalMarkup = currentMargin + adminFee;
+            const finalPrice = hppTotal + totalMarkup;
 
-          return (
-            <div className="space-y-8 animate-in fade-in slide-in-from-right-2 duration-300">
-              {/* 1. HPP DASAR PAKET */}
-              <div className="mb-8">
-                <div className="flex items-center gap-2 mb-4">
-                  <div className="w-1 h-4 bg-gray-900 rounded-full"></div>
-                  <h4 className="font-black text-sm text-[#1A1C29] uppercase tracking-wider">1. HPP DASAR PAKET</h4>
-                </div>
-                <p className="text-[9px] font-bold text-gray-400 uppercase tracking-widest pl-3 mb-4">BIAYA POKOK (HARGA BASE + ADDITIONAL & ADD ONS)</p>
-                
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <div className="bg-[#F8F9FA] border border-gray-100 rounded-2xl p-5">
-                    <div className="w-8 h-8 rounded-full bg-blue-50 text-blue-500 flex items-center justify-center mb-4">
-                      <Receipt className="w-4 h-4" />
-                    </div>
-                    <p className="text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-1">HPP TOTAL / PAX</p>
-                    <h3 className="font-black text-xl italic text-[#1A1C29]">Rp {hppTotal.toLocaleString('id-ID')}</h3>
+            return (
+              <div className="space-y-8 animate-in fade-in slide-in-from-right-2 duration-300">
+                {/* 1. HPP DASAR PAKET */}
+                <div className="mb-8">
+                  <div className="flex items-center gap-2 mb-4">
+                    <div className="w-1 h-4 bg-gray-900 rounded-full"></div>
+                    <h4 className="font-black text-sm text-[#1A1C29] uppercase tracking-wider">
+                      1. HPP DASAR PAKET
+                    </h4>
                   </div>
-                  <div className="bg-[#F8F9FA] border border-gray-100 rounded-2xl p-5">
-                    <div className="w-8 h-8 rounded-full bg-indigo-50 text-indigo-500 flex items-center justify-center mb-4">
-                      <Calendar className="w-4 h-4" />
+                  <p className="text-[9px] font-bold text-gray-400 uppercase tracking-widest pl-3 mb-4">
+                    BIAYA POKOK (HARGA BASE + ADDITIONAL & ADD ONS)
+                  </p>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div className="bg-[#F8F9FA] border border-gray-100 rounded-2xl p-5">
+                      <div className="w-8 h-8 rounded-full bg-blue-50 text-blue-500 flex items-center justify-center mb-4">
+                        <Receipt className="w-4 h-4" />
+                      </div>
+                      <p className="text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-1">
+                        HPP TOTAL / PAX
+                      </p>
+                      <h3 className="font-black text-xl italic text-[#1A1C29]">
+                        Rp {hppTotal.toLocaleString("id-ID")}
+                      </h3>
                     </div>
-                    <p className="text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-1">DURASI PROGRAM</p>
-                    <h3 className="font-black text-xl italic text-[#1A1C29]">10D9N</h3>
+                    <div className="bg-[#F8F9FA] border border-gray-100 rounded-2xl p-5">
+                      <div className="w-8 h-8 rounded-full bg-indigo-50 text-indigo-500 flex items-center justify-center mb-4">
+                        <Calendar className="w-4 h-4" />
+                      </div>
+                      <p className="text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-1">
+                        DURASI PROGRAM
+                      </p>
+                      <h3 className="font-black text-xl italic text-[#1A1C29]">
+                        10D9N
+                      </h3>
+                    </div>
+                  </div>
+                </div>
+
+                {/* 2. PENGATURAN PROFIT */}
+                <div className="mb-8">
+                  <div className="flex items-center gap-2 mb-4">
+                    <div className="w-1 h-4 bg-blue-600 rounded-full"></div>
+                    <h4 className="font-black text-sm text-[#1A1C29] uppercase tracking-wider">
+                      2. PENGATURAN PROFIT (UJROH MITRA)
+                    </h4>
+                  </div>
+                  <p className="text-[9px] font-bold text-gray-400 uppercase tracking-widest pl-3 mb-4">
+                    TENTUKAN MARGIN KEUNTUNGAN PER PAX (10.000 - 1.000.000)
+                  </p>
+
+                  <div className="bg-white rounded-[2rem] p-6 sm:p-10 shadow-xl shadow-gray-200/40 border border-gray-100 flex flex-col items-center">
+                    {/* Kontrol Margin */}
+                    <div className="bg-gray-50 rounded-full p-2 flex items-center justify-between gap-4 sm:gap-8 min-w-[280px] sm:min-w-[320px] mb-8">
+                      <button
+                        onClick={() =>
+                          setFormData({
+                            ...formData,
+                            wisataMargin: Math.max(0, currentMargin - 50000),
+                          })
+                        }
+                        className="w-12 h-12 rounded-full bg-white shadow-sm border border-gray-200 flex items-center justify-center text-gray-500 hover:text-gray-900 transition-colors cursor-pointer z-10"
+                      >
+                        <Minus className="w-5 h-5 pointer-events-none" />
+                      </button>
+
+                      <div className="text-center flex-1">
+                        <h3 className="font-black text-2xl sm:text-3xl text-blue-600 tracking-tight italic">
+                          Rp {currentMargin.toLocaleString("id-ID")}
+                        </h3>
+                        <p className="text-[9px] font-bold text-blue-400 uppercase tracking-widest mt-1">
+                          MARGIN
+                        </p>
+                      </div>
+
+                      <button
+                        onClick={() =>
+                          setFormData({
+                            ...formData,
+                            wisataMargin: currentMargin + 50000,
+                          })
+                        }
+                        className="w-12 h-12 rounded-full bg-blue-600 shadow-lg shadow-blue-500/40 flex items-center justify-center text-white hover:bg-blue-700 transition-colors cursor-pointer z-10"
+                      >
+                        <Plus className="w-5 h-5 pointer-events-none" />
+                      </button>
+                    </div>
+
+                    {/* Breakdown Card */}
+                    <div className="flex flex-col sm:flex-row gap-4 w-full max-w-sm">
+                      <div className="flex-1 bg-gray-50 border border-gray-100 p-4 rounded-2xl relative overflow-hidden">
+                        <p className="text-[8px] font-black text-gray-500 uppercase tracking-widest mb-1.5 flex justify-between">
+                          ADMIN FEE (10%) <ArrowRightLeft className="w-3 h-3" />
+                        </p>
+                        <h4 className="font-black text-sm text-gray-900 italic">
+                          Rp {adminFee.toLocaleString("id-ID")}
+                        </h4>
+                      </div>
+                      <div className="flex-1 bg-blue-50 border border-blue-100 p-4 rounded-2xl relative overflow-hidden">
+                        <p className="text-[8px] font-black text-blue-500 uppercase tracking-widest mb-1.5 flex justify-between">
+                          TOTAL MARKUP <ArrowRight className="w-3 h-3" />
+                        </p>
+                        <h4 className="font-black text-sm text-blue-700 italic">
+                          Rp {totalMarkup.toLocaleString("id-ID")}
+                        </h4>
+                      </div>
+                    </div>
+
+                    <p className="text-[8px] font-bold text-gray-400 uppercase tracking-widest mt-6 text-center">
+                      BIAYA ADMIN DISEDIAKAN UNTUK PENGELOLAAN INDUSTRI SISTEM
+                    </p>
+                  </div>
+                </div>
+
+                {/* 3. HARGA JUAL MARKETPLACE (FINAL) */}
+                <div className="mb-4">
+                  <div className="flex items-center gap-2 mb-4">
+                    <div className="w-1 h-4 bg-[#009B66] rounded-full"></div>
+                    <h4 className="font-black text-sm text-[#1A1C29] uppercase tracking-wider">
+                      3. HARGA JUAL MARKETPLACE (FINAL)
+                    </h4>
+                  </div>
+                  <p className="text-[9px] font-bold text-gray-400 uppercase tracking-widest pl-3 mb-4">
+                    HARGA AKHIR PER PAX YANG AKAN TAYANG DI APLIKASI JAMAAH
+                  </p>
+
+                  <div className="bg-[#131620] rounded-[2rem] p-8 sm:p-12 relative overflow-hidden text-center flex flex-col items-center justify-center shadow-2xl">
+                    {/* Decoration */}
+                    <div className="absolute top-0 right-0 w-64 h-64 bg-blue-500/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2"></div>
+                    <div className="absolute bottom-0 left-0 w-64 h-64 bg-teal-500/10 rounded-full blur-3xl translate-y-1/2 -translate-x-1/2"></div>
+
+                    <div className="bg-white/10 backdrop-blur-sm px-4 py-1.5 rounded-full border border-white/10 mb-6 z-10">
+                      <span className="text-[9px] font-black text-teal-400 uppercase tracking-widest flex items-center gap-1.5">
+                        <Check
+                          className="w-3 h-3 text-teal-400"
+                          strokeWidth={3}
+                        />{" "}
+                        WISATA HALAL PACKAGE
+                      </span>
+                    </div>
+
+                    <h1 className="font-black text-4xl sm:text-5xl text-white tracking-tight italic mb-3 z-10">
+                      <span className="text-2xl sm:text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-teal-400 to-blue-500 mr-2">
+                        Rp
+                      </span>
+                      {finalPrice.toLocaleString("id-ID")}
+                    </h1>
+                    <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest z-10">
+                      ALL-IN / PER PAX
+                    </p>
                   </div>
                 </div>
               </div>
-              
-              {/* 2. PENGATURAN PROFIT */}
-              <div className="mb-8">
-                <div className="flex items-center gap-2 mb-4">
-                  <div className="w-1 h-4 bg-blue-600 rounded-full"></div>
-                  <h4 className="font-black text-sm text-[#1A1C29] uppercase tracking-wider">2. PENGATURAN PROFIT (UJROH MITRA)</h4>
-                </div>
-                <p className="text-[9px] font-bold text-gray-400 uppercase tracking-widest pl-3 mb-4">TENTUKAN MARGIN KEUNTUNGAN PER PAX (10.000 - 1.000.000)</p>
-                
-                <div className="bg-white rounded-[2rem] p-6 sm:p-10 shadow-xl shadow-gray-200/40 border border-gray-100 flex flex-col items-center">
-                  {/* Kontrol Margin */}
-                  <div className="bg-gray-50 rounded-full p-2 flex items-center justify-between gap-4 sm:gap-8 min-w-[280px] sm:min-w-[320px] mb-8">
-                    <button 
-                      onClick={() => setFormData({...formData, wisataMargin: Math.max(0, currentMargin - 50000)})}
-                      className="w-12 h-12 rounded-full bg-white shadow-sm border border-gray-200 flex items-center justify-center text-gray-500 hover:text-gray-900 transition-colors cursor-pointer z-10"
-                    >
-                      <Minus className="w-5 h-5 pointer-events-none" />
-                    </button>
-                    
-                    <div className="text-center flex-1">
-                      <h3 className="font-black text-2xl sm:text-3xl text-blue-600 tracking-tight italic">Rp {currentMargin.toLocaleString('id-ID')}</h3>
-                      <p className="text-[9px] font-bold text-blue-400 uppercase tracking-widest mt-1">MARGIN</p>
-                    </div>
-                    
-                    <button 
-                      onClick={() => setFormData({...formData, wisataMargin: currentMargin + 50000})}
-                      className="w-12 h-12 rounded-full bg-blue-600 shadow-lg shadow-blue-500/40 flex items-center justify-center text-white hover:bg-blue-700 transition-colors cursor-pointer z-10"
-                    >
-                      <Plus className="w-5 h-5 pointer-events-none" />
-                    </button>
-                  </div>
-                  
-                  {/* Breakdown Card */}
-                  <div className="flex flex-col sm:flex-row gap-4 w-full max-w-sm">
-                    <div className="flex-1 bg-gray-50 border border-gray-100 p-4 rounded-2xl relative overflow-hidden">
-                      <p className="text-[8px] font-black text-gray-500 uppercase tracking-widest mb-1.5 flex justify-between">ADMIN FEE (10%) <ArrowRightLeft className="w-3 h-3" /></p>
-                      <h4 className="font-black text-sm text-gray-900 italic">Rp {adminFee.toLocaleString('id-ID')}</h4>
-                    </div>
-                    <div className="flex-1 bg-blue-50 border border-blue-100 p-4 rounded-2xl relative overflow-hidden">
-                      <p className="text-[8px] font-black text-blue-500 uppercase tracking-widest mb-1.5 flex justify-between">TOTAL MARKUP <ArrowRight className="w-3 h-3" /></p>
-                      <h4 className="font-black text-sm text-blue-700 italic">Rp {totalMarkup.toLocaleString('id-ID')}</h4>
-                    </div>
-                  </div>
-                  
-                  <p className="text-[8px] font-bold text-gray-400 uppercase tracking-widest mt-6 text-center">BIAYA ADMIN DISEDIAKAN UNTUK PENGELOLAAN INDUSTRI SISTEM</p>
-                </div>
-              </div>
-              
-              {/* 3. HARGA JUAL MARKETPLACE (FINAL) */}
-              <div className="mb-4">
-                <div className="flex items-center gap-2 mb-4">
-                  <div className="w-1 h-4 bg-[#009B66] rounded-full"></div>
-                  <h4 className="font-black text-sm text-[#1A1C29] uppercase tracking-wider">3. HARGA JUAL MARKETPLACE (FINAL)</h4>
-                </div>
-                <p className="text-[9px] font-bold text-gray-400 uppercase tracking-widest pl-3 mb-4">HARGA AKHIR PER PAX YANG AKAN TAYANG DI APLIKASI JAMAAH</p>
-                
-                <div className="bg-[#131620] rounded-[2rem] p-8 sm:p-12 relative overflow-hidden text-center flex flex-col items-center justify-center shadow-2xl">
-                  {/* Decoration */}
-                  <div className="absolute top-0 right-0 w-64 h-64 bg-blue-500/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2"></div>
-                  <div className="absolute bottom-0 left-0 w-64 h-64 bg-teal-500/10 rounded-full blur-3xl translate-y-1/2 -translate-x-1/2"></div>
-                  
-                  <div className="bg-white/10 backdrop-blur-sm px-4 py-1.5 rounded-full border border-white/10 mb-6 z-10">
-                    <span className="text-[9px] font-black text-teal-400 uppercase tracking-widest flex items-center gap-1.5">
-                      <Check className="w-3 h-3 text-teal-400" strokeWidth={3} /> WISATA HALAL PACKAGE
-                    </span>
-                  </div>
-                  
-                  <h1 className="font-black text-4xl sm:text-5xl text-white tracking-tight italic mb-3 z-10">
-                    <span className="text-2xl sm:text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-teal-400 to-blue-500 mr-2">Rp</span>
-                    {finalPrice.toLocaleString('id-ID')}
-                  </h1>
-                  <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest z-10">ALL-IN / PER PAX</p>
-                </div>
-              </div>
+            );
+          })()}
 
-            </div>
-          );
-        })()}
-
-        {(currentStepName === 'MASKAPAI' || currentStepName === 'INFO LAND ARRANGEMENT') && (
+        {(currentStepName === "MASKAPAI" ||
+          currentStepName === "INFO LAND ARRANGEMENT") && (
           <div className="space-y-8 animate-in fade-in slide-in-from-bottom-2 duration-300">
-            {formData.kategori === 'UMRAH LA' ? (
+            {formData.kategori === "UMRAH LA" ? (
               <div className="bg-[#FFFDF5] border border-[#FBECC8] rounded-[2rem] p-12 flex flex-col items-center justify-center text-center shadow-inner">
                 <div className="w-20 h-20 bg-white rounded-3xl shadow-sm border border-[#FEEAC1] flex items-center justify-center mb-6">
-                  <PlaneTakeoff className="w-10 h-10 text-[#F59E0B]" strokeWidth={2} />
+                  <PlaneTakeoff
+                    className="w-10 h-10 text-[#F59E0B]"
+                    strokeWidth={2}
+                  />
                 </div>
-                <h3 className="text-xl font-black text-[#1A1C29] tracking-wider mb-3">KATEGORI LAND ARRANGEMENT</h3>
+                <h3 className="text-xl font-black text-[#1A1C29] tracking-wider mb-3">
+                  KATEGORI LAND ARRANGEMENT
+                </h3>
                 <p className="text-[10px] sm:text-xs font-bold text-gray-400 uppercase tracking-widest max-w-md leading-relaxed">
-                  TIKET PESAWAT TIDAK TERMASUK DALAM PAKET INI.<br/>
+                  TIKET PESAWAT TIDAK TERMASUK DALAM PAKET INI.
+                  <br />
                   MITRA HANYA MENYEDIAKAN AKOMODASI DI SAUDI.
                 </p>
               </div>
@@ -1102,16 +2258,20 @@ export const PaketMasterWizard: React.FC<PaketMasterWizardProps> = ({ initialDat
               <>
                 {/* Tipe Penerbangan */}
                 <div>
-                  <label className="block text-xs font-bold text-gray-500 mb-3 uppercase tracking-wider">Tipe Penerbangan</label>
+                  <label className="block text-xs font-bold text-gray-500 mb-3 uppercase tracking-wider">
+                    Tipe Penerbangan
+                  </label>
                   <div className="flex border border-gray-200 rounded-xl overflow-hidden p-1 bg-gray-50 max-w-2xl">
-                    {['DIRECT', 'TRANSIT'].map(type => (
+                    {["DIRECT", "TRANSIT"].map((type) => (
                       <button
                         key={type}
-                        onClick={() => setFormData({...formData, tipePenerbangan: type})}
+                        onClick={() =>
+                          setFormData({ ...formData, tipePenerbangan: type })
+                        }
                         className={`flex-1 py-3 text-sm font-bold transition-all rounded-lg ${
-                          formData.tipePenerbangan === type 
-                            ? 'bg-white text-emerald-600 border border-emerald-100 shadow-sm' 
-                            : 'text-gray-500 hover:text-gray-700'
+                          formData.tipePenerbangan === type
+                            ? "bg-white text-emerald-600 border border-emerald-100 shadow-sm"
+                            : "text-gray-500 hover:text-gray-700"
                         }`}
                       >
                         {type}
@@ -1123,25 +2283,68 @@ export const PaketMasterWizard: React.FC<PaketMasterWizardProps> = ({ initialDat
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                   {/* Pilih Maskapai */}
                   <div>
-                    <label className="block text-xs font-bold text-gray-500 mb-2 uppercase tracking-wider">Pilih Maskapai</label>
+                    <label className="block text-xs font-bold text-gray-500 mb-2 uppercase tracking-wider">
+                      Pilih Maskapai
+                    </label>
                     <select
                       value={formData.maskapaiId}
-                      onChange={(e) => setFormData({...formData, maskapaiId: e.target.value})}
+                      onChange={(e) => {
+                        const newId = e.target.value;
+                        const selectedMaskapai = maskapaiList.find(
+                          (m) => m.id === newId,
+                        );
+
+                        const newTglBerangkat = selectedMaskapai
+                          ? selectedMaskapai.tanggalKeberangkatan
+                          : formData.tglBerangkat;
+                        let newTglPulang = formData.tglKepulangan;
+                        if (newTglBerangkat) {
+                          const dateObj = new Date(newTglBerangkat);
+                          if (!isNaN(dateObj.getTime())) {
+                            dateObj.setDate(
+                              dateObj.getDate() +
+                                (formData.durasiHari || 9) -
+                                1,
+                            );
+                            newTglPulang = dateObj.toISOString().split("T")[0];
+                          }
+                        }
+
+                        setFormData({
+                          ...formData,
+                          maskapaiId: newId,
+                          estimasiHargaMaskapai: selectedMaskapai
+                            ? selectedMaskapai.hargaJual || 0
+                            : formData.estimasiHargaMaskapai || 0,
+                          tglBerangkat: newTglBerangkat,
+                          tglKepulangan: newTglPulang,
+                        });
+                      }}
                       className="w-full p-3.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-emerald-500 outline-none text-gray-800 font-medium appearance-none bg-white"
                     >
                       <option value="">-- Pilih Maskapai --</option>
-                      {maskapaiList.map(m => (
-                        <option key={m.id} value={m.id}>{m.name} ({m.tanggalKeberangkatan}) - Sisa: {m.availableSeats}</option>
+                      {filteredMaskapaiList.map((m) => (
+                        <option key={m.id} value={m.id}>
+                          {m.name} ({m.programDays || 9} Hari) ({m.tanggalKeberangkatan}) - Sisa:{" "}
+                          {m.availableSeats}
+                        </option>
                       ))}
                     </select>
                   </div>
 
                   {/* Kelas Penerbangan */}
                   <div>
-                    <label className="block text-xs font-bold text-gray-500 mb-2 uppercase tracking-wider">Kelas Penerbangan</label>
+                    <label className="block text-xs font-bold text-gray-500 mb-2 uppercase tracking-wider">
+                      Kelas Penerbangan
+                    </label>
                     <select
                       value={formData.kelasPenerbangan}
-                      onChange={(e) => setFormData({...formData, kelasPenerbangan: e.target.value})}
+                      onChange={(e) =>
+                        setFormData({
+                          ...formData,
+                          kelasPenerbangan: e.target.value,
+                        })
+                      }
                       className="w-full p-3.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-emerald-500 outline-none text-gray-800 font-medium appearance-none bg-white"
                     >
                       <option value="Ekonomi">Ekonomi</option>
@@ -1153,14 +2356,30 @@ export const PaketMasterWizard: React.FC<PaketMasterWizardProps> = ({ initialDat
 
                 {/* Estimasi Harga Maskapai */}
                 <div>
-                  <label className="block text-xs font-bold text-gray-500 mb-2 uppercase tracking-wider">Estimasi Harga Maskapai (Per pax)</label>
+                  <label className="block text-xs font-bold text-gray-500 mb-2 uppercase tracking-wider">
+                    Estimasi Harga Maskapai (Per pax)
+                  </label>
                   <div className="relative">
-                    <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 font-bold">Rp</span>
+                    <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 font-bold">
+                      Rp
+                    </span>
                     <input
-                      type="number"
+                      type="text"
                       placeholder="0"
-                      value={formData.estimasiHargaMaskapai || ''}
-                      onChange={(e) => setFormData({...formData, estimasiHargaMaskapai: e.target.value})}
+                      value={
+                        formData.estimasiHargaMaskapai
+                          ? Number(
+                              formData.estimasiHargaMaskapai,
+                            ).toLocaleString("id-ID")
+                          : ""
+                      }
+                      onChange={(e) => {
+                        const rawVal = e.target.value.replace(/\D/g, "");
+                        setFormData({
+                          ...formData,
+                          estimasiHargaMaskapai: rawVal ? Number(rawVal) : 0,
+                        });
+                      }}
                       className="w-full pl-12 pr-4 py-3.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-emerald-500 outline-none text-gray-800 font-bold transition-all"
                     />
                   </div>
@@ -1170,13 +2389,17 @@ export const PaketMasterWizard: React.FC<PaketMasterWizardProps> = ({ initialDat
           </div>
         )}
 
-        {currentStepName === 'HOTEL WISATA' && (
+        {currentStepName === "HOTEL WISATA" && (
           <div className="space-y-6 animate-in fade-in slide-in-from-bottom-2 duration-300 relative pb-20">
             {/* Banner Header Dinamis */}
             <div className="bg-blue-50/50 rounded-2xl p-6 border border-blue-100 flex items-center justify-between">
               <div>
-                <h3 className="font-black text-blue-900 text-lg uppercase tracking-wide">PAKET WISATA {formData.negaraWisata || 'TURKEY'}</h3>
-                <p className="text-xs font-bold text-blue-600 uppercase mt-1">DURASI PROGRAM: {formData.durasiWisata || 0} HARI</p>
+                <h3 className="font-black text-blue-900 text-lg uppercase tracking-wide">
+                  PAKET WISATA {formData.negaraWisata || "TURKEY"}
+                </h3>
+                <p className="text-xs font-bold text-blue-600 uppercase mt-1">
+                  DURASI PROGRAM: {formData.durasiWisata || 0} HARI
+                </p>
               </div>
               <div className="w-12 h-12 bg-white rounded-xl flex items-center justify-center shadow-sm">
                 <Globe className="w-6 h-6 text-blue-500" />
@@ -1184,117 +2407,267 @@ export const PaketMasterWizard: React.FC<PaketMasterWizardProps> = ({ initialDat
             </div>
 
             <div className="mt-8 mb-4">
-              <label className="block text-[10px] sm:text-xs font-bold text-gray-900 uppercase tracking-wider">PILIH HOTEL WISATA</label>
+              <label className="block text-[10px] sm:text-xs font-bold text-gray-900 uppercase tracking-wider">
+                PILIH HOTEL WISATA
+              </label>
+            </div>
+
+            {/* Search and Filters */}
+            <div className="mb-4">
+              <div className="relative mb-3">
+                <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                <input
+                  type="text"
+                  value={hotelSearchTerm}
+                  onChange={(e) => setHotelSearchTerm(e.target.value)}
+                  placeholder="Cari nama hotel wisata..."
+                  className="w-full pl-11 pr-4 py-3 bg-white border border-gray-200 rounded-xl font-medium text-sm outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500"
+                />
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <select
+                  value={hotelFilterBintang}
+                  onChange={(e) => setHotelFilterBintang(e.target.value)}
+                  className="px-3 py-2.5 bg-white border border-gray-200 rounded-lg text-xs font-bold text-gray-600 outline-none appearance-none"
+                >
+                  <option value="ALL">Semua Bintang</option>
+                  <option value="5">Bintang 5</option>
+                  <option value="4">Bintang 4</option>
+                  <option value="3">Bintang 3</option>
+                </select>
+                <select className="px-3 py-2.5 bg-white border border-gray-200 rounded-lg text-xs font-bold text-gray-600 outline-none appearance-none">
+                  <option>Harga Terendah</option>
+                </select>
+              </div>
             </div>
 
             {/* Hotel Cards Grid */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
-              {hotelsList.filter(h => h.kota?.toLowerCase() !== 'madinah' && h.kota?.toLowerCase() !== 'makkah').map(hotel => {
-                const isSelected = formData.hotelWisataId === hotel.id;
-                return (
-                  <div 
-                    key={hotel.id} 
-                    onClick={() => setFormData({...formData, hotelWisataId: hotel.id})}
-                    className={`bg-white rounded-2xl overflow-hidden border-2 cursor-pointer transition-all flex flex-col ${isSelected ? 'border-blue-500 shadow-[0_8px_30px_rgba(59,130,246,0.15)] ring-4 ring-blue-50' : 'border-gray-100 hover:border-gray-300'}`}
-                  >
-                    <div className="h-44 overflow-hidden relative bg-gray-100 flex items-center justify-center">
-                      <Building2 className="w-12 h-12 text-gray-300" />
-                      
-                      <div className="absolute inset-x-0 bottom-0 top-1/2 bg-gradient-to-t from-black/20 to-transparent"></div>
-                      <div className="absolute bottom-4 left-4 right-4">
-                        <h4 className="text-gray-900 drop-shadow-md font-black uppercase text-sm mb-1">{hotel.nama}</h4>
-                        <div className="flex items-center gap-1">
-                           {[...Array(hotel.bintang || 5)].map((_, i) => (
-                             <Star key={i} className="w-3 h-3 fill-amber-500 text-amber-500" />
-                           ))}
-                        </div>
-                      </div>
-                      {isSelected && (
-                         <div className="absolute top-3 right-3 w-6 h-6 bg-blue-500 rounded-full flex items-center justify-center shadow-md">
-                           <Check className="w-3.5 h-3.5 text-white" />
-                         </div>
-                      )}
-                    </div>
-                    
-                    <div className="p-5 flex flex-col flex-1">
-                      <div className="flex justify-between items-end mb-4 border-b border-gray-100 pb-4">
-                        <div>
-                          <div className="text-[9px] text-gray-400 font-bold uppercase tracking-wider mb-1">HARGA PAKET WISATA</div>
-                          <div className="text-blue-700 font-black text-xl">Rp {((hotel.priceQuad || hotel.pricePerNight || 0) * formData.durasiWisata).toLocaleString('id-ID')}</div>
-                        </div>
-                        <div className="bg-blue-50 text-blue-600 px-2.5 py-1 rounded-md text-[9px] font-bold">
-                          1 PAX
-                        </div>
-                      </div>
-                      
-                      <div className="space-y-3">
-                        <div className="flex justify-between items-center">
-                          <span className="text-[10px] text-gray-500 font-bold uppercase">HARI / MALAM</span>
-                          <span className="text-[10px] text-gray-900 font-bold">Rp {(hotel.priceQuad || hotel.pricePerNight || 0).toLocaleString('id-ID')}</span>
-                        </div>
-                        <div className="flex justify-between items-center pt-3 border-t border-gray-50">
-                          <span className="text-[10px] text-gray-500 font-bold uppercase">DURASI ({formData.durasiWisata} MALAM)</span>
-                          <span className="text-[10px] text-gray-900 font-bold">Rp {((hotel.priceQuad || hotel.pricePerNight || 0) * formData.durasiWisata).toLocaleString('id-ID')}</span>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
+            {(() => {
+              const filtered = hotelsList
+                .filter(
+                  (h) =>
+                    h.kota?.toLowerCase() !== "madinah" &&
+                    h.kota?.toLowerCase() !== "makkah",
+                )
+                .filter((h) =>
+                  h.nama?.toLowerCase().includes(hotelSearchTerm.toLowerCase()),
+                )
+                .filter(
+                  (h) =>
+                    hotelFilterBintang === "ALL" ||
+                    String(h.bintang) === hotelFilterBintang,
                 );
-              })}
-            </div>
+
+              const pageSize = 10;
+              const totalPages = Math.ceil(filtered.length / pageSize);
+              const paginated = filtered.slice(
+                (hotelPage - 1) * pageSize,
+                hotelPage * pageSize,
+              );
+
+              return (
+                <>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+                    {paginated.map((hotel) => {
+                      const isSelected = formData.hotelWisataId === hotel.id;
+                      return (
+                        <div
+                          key={hotel.id}
+                          onClick={() =>
+                            setFormData({
+                              ...formData,
+                              hotelWisataId: hotel.id,
+                            })
+                          }
+                          className={`bg-white rounded-2xl overflow-hidden border-2 cursor-pointer transition-all flex flex-col ${isSelected ? "border-blue-500 shadow-[0_8px_30px_rgba(59,130,246,0.15)] ring-4 ring-blue-50" : "border-gray-100 hover:border-gray-300"}`}
+                        >
+                          <div className="h-44 overflow-hidden relative bg-gray-100 flex items-center justify-center shrink-0">
+                            <img
+                              src={getHotelImage(
+                                hotel.id,
+                                hotel.nama,
+                                hotel.kota,
+                              )}
+                              alt={hotel.nama}
+                              className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
+                            />
+
+                            <div className="absolute inset-x-0 bottom-0 top-1/2 bg-gradient-to-t from-black/80 to-transparent"></div>
+                            <div className="absolute bottom-4 left-4 right-4 flex justify-between items-end">
+                              <div>
+                                <h4 className="text-white drop-shadow-md font-black uppercase text-sm mb-1">
+                                  {hotel.nama}
+                                </h4>
+                                <div className="flex flex-col gap-1">
+                                  <span className="text-[10px] text-gray-700 bg-white/90 px-1.5 py-0.5 rounded font-bold uppercase w-fit">
+                                    {hotel.kota}
+                                  </span>
+                                  <div className="flex items-center gap-1">
+                                    {[...Array(hotel.bintang || 5)].map(
+                                      (_, i) => (
+                                        <Star
+                                          key={i}
+                                          className="w-3 h-3 fill-amber-500 text-amber-500"
+                                        />
+                                      ),
+                                    )}
+                                  </div>
+                                </div>
+                              </div>
+                              {isSelected && (
+                                <div className="w-6 h-6 bg-blue-500 rounded-full flex items-center justify-center shadow-md">
+                                  <Check className="w-3.5 h-3.5 text-white" />
+                                </div>
+                              )}
+                            </div>
+                          </div>
+
+                          <div className="p-5 flex flex-col flex-1">
+                            <div className="text-[9px] text-gray-400 font-bold uppercase tracking-wider mb-3 border-b border-gray-100 pb-2">
+                              ESTIMASI HARGA PER PAX (DURASI{" "}
+                              {formData.durasiWisata} MALAM)
+                            </div>
+
+                            <div className="grid grid-cols-3 gap-2 mt-auto">
+                              <div className="bg-gray-50 rounded-lg p-2 text-center border border-gray-100">
+                                <div className="text-[9px] text-gray-500 font-bold uppercase mb-1">
+                                  QUAD
+                                </div>
+                                <div className="text-blue-700 font-black text-xs">
+                                  Rp{" "}
+                                  {(
+                                    (hotel.priceQuad ||
+                                      hotel.pricePerNight ||
+                                      0) * formData.durasiWisata
+                                  ).toLocaleString("id-ID")}
+                                </div>
+                              </div>
+                              <div className="bg-gray-50 rounded-lg p-2 text-center border border-gray-100">
+                                <div className="text-[9px] text-gray-500 font-bold uppercase mb-1">
+                                  TRIPLE
+                                </div>
+                                <div className="text-blue-700 font-black text-xs">
+                                  Rp{" "}
+                                  {(
+                                    (hotel.priceTriple ||
+                                      hotel.pricePerNight ||
+                                      0) * formData.durasiWisata
+                                  ).toLocaleString("id-ID")}
+                                </div>
+                              </div>
+                              <div className="bg-gray-50 rounded-lg p-2 text-center border border-gray-100">
+                                <div className="text-[9px] text-gray-500 font-bold uppercase mb-1">
+                                  DOUBLE
+                                </div>
+                                <div className="text-blue-700 font-black text-xs">
+                                  Rp{" "}
+                                  {(
+                                    (hotel.priceDouble ||
+                                      hotel.pricePerNight ||
+                                      0) * formData.durasiWisata
+                                  ).toLocaleString("id-ID")}
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+
+                  {totalPages > 1 && (
+                    <div className="flex justify-center items-center gap-2 mb-8">
+                      <button
+                        onClick={() =>
+                          setHotelPage((prev) => Math.max(prev - 1, 1))
+                        }
+                        disabled={hotelPage === 1}
+                        className="px-3 py-1.5 rounded-lg border border-gray-200 text-gray-600 text-xs font-bold disabled:opacity-50 hover:bg-gray-50"
+                      >
+                        Previous
+                      </button>
+                      <span className="text-xs font-bold text-gray-500">
+                        Page {hotelPage} of {totalPages}
+                      </span>
+                      <button
+                        onClick={() =>
+                          setHotelPage((prev) => Math.min(prev + 1, totalPages))
+                        }
+                        disabled={hotelPage === totalPages}
+                        className="px-3 py-1.5 rounded-lg border border-gray-200 text-gray-600 text-xs font-bold disabled:opacity-50 hover:bg-gray-50"
+                      >
+                        Next
+                      </button>
+                    </div>
+                  )}
+                </>
+              );
+            })()}
 
             {/* Preview Itinerary Wisata */}
             <div className="bg-gray-50 rounded-2xl p-6 border border-gray-100">
-               <h4 className="text-xs font-black text-gray-800 uppercase tracking-wider mb-6">PREVIEW ITINERARY WISATA</h4>
-               <div className="space-y-0 text-sm">
-                 {[...Array(Math.max(1, formData.durasiWisata))].map((_, idx) => (
-                   <div key={idx} className="flex relative">
-                     {/* Line connector */}
-                     {(idx < formData.durasiWisata - 1) && (
-                       <div className="absolute left-[7px] top-6 bottom-0 w-[1px] bg-gray-300"></div>
-                     )}
-                     
-                     {/* Circle marker */}
-                     <div className="w-4 h-4 rounded-full border-2 border-blue-500 bg-white z-10 shrink-0 mt-1 mr-4"></div>
-                     
-                     <div className="pb-8">
-                       <h5 className="font-bold text-gray-800 text-[11px] tracking-wider uppercase mb-1">HARI KE-{idx + 1}: CITY TOUR {formData.negaraWisata || 'TURKEY'}</h5>
-                       <p className="text-[10px] text-gray-500 leading-relaxed max-w-2xl">
-                         Mengunjungi destinasi populer dan tempat bersejarah di {formData.negaraWisata || 'Turkey'}. Termasuk makan siang dan makan malam di restoran halal lokal.
-                       </p>
-                     </div>
-                   </div>
-                 ))}
-               </div>
-            </div>
+              <h4 className="text-xs font-black text-gray-800 uppercase tracking-wider mb-6">
+                PREVIEW ITINERARY WISATA
+              </h4>
+              <div className="space-y-0 text-sm">
+                {[...Array(Math.max(1, formData.durasiWisata))].map(
+                  (_, idx) => (
+                    <div key={idx} className="flex relative">
+                      {/* Line connector */}
+                      {idx < formData.durasiWisata - 1 && (
+                        <div className="absolute left-[7px] top-6 bottom-0 w-[1px] bg-gray-300"></div>
+                      )}
 
+                      {/* Circle marker */}
+                      <div className="w-4 h-4 rounded-full border-2 border-blue-500 bg-white z-10 shrink-0 mt-1 mr-4"></div>
+
+                      <div className="pb-8">
+                        <h5 className="font-bold text-gray-800 text-[11px] tracking-wider uppercase mb-1">
+                          HARI KE-{idx + 1}: EKSPLORASI{" "}
+                          {formData.negaraWisata || "TURKEY"}
+                        </h5>
+                        <p className="text-[10px] text-gray-500 leading-relaxed max-w-2xl">
+                          Agenda itinerary sedang dalam penyusunan. Mengunjungi
+                          destinasi populer dan penginapan di{" "}
+                          {formData.negaraWisata || "Turkey"}. Termasuk makan
+                          siang dan sarapan sesuai standar pelayanan yang
+                          berlaku.
+                        </p>
+                      </div>
+                    </div>
+                  ),
+                )}
+              </div>
+            </div>
           </div>
         )}
 
-        {(currentStepName === 'HOTEL' || currentStepName === 'HOTEL UMRAH') && (
+        {(currentStepName === "HOTEL" || currentStepName === "HOTEL UMRAH") && (
           <div className="space-y-6 animate-in fade-in slide-in-from-bottom-2 duration-300">
-            
             {/* Header sub-step */}
             <div className="flex flex-col md:flex-row md:justify-between md:items-center gap-4 mb-6">
               <div className="flex items-center gap-2">
                 <div className="w-1 h-5 bg-amber-500 rounded-full"></div>
                 <h3 className="font-bold text-gray-700 uppercase tracking-wide text-xs sm:text-sm">
-                  Pilih Hotel DI {hotelStep === 'madinah' ? 'Madinah (Langkah 3.1)' : 'Makkah (Langkah 3.2)'}
+                  Pilih Hotel DI{" "}
+                  {hotelStep === "madinah"
+                    ? "Madinah (Langkah 3.1)"
+                    : "Makkah (Langkah 3.2)"}
                 </h3>
               </div>
               <div className="flex bg-gray-100 rounded-full p-1 gap-1">
-                <button 
-                  onClick={() => setHotelStep('madinah')}
-                  className={`px-4 py-1.5 rounded-full text-xs font-bold transition-colors ${hotelStep === 'madinah' ? 'bg-emerald-100 text-emerald-700' : 'text-gray-500 hover:text-gray-700'}`}
+                <button
+                  onClick={() => setHotelStep("madinah")}
+                  className={`px-4 py-1.5 rounded-full text-xs font-bold transition-colors ${hotelStep === "madinah" ? "bg-emerald-100 text-emerald-700" : "text-gray-500 hover:text-gray-700"}`}
                 >
-                  {hotelStep === 'madinah' && <span className="mr-1">3.1</span>}
+                  {hotelStep === "madinah" && <span className="mr-1">3.1</span>}
                   MADINAH
                 </button>
-                <button 
-                  onClick={() => setHotelStep('makkah')}
-                  className={`px-4 py-1.5 rounded-full text-xs font-bold transition-colors ${hotelStep === 'makkah' ? 'bg-emerald-100 text-emerald-700' : 'text-gray-500 hover:text-gray-700'}`}
+                <button
+                  onClick={() => setHotelStep("makkah")}
+                  className={`px-4 py-1.5 rounded-full text-xs font-bold transition-colors ${hotelStep === "makkah" ? "bg-emerald-100 text-emerald-700" : "text-gray-500 hover:text-gray-700"}`}
                 >
-                  {hotelStep === 'makkah' && <span className="mr-1">3.2</span>}
+                  {hotelStep === "makkah" && <span className="mr-1">3.2</span>}
                   MAKKAH
                 </button>
               </div>
@@ -1303,59 +2676,185 @@ export const PaketMasterWizard: React.FC<PaketMasterWizardProps> = ({ initialDat
             {/* Dark Blue Date Box */}
             <div className="bg-[#1e2336] rounded-xl p-4 flex flex-col md:flex-row gap-4 mb-6">
               <div className="flex-1">
-                <label className="text-[10px] text-gray-400 font-bold mb-1 block uppercase">Check In</label>
-                <input 
-                  type="date" 
-                  value={hotelStep === 'madinah' ? formData.chkInMadinah : formData.chkInMakkah}
+                <label className="text-[10px] text-gray-400 font-bold mb-1 block uppercase">
+                  Check In
+                </label>
+                <input
+                  type="date"
+                  value={
+                    hotelStep === "madinah"
+                      ? formData.chkInMadinah
+                      : formData.chkInMakkah
+                  }
                   onChange={(e) => {
                     const val = e.target.value;
-                    if(hotelStep === 'madinah') setFormData({...formData, chkInMadinah: val});
-                    else setFormData({...formData, chkInMakkah: val});
+                    const dateVal = new Date(val);
+                    if (hotelStep === "madinah") {
+                      if (!isNaN(dateVal.getTime())) {
+                        const outDate = new Date(dateVal);
+                        outDate.setDate(
+                          outDate.getDate() + (formData.durasiMadinah || 3),
+                        );
+                        setFormData({
+                          ...formData,
+                          chkInMadinah: val,
+                          chkOutMadinah: outDate.toISOString().split("T")[0],
+                        });
+                      } else {
+                        setFormData({ ...formData, chkInMadinah: val });
+                      }
+                    } else {
+                      if (!isNaN(dateVal.getTime())) {
+                        const outDate = new Date(dateVal);
+                        outDate.setDate(
+                          outDate.getDate() + (formData.durasiMakkah || 4),
+                        );
+                        setFormData({
+                          ...formData,
+                          chkInMakkah: val,
+                          chkOutMakkah: outDate.toISOString().split("T")[0],
+                        });
+                      } else {
+                        setFormData({ ...formData, chkInMakkah: val });
+                      }
+                    }
                   }}
                   className="w-full bg-[#151928] text-gray-300 px-3 py-2 rounded-lg border border-gray-700 text-sm focus:outline-none focus:border-emerald-500"
                 />
               </div>
               <div className="flex-1">
-                <label className="text-[10px] text-gray-400 font-bold mb-1 block uppercase">Durasi Malam</label>
+                <label className="text-[10px] text-gray-400 font-bold mb-1 block uppercase">
+                  Durasi Malam
+                </label>
                 <div className="flex items-center bg-[#151928] rounded-lg border border-gray-700 py-1.5 px-1">
-                  <button 
+                  <button
                     onClick={() => {
-                      if(hotelStep === 'madinah' && formData.durasiMadinah > 1) setFormData({...formData, durasiMadinah: formData.durasiMadinah - 1});
-                      if(hotelStep === 'makkah' && formData.durasiMakkah > 1) setFormData({...formData, durasiMakkah: formData.durasiMakkah - 1});
+                      if (hotelStep === "madinah" && formData.durasiMadinah > 1)
+                        setFormData({
+                          ...formData,
+                          durasiMadinah: formData.durasiMadinah - 1,
+                        });
+                      if (hotelStep === "makkah" && formData.durasiMakkah > 1)
+                        setFormData({
+                          ...formData,
+                          durasiMakkah: formData.durasiMakkah - 1,
+                        });
                     }}
-                    className="px-3 text-gray-400 hover:text-white"><Minus className="w-4 h-4"/></button>
-                  <input 
-                    type="text" 
-                    value={hotelStep === 'madinah' ? formData.durasiMadinah : formData.durasiMakkah} 
-                    className="w-full bg-transparent text-center text-white font-bold text-sm outline-none" 
+                    className="px-3 text-gray-400 hover:text-white"
+                  >
+                    <Minus className="w-4 h-4" />
+                  </button>
+                  <input
+                    type="text"
+                    value={
+                      hotelStep === "madinah"
+                        ? formData.durasiMadinah
+                        : formData.durasiMakkah
+                    }
+                    className="w-full bg-transparent text-center text-white font-bold text-sm outline-none"
                     readOnly
                   />
-                  <button 
+                  <button
                     onClick={() => {
-                      if(hotelStep === 'madinah') setFormData({...formData, durasiMadinah: formData.durasiMadinah + 1});
-                      if(hotelStep === 'makkah') setFormData({...formData, durasiMakkah: formData.durasiMakkah + 1});
+                      if (hotelStep === "madinah")
+                        setFormData({
+                          ...formData,
+                          durasiMadinah: formData.durasiMadinah + 1,
+                        });
+                      if (hotelStep === "makkah")
+                        setFormData({
+                          ...formData,
+                          durasiMakkah: formData.durasiMakkah + 1,
+                        });
                     }}
-                    className="px-3 text-gray-400 hover:text-white"><Plus className="w-4 h-4"/></button>
+                    className="px-3 text-gray-400 hover:text-white"
+                  >
+                    <Plus className="w-4 h-4" />
+                  </button>
                 </div>
               </div>
               <div className="flex-1">
-                <label className="text-[10px] text-gray-400 font-bold mb-1 block uppercase">Check Out</label>
-                <input 
-                  type="date" 
-                  value={hotelStep === 'madinah' ? formData.chkOutMadinah : formData.chkOutMakkah}
+                <label className="text-[10px] text-gray-400 font-bold mb-1 block uppercase">
+                  Check Out
+                </label>
+                <input
+                  type="date"
+                  min={
+                    hotelStep === "madinah"
+                      ? formData.chkInMadinah
+                      : formData.chkInMakkah
+                  }
+                  max={formData.tglKepulangan || undefined}
+                  value={
+                    hotelStep === "madinah"
+                      ? formData.chkOutMadinah
+                      : formData.chkOutMakkah
+                  }
                   onChange={(e) => {
                     const val = e.target.value;
-                    if(hotelStep === 'madinah') setFormData({...formData, chkOutMadinah: val});
-                    else setFormData({...formData, chkOutMakkah: val});
+                    const dateVal = new Date(val);
+                    if (hotelStep === "madinah") {
+                      const inDate = new Date(
+                        formData.chkInMadinah || formData.tglBerangkat,
+                      );
+                      if (
+                        !isNaN(dateVal.getTime()) &&
+                        !isNaN(inDate.getTime())
+                      ) {
+                        const diff = Math.ceil(
+                          (dateVal.getTime() - inDate.getTime()) /
+                            (1000 * 3600 * 24),
+                        );
+                        setFormData({
+                          ...formData,
+                          chkOutMadinah: val,
+                          durasiMadinah: Math.max(1, diff),
+                        });
+                      } else {
+                        setFormData({ ...formData, chkOutMadinah: val });
+                      }
+                    } else {
+                      const inDate = new Date(
+                        formData.chkInMakkah ||
+                          formData.chkOutMadinah ||
+                          formData.tglBerangkat,
+                      );
+                      if (
+                        !isNaN(dateVal.getTime()) &&
+                        !isNaN(inDate.getTime())
+                      ) {
+                        const diff = Math.ceil(
+                          (dateVal.getTime() - inDate.getTime()) /
+                            (1000 * 3600 * 24),
+                        );
+                        setFormData({
+                          ...formData,
+                          chkOutMakkah: val,
+                          durasiMakkah: Math.max(1, diff),
+                        });
+                      } else {
+                        setFormData({ ...formData, chkOutMakkah: val });
+                      }
+                    }
                   }}
                   className="w-full bg-[#151928] text-gray-300 px-3 py-2 rounded-lg border border-gray-700 text-sm focus:outline-none focus:border-emerald-500"
                 />
               </div>
               <div className="flex-1 flex items-end">
                 <div className="w-full bg-[#0d4a3e] border border-[#166554] text-white rounded-lg p-2 flex flex-col items-center justify-center min-h-[42px]">
-                  <span className="text-[10px] font-bold text-emerald-200">PERJALANAN HARI</span>
+                  <span className="text-[10px] font-bold text-emerald-200">
+                    PERJALANAN HARI
+                  </span>
                   <span className="text-sm font-black text-white flex items-center gap-1">
-                    <User className="w-3 h-3"/> {hotelStep === 'madinah' ? formData.durasiMadinah : formData.durasiMakkah} Malam
+                    <User className="w-3 h-3" />{" "}
+                    {hotelStep === "madinah"
+                      ? (formData.durasiMadinah || 3) + 1
+                      : (formData.durasiMakkah || 4) + 1}{" "}
+                    Hari /{" "}
+                    {hotelStep === "madinah"
+                      ? formData.durasiMadinah
+                      : formData.durasiMakkah}{" "}
+                    Malam
                   </span>
                 </div>
               </div>
@@ -1364,100 +2863,310 @@ export const PaketMasterWizard: React.FC<PaketMasterWizardProps> = ({ initialDat
             {/* Search and Filters */}
             <div className="mb-4">
               <div className="relative mb-3">
-                <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400"/>
-                <input 
-                  type="text" 
-                  placeholder="Cari nama hotel..." 
-                  className="w-full pl-11 pr-4 py-3 bg-white border border-gray-200 rounded-xl font-medium text-sm outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500" 
+                <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                <input
+                  type="text"
+                  value={hotelSearchTerm}
+                  onChange={(e) => setHotelSearchTerm(e.target.value)}
+                  placeholder="Cari nama hotel..."
+                  className="w-full pl-11 pr-4 py-3 bg-white border border-gray-200 rounded-xl font-medium text-sm outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500"
                 />
               </div>
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <select
+                  value={hotelFilterBintang}
+                  onChange={(e) => setHotelFilterBintang(e.target.value)}
+                  className="px-3 py-2.5 bg-white border border-gray-200 rounded-lg text-xs font-bold text-gray-600 outline-none appearance-none"
+                >
+                  <option value="ALL">Semua Bintang</option>
+                  <option value="5">Bintang 5</option>
+                  <option value="4">Bintang 4</option>
+                  <option value="3">Bintang 3</option>
+                </select>
                 <select className="px-3 py-2.5 bg-white border border-gray-200 rounded-lg text-xs font-bold text-gray-600 outline-none appearance-none">
                   <option>Harga Terendah</option>
-                </select>
-                <select className="px-3 py-2.5 bg-white border border-gray-200 rounded-lg text-xs font-bold text-gray-600 outline-none appearance-none">
-                  <option>Semua Bintang</option>
-                </select>
-                <select className="px-3 py-2.5 bg-white border border-gray-200 rounded-lg text-xs font-bold text-gray-600 outline-none appearance-none">
-                  <option>Semua Jarak</option>
                 </select>
               </div>
             </div>
 
             {/* Hotel Cards Grid */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-8">
-              {hotelsList.filter(h => h.kota?.toLowerCase() === hotelStep).map(hotel => {
-                const isSelected = hotelStep === 'madinah' ? formData.hotelMadinahId === hotel.id : formData.hotelMakkahId === hotel.id;
-                return (
-                  <div 
-                    key={hotel.id} 
-                    onClick={() => {
-                        if(hotelStep === 'madinah') setFormData({...formData, hotelMadinahId: hotel.id});
-                        else setFormData({...formData, hotelMakkahId: hotel.id});
-                    }}
-                    className={`bg-[#0b101e] rounded-2xl overflow-hidden border cursor-pointer transition-all flex flex-col ${isSelected ? 'border-blue-500 shadow-[0_0_15px_rgba(59,130,246,0.3)]' : 'border-gray-800 hover:border-gray-600'}`}
-                  >
-                    <div className="h-40 overflow-hidden relative bg-gray-800 flex items-center justify-center">
-                      <Building2 className="w-12 h-12 text-gray-700" />
-                    </div>
-                    <div className="p-4 flex flex-col flex-1">
-                      <h4 className="text-white font-black uppercase text-sm mb-1">{hotel.nama}</h4>
-                      <p className="text-[10px] text-gray-400 font-bold uppercase tracking-wider mb-4">{hotel.kota}</p>
-                      
-                      <div className="flex gap-2 mb-6">
-                        <span className="bg-[#1e2336] text-amber-500 px-2.5 py-1 rounded-md text-xs font-bold flex items-center gap-1"><Star className="w-3 h-3 fill-amber-500"/> {hotel.bintang || 5}</span>
-                      </div>
-                      
-                      <div className="mt-auto flex justify-between items-end">
-                        <div>
-                          <div className="text-emerald-400 font-black text-lg">Rp {(hotel.priceQuad || 0).toLocaleString('id-ID')} <span className="text-[10px] text-gray-500 font-bold">/ MALAM</span></div>
-                          <div className="text-[9px] text-gray-500 font-bold uppercase mt-0.5">QUAD / PAX</div>
-                        </div>
-                        <div className={`w-8 h-8 rounded-full flex items-center justify-center transition-colors ${isSelected ? 'bg-blue-600 text-white' : 'bg-gray-800 text-gray-600'}`}>
-                          {isSelected && <Check className="w-4 h-4"/>}
-                        </div>
-                      </div>
-                    </div>
-                  </div>
+            {(() => {
+              const checkDate = hotelStep === "madinah" 
+                ? (formData.chkInMadinah || formData.tglBerangkat) 
+                : (formData.chkInMakkah || formData.tglBerangkat);
+
+              const filtered = hotelsList
+                .filter((h) => h.kota?.toLowerCase() === hotelStep)
+                .filter((h) => {
+                  if (!checkDate) return true;
+                  if (!h.seasons || h.seasons.length === 0) return true;
+                  const dateObj = new Date(checkDate);
+                  if (isNaN(dateObj.getTime())) return true;
+                  return h.seasons.some((season: any) => isDateInRange(dateObj, season.range));
+                })
+                .filter((h) =>
+                  h.nama?.toLowerCase().includes(hotelSearchTerm.toLowerCase()),
+                )
+                .filter(
+                  (h) =>
+                    hotelFilterBintang === "ALL" ||
+                    String(h.bintang) === hotelFilterBintang,
                 );
-              })}
-            </div>
+
+              const pageSize = 10;
+              const totalPages = Math.ceil(filtered.length / pageSize);
+              const paginated = filtered.slice(
+                (hotelPage - 1) * pageSize,
+                hotelPage * pageSize,
+              );
+
+              return (
+                <>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+                    {paginated.map((hotel) => {
+                      const isSelected =
+                        hotelStep === "madinah"
+                          ? formData.hotelMadinahId === hotel.id
+                          : formData.hotelMakkahId === hotel.id;
+
+                      let seasonText = null;
+                      if (checkDate && hotel.seasons && hotel.seasons.length > 0) {
+                        const dateObj = new Date(checkDate);
+                        if (!isNaN(dateObj.getTime())) {
+                          const activeSeason = hotel.seasons.find((s: any) => isDateInRange(dateObj, s.range));
+                          if (activeSeason) {
+                            seasonText = activeSeason.range;
+                          }
+                        }
+                      }
+
+                      return (
+                        <div
+                          key={hotel.id}
+                          onClick={() => {
+                            if (hotelStep === "madinah")
+                              setFormData({
+                                ...formData,
+                                hotelMadinahId: hotel.id,
+                              });
+                            else
+                              setFormData({
+                                ...formData,
+                                hotelMakkahId: hotel.id,
+                              });
+                          }}
+                          className={`bg-[#0b101e] rounded-2xl overflow-hidden border cursor-pointer transition-all flex flex-col relative min-h-[220px] group ${isSelected ? "border-blue-500 shadow-[0_0_15px_rgba(59,130,246,0.3)] ring-2 ring-blue-500" : "border-gray-800 hover:border-gray-600"}`}
+                        >
+                          {/* FULL BACKGROUND IMAGE */}
+                          <div className="absolute inset-0">
+                            <img
+                              src={getHotelImage(
+                                hotel.id,
+                                hotel.nama,
+                                hotel.kota,
+                              )}
+                              alt={hotel.nama}
+                              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
+                            />
+                            <div
+                              className={`absolute inset-0 bg-gradient-to-t ${isSelected ? "from-blue-900/95 via-blue-900/80" : "from-[#0b101e]/95 via-[#0b101e]/80"} to-black/20`}
+                            ></div>
+                          </div>
+
+                          <div className="p-4 flex flex-col flex-1 relative z-10 justify-between">
+                            <div className="flex justify-between items-start mb-2">
+                              <div className="pr-4">
+                                <h4 className="text-white font-black uppercase text-sm mb-1 line-clamp-2 drop-shadow-md">
+                                  {hotel.nama}
+                                </h4>
+                                <p className="text-[10px] text-gray-300 font-bold uppercase tracking-wider drop-shadow">
+                                  {hotel.kota}
+                                </p>
+                              </div>
+                              <div
+                                className={`w-6 h-6 rounded-full flex items-center justify-center shrink-0 transition-colors shadow-lg ${isSelected ? "bg-blue-500 text-white" : "bg-black/50 text-gray-400 border border-white/20"}`}
+                              >
+                                {isSelected && (
+                                  <Check className="w-3.5 h-3.5" />
+                                )}
+                              </div>
+                            </div>
+
+                            <div className="mt-auto pt-4">
+                              <div className="flex gap-2 mb-3">
+                                <span className="bg-amber-500/20 text-amber-400 border border-amber-500/30 px-2 py-0.5 rounded text-[10px] font-bold flex items-center gap-1 backdrop-blur-sm">
+                                  <Star className="w-3 h-3 fill-amber-400" />{" "}
+                                  {hotel.bintang || 5}
+                                </span>
+                                {seasonText && (
+                                  <span className="bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 px-2 py-0.5 rounded text-[10px] font-bold flex items-center gap-1 backdrop-blur-sm flex-1 truncate">
+                                    <Calendar className="w-3 h-3 shrink-0" />
+                                    <span className="truncate">{seasonText}</span>
+                                  </span>
+                                )}
+                              </div>
+
+                              <div className="grid grid-cols-3 gap-2">
+                                <div className="bg-black/40 backdrop-blur-md rounded-lg p-2 text-center border border-white/10">
+                                  <div className="text-[8px] text-gray-400 font-bold uppercase mb-1">
+                                    QUAD
+                                  </div>
+                                  <div
+                                    className="text-emerald-400 font-bold text-xs truncate"
+                                    title={`Rp ${(hotel.priceQuad || 0).toLocaleString("id-ID")}`}
+                                  >
+                                    Rp{" "}
+                                    {(hotel.priceQuad || 0).toLocaleString(
+                                      "id-ID",
+                                    )}
+                                  </div>
+                                  <div className="text-[7px] text-gray-500">
+                                    / PAX/MLM
+                                  </div>
+                                </div>
+                                <div className="bg-black/40 backdrop-blur-md rounded-lg p-2 text-center border border-white/10">
+                                  <div className="text-[8px] text-gray-400 font-bold uppercase mb-1">
+                                    TRIPLE
+                                  </div>
+                                  <div
+                                    className="text-emerald-400 font-bold text-xs truncate"
+                                    title={`Rp ${(hotel.priceTriple || 0).toLocaleString("id-ID")}`}
+                                  >
+                                    Rp{" "}
+                                    {(hotel.priceTriple || 0).toLocaleString(
+                                      "id-ID",
+                                    )}
+                                  </div>
+                                  <div className="text-[7px] text-gray-500">
+                                    / PAX/MLM
+                                  </div>
+                                </div>
+                                <div className="bg-black/40 backdrop-blur-md rounded-lg p-2 text-center border border-white/10">
+                                  <div className="text-[8px] text-gray-400 font-bold uppercase mb-1">
+                                    DOUBLE
+                                  </div>
+                                  <div
+                                    className="text-emerald-400 font-bold text-xs truncate"
+                                    title={`Rp ${(hotel.priceDouble || 0).toLocaleString("id-ID")}`}
+                                  >
+                                    Rp{" "}
+                                    {(hotel.priceDouble || 0).toLocaleString(
+                                      "id-ID",
+                                    )}
+                                  </div>
+                                  <div className="text-[7px] text-gray-500">
+                                    / PAX/MLM
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+
+                  {totalPages > 1 && (
+                    <div className="flex justify-center items-center gap-2 mb-8">
+                      <button
+                        onClick={() =>
+                          setHotelPage((prev) => Math.max(prev - 1, 1))
+                        }
+                        disabled={hotelPage === 1}
+                        className="px-3 py-1.5 rounded-lg border border-gray-700 text-gray-400 text-xs font-bold disabled:opacity-50 hover:bg-gray-800"
+                      >
+                        Previous
+                      </button>
+                      <span className="text-xs font-bold text-gray-500">
+                        Page {hotelPage} of {totalPages}
+                      </span>
+                      <button
+                        onClick={() =>
+                          setHotelPage((prev) => Math.min(prev + 1, totalPages))
+                        }
+                        disabled={hotelPage === totalPages}
+                        className="px-3 py-1.5 rounded-lg border border-gray-700 text-gray-400 text-xs font-bold disabled:opacity-50 hover:bg-gray-800"
+                      >
+                        Next
+                      </button>
+                    </div>
+                  )}
+                </>
+              );
+            })()}
 
             {/* Summary Box */}
             <div className="bg-[#07593c] rounded-2xl p-5 md:p-6 relative overflow-hidden mt-8">
               <Building2 className="absolute -right-6 -bottom-6 w-40 h-40 text-emerald-900/40 z-0" />
-              
+
               <div className="flex items-center gap-2 mb-6 relative z-10">
                 <Building2 className="w-5 h-5 text-emerald-300" />
-                <h3 className="text-white font-black text-xs md:text-sm uppercase tracking-wider">RINGKASAN ESTIMASI HARGA JUAL KOMPONEN HOTEL PER PAX</h3>
+                <h3 className="text-white font-black text-xs md:text-sm uppercase tracking-wider">
+                  RINGKASAN ESTIMASI HARGA JUAL KOMPONEN HOTEL PER PAX
+                </h3>
               </div>
 
               <div className="space-y-4 relative z-10">
-                {['madinah', 'makkah'].map((citySpan) => {
-                  const hId = citySpan === 'madinah' ? formData.hotelMadinahId : formData.hotelMakkahId;
-                  const durasi = citySpan === 'madinah' ? formData.durasiMadinah : formData.durasiMakkah;
-                  const hObj = hotelsList.find(h => h.id === hId);
-                  
+                {["madinah", "makkah"].map((citySpan) => {
+                  const hId =
+                    citySpan === "madinah"
+                      ? formData.hotelMadinahId
+                      : formData.hotelMakkahId;
+                  const durasi =
+                    citySpan === "madinah"
+                      ? formData.durasiMadinah
+                      : formData.durasiMakkah;
+                  const hObj = hotelsList.find((h) => h.id === hId);
+
                   if (!hObj) return null;
-                  
+
                   return (
-                    <div key={citySpan} className="border border-[#116e4d] bg-[#0c6344] rounded-xl p-4">
+                    <div
+                      key={citySpan}
+                      className="border border-[#116e4d] bg-[#0c6344] rounded-xl p-4"
+                    >
                       <div className="flex justify-between items-center mb-3">
-                        <span className="text-emerald-100 text-[10px] font-bold uppercase tracking-wider">HOTEL {citySpan.toUpperCase()}: {hObj.nama}</span>
-                        <span className="text-emerald-100 text-[10px] font-bold bg-[#116e4d] px-2 py-1 rounded-md">{durasi} MALAM</span>
+                        <span className="text-emerald-100 text-[10px] font-bold uppercase tracking-wider">
+                          HOTEL {citySpan.toUpperCase()}: {hObj.nama} ★
+                          {hObj.bintang || 5}
+                        </span>
+                        <span className="text-emerald-100 text-[10px] font-bold bg-[#116e4d] px-2 py-1 rounded-md">
+                          {(durasi || 0) + 1} HARI {durasi} MALAM
+                        </span>
                       </div>
                       <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                         <div className="bg-[#167855] rounded-lg p-2.5 text-center border border-[#1e8c65]">
-                          <div className="text-emerald-200 text-[9px] font-bold uppercase mb-1 tracking-wider">QUAD</div>
-                          <div className="text-white font-black text-sm">Rp {((hObj.priceQuad || 0) * durasi).toLocaleString('id-ID')}</div>
+                          <div className="text-emerald-200 text-[9px] font-bold uppercase mb-1 tracking-wider">
+                            QUAD
+                          </div>
+                          <div className="text-white font-black text-sm">
+                            Rp{" "}
+                            {((hObj.priceQuad || 0) * durasi).toLocaleString(
+                              "id-ID",
+                            )}
+                          </div>
                         </div>
                         <div className="bg-[#167855] rounded-lg p-2.5 text-center border border-[#1e8c65]">
-                          <div className="text-emerald-200 text-[9px] font-bold uppercase mb-1 tracking-wider">TRIPLE</div>
-                          <div className="text-white font-black text-sm">Rp {((hObj.priceTriple || 0) * durasi).toLocaleString('id-ID')}</div>
+                          <div className="text-emerald-200 text-[9px] font-bold uppercase mb-1 tracking-wider">
+                            TRIPLE
+                          </div>
+                          <div className="text-white font-black text-sm">
+                            Rp{" "}
+                            {((hObj.priceTriple || 0) * durasi).toLocaleString(
+                              "id-ID",
+                            )}
+                          </div>
                         </div>
                         <div className="bg-[#167855] rounded-lg p-2.5 text-center border border-[#1e8c65]">
-                          <div className="text-emerald-200 text-[9px] font-bold uppercase mb-1 tracking-wider">DOUBLE</div>
-                          <div className="text-white font-black text-sm">Rp {((hObj.priceDouble || 0) * durasi).toLocaleString('id-ID')}</div>
+                          <div className="text-emerald-200 text-[9px] font-bold uppercase mb-1 tracking-wider">
+                            DOUBLE
+                          </div>
+                          <div className="text-white font-black text-sm">
+                            Rp{" "}
+                            {((hObj.priceDouble || 0) * durasi).toLocaleString(
+                              "id-ID",
+                            )}
+                          </div>
                         </div>
                       </div>
                     </div>
@@ -1467,15 +3176,25 @@ export const PaketMasterWizard: React.FC<PaketMasterWizardProps> = ({ initialDat
 
               <div className="border-t border-[#116e4d] mt-6 pt-5 flex flex-col md:flex-row md:justify-between items-start md:items-end gap-2 relative z-10">
                 <div>
-                  <div className="text-emerald-300 text-[10px] font-bold uppercase tracking-wider mb-1">TOTAL ESTIMASI KOMPONEN HOTEL (QUAD)</div>
+                  <div className="text-emerald-300 text-[10px] font-bold uppercase tracking-wider mb-1">
+                    TOTAL ESTIMASI KOMPONEN HOTEL (QUAD)
+                  </div>
                   <div className="text-white font-black text-2xl flex items-baseline gap-1">
                     {(() => {
-                      const hMadinah = hotelsList.find(h => h.id === formData.hotelMadinahId);
-                      const hMakkah = hotelsList.find(h => h.id === formData.hotelMakkahId);
-                      const sum = ((hMadinah?.priceQuad || 0) * formData.durasiMadinah) + ((hMakkah?.priceQuad || 0) * formData.durasiMakkah);
-                      return `Rp ${sum.toLocaleString('id-ID')}`;
+                      const hMadinah = hotelsList.find(
+                        (h) => h.id === formData.hotelMadinahId,
+                      );
+                      const hMakkah = hotelsList.find(
+                        (h) => h.id === formData.hotelMakkahId,
+                      );
+                      const sum =
+                        (hMadinah?.priceQuad || 0) * formData.durasiMadinah +
+                        (hMakkah?.priceQuad || 0) * formData.durasiMakkah;
+                      return `Rp ${sum.toLocaleString("id-ID")}`;
                     })()}
-                    <span className="text-xs font-bold text-emerald-200">/ PAX</span>
+                    <span className="text-xs font-bold text-emerald-200">
+                      / PAX
+                    </span>
                   </div>
                 </div>
                 <div className="text-[9px] font-bold text-emerald-300 italic opacity-80">
@@ -1483,12 +3202,11 @@ export const PaketMasterWizard: React.FC<PaketMasterWizardProps> = ({ initialDat
                 </div>
               </div>
             </div>
-
           </div>
         )}
 
         {/* Step 4: Layanan */}
-        {currentStepName === 'LAYANAN' && (
+        {currentStepName === "LAYANAN" && (
           <div className="space-y-4 animate-in fade-in slide-in-from-bottom-2 duration-300 relative pb-40">
             {/* Header sub-step */}
             <div className="flex items-center gap-2 mb-6">
@@ -1498,89 +3216,268 @@ export const PaketMasterWizard: React.FC<PaketMasterWizardProps> = ({ initialDat
               </h3>
             </div>
 
-            <div className="space-y-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {layananList.map((item) => {
+                const isGroup = !!item.isGroup;
                 const isSelected = formData.selectedLayanan?.includes(item.id);
-                const isWisata = item.id.toLowerCase().includes('wisata');
-                const Icon = ListCheck; // Generic icon for now since dynamic
+                // Also true if any of the group's sub-options are selected
+                const isGroupSelected =
+                  isSelected ||
+                  (isGroup &&
+                    item.options.some((opt: any) =>
+                      formData.selectedLayanan?.includes(opt.id),
+                    ));
+
+                const isWisata =
+                  item.id.toLowerCase() === "wisata" ||
+                  item.nama.toLowerCase() === "wisata" ||
+                  item.nama.toLowerCase().includes("wisata/ziarah");
+
+                // For grouped items, if selected, find the active option's price. Otherwise show minimum price.
+                let displayPrice = item.harga || 0;
+                if (isGroup) {
+                  const activeOpt = item.options.find((opt: any) =>
+                    formData.selectedLayanan?.includes(opt.id),
+                  );
+                  if (activeOpt) {
+                    displayPrice = activeOpt.price;
+                  } else {
+                    // Defaults to first price, or 0 if empty
+                    displayPrice = item.options[0]?.price || 0;
+                  }
+                }
+
+                // Helper to map realistic UI icons based on the real service name from the db:
+                let Icon = ListCheck;
+                const lowerName = item.nama.toLowerCase();
+                if (
+                  lowerName.includes("handling") ||
+                  lowerName.includes("bandara")
+                )
+                  Icon = PlaneTakeoff;
+                else if (
+                  lowerName.includes("buss") ||
+                  lowerName.includes("bus") ||
+                  lowerName.includes("transportasi")
+                )
+                  Icon = Bus;
+                else if (lowerName.includes("asuransi")) Icon = Shield;
+                else if (
+                  lowerName.includes("perlengkapan") ||
+                  lowerName.includes("aksesoris")
+                )
+                  Icon = Briefcase;
+                else if (
+                  lowerName.includes("muthawwif") ||
+                  lowerName.includes("guide") ||
+                  lowerName.includes("leader")
+                )
+                  Icon = UserCheck;
+                else if (lowerName.includes("visa")) Icon = FileText;
+                else if (lowerName.includes("muassasah")) Icon = Layers;
+                else if (
+                  lowerName.includes("kereta") ||
+                  lowerName.includes("train")
+                )
+                  Icon = Train;
+                else if (lowerName.includes("manasik")) Icon = BookOpen;
+                else if (
+                  lowerName.includes("ziarah") ||
+                  lowerName.includes("wisata")
+                )
+                  Icon = Map;
 
                 return (
-                  <div key={item.id} className="relative">
-                    <div 
+                  <div
+                    key={item.id}
+                    className="relative group flex flex-col h-full rounded-2xl border-2 transition-all cursor-pointer bg-white hover:border-gray-300 hover:shadow-md hover:bg-gray-50/50"
+                    style={{
+                      borderColor: isGroupSelected ? "#3b82f6" : undefined,
+                      backgroundColor: isGroupSelected ? "#eff6ff" : undefined,
+                      boxShadow: isGroupSelected
+                        ? "0 8px 30px rgba(59,130,246,0.12)"
+                        : undefined,
+                    }}
+                  >
+                    <div
                       onClick={() => {
-                        const currentSelections = formData.selectedLayanan || [];
-                        let newSelections;
-                        if(currentSelections.includes(item.id)) {
-                          newSelections = currentSelections.filter((id: string) => id !== item.id);
+                        let currentSelections = formData.selectedLayanan || [];
+                        if (
+                          currentSelections.includes(item.id) ||
+                          (isGroup &&
+                            item.options.some((o: any) =>
+                              currentSelections.includes(o.id),
+                            ))
+                        ) {
+                          // Deselect all
+                          currentSelections = currentSelections.filter(
+                            (id: string) =>
+                              id !== item.id &&
+                              (!isGroup ||
+                                !item.options
+                                  .map((o: any) => o.id)
+                                  .includes(id)),
+                          );
                         } else {
-                          newSelections = [...currentSelections, item.id];
+                          // Select main + auto select first option if group
+                          currentSelections = [...currentSelections, item.id];
+                          if (isGroup && item.options.length > 0) {
+                            currentSelections.push(item.options[0].id);
+                          }
                         }
-                        setFormData({...formData, selectedLayanan: newSelections});
+                        setFormData({
+                          ...formData,
+                          selectedLayanan: currentSelections,
+                        });
                       }}
-                      className={`flex items-center p-3 sm:p-4 rounded-xl border-2 transition-all cursor-pointer ${
-                        isSelected 
-                          ? 'border-blue-500 bg-blue-50/10' 
-                          : 'border-gray-100 hover:border-gray-200 bg-white'
-                      }`}
+                      className="flex flex-col flex-1 p-4"
                     >
-                      <div className={`w-10 h-10 sm:w-12 sm:h-12 rounded-xl flex items-center justify-center mr-4 transition-colors ${
-                        isSelected ? 'bg-blue-600 text-white shadow-lg shadow-blue-600/20' : 'bg-gray-100 text-gray-400'
-                      }`}>
-                        <Icon className="w-5 h-5 sm:w-6 sm:h-6" />
-                      </div>
-                      
-                      <div className="flex-1 min-w-0">
-                        <h4 className="font-black text-gray-900 text-xs sm:text-sm uppercase">{item.nama}</h4>
-                        <p className="text-[9px] sm:text-[10px] text-gray-500 font-bold uppercase tracking-wider truncate mb-1">{item.deskripsi}</p>
-                        <div className="text-emerald-600 font-black text-xs sm:text-sm">
-                          Rp {(item.harga || 0).toLocaleString('id-ID')}
+                      <div className="flex items-start justify-between mb-4">
+                        <div
+                          className={`w-12 h-12 rounded-xl flex items-center justify-center transition-colors ${
+                            isGroupSelected
+                              ? "bg-blue-600 text-white shadow-md shadow-blue-600/20"
+                              : "bg-gray-100 text-gray-400 group-hover:bg-blue-50 group-hover:text-blue-500"
+                          }`}
+                        >
+                          <Icon className="w-6 h-6" />
+                        </div>
+                        <div
+                          className={`w-6 h-6 rounded-full flex items-center justify-center transition-all duration-300 ${
+                            isGroupSelected
+                              ? "bg-blue-600 text-white scale-110"
+                              : "bg-transparent text-transparent border-2 border-gray-200 group-hover:border-blue-300"
+                          }`}
+                        >
+                          <Check
+                            className={`w-3.5 h-3.5 ${isGroupSelected ? "opacity-100" : "opacity-0"}`}
+                            strokeWidth={3}
+                          />
                         </div>
                       </div>
 
-                      <div className={`w-6 h-6 rounded-full flex items-center justify-center transition-colors ml-4 ${
-                        isSelected ? 'bg-blue-600 text-white' : 'bg-gray-100'
-                      }`}>
-                        {isSelected && <Check className="w-3.5 h-3.5" />}
+                      <div className="flex-1 flex flex-col min-w-0">
+                        <h4 className="font-black text-[#1A1C29] text-sm uppercase mb-1 tracking-wider">
+                          {item.nama}
+                        </h4>
+                        <p className="text-[10px] text-gray-500 font-bold uppercase tracking-widest line-clamp-2 mb-6 leading-relaxed flex-1">
+                          {item.deskripsi}
+                        </p>
+
+                        <div className="mt-auto flex items-end justify-between">
+                          <div className="text-[10px] text-gray-400 font-bold uppercase tracking-widest mb-0.5">
+                            BIAYA PER PAX
+                          </div>
+                          <div className="font-black text-lg text-blue-600">
+                            Rp {displayPrice.toLocaleString("id-ID")}
+                          </div>
+                        </div>
                       </div>
                     </div>
 
-                    {/* Expandable Wisata Options */}
-                    {isWisata && isSelected && (
-                      <div className="mt-2 ml-14 sm:ml-16 bg-[#f8fafc] rounded-xl p-4 border border-gray-100 animate-in fade-in slide-in-from-top-2">
-                        {WISATA_OPTIONS.map(cat => (
-                          <div key={cat.category} className="mb-4 last:mb-0">
-                            <h5 className="text-[10px] font-black text-blue-600 uppercase tracking-widest mb-2 border-b border-blue-100 pb-1 inline-block">{cat.category}</h5>
-                            <div className="flex flex-wrap gap-2">
-                              {cat.items.map(opt => {
-                                const isOptSelected = formData.selectedWisata?.includes(opt);
-                                return (
-                                  <button
-                                    key={opt}
-                                    onClick={(e) => {
-                                      e.stopPropagation();
-                                      const wSelections = formData.selectedWisata || [];
-                                      let newWSelections;
-                                      if(wSelections.includes(opt)) {
-                                        newWSelections = wSelections.filter((w: string) => w !== opt);
-                                      } else {
-                                        newWSelections = [...wSelections, opt];
-                                      }
-                                      setFormData({...formData, selectedWisata: newWSelections});
-                                    }}
-                                    className={`px-3 py-1.5 rounded-lg border text-[10px] font-bold transition-all flex items-center gap-1 ${
-                                      isOptSelected 
-                                      ? 'border-blue-600 bg-white text-gray-800 shadow-sm' 
-                                      : 'border-gray-200 bg-gray-50 text-gray-400 hover:border-gray-300'
-                                    }`}
-                                  >
-                                    <div className={`w-1.5 h-1.5 rounded-full ${isOptSelected ? 'bg-amber-500' : 'bg-gray-300'}`}></div>
-                                    {opt}
-                                  </button>
-                                );
-                              })}
-                            </div>
+                    {/* Expandable Group Options */}
+                    {isGroup && isGroupSelected && (
+                      <div className="px-4 pb-4 w-full">
+                        <div className="bg-white rounded-xl p-4 border border-gray-100 shadow-sm animate-in fade-in slide-in-from-top-2">
+                          <h5 className="text-[10px] font-black text-blue-600 uppercase tracking-widest mb-3 border-b-2 border-blue-50 pb-1.5 inline-block">
+                            PILIHAN LAYANAN
+                          </h5>
+                          <div className="flex flex-wrap gap-2">
+                            {item.options.map((opt: any) => {
+                              const isOptSelected =
+                                formData.selectedLayanan?.includes(opt.id);
+                              return (
+                                <button
+                                  key={opt.id}
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    // Remove all options of this group from selected
+                                    let wSelections = (
+                                      formData.selectedLayanan || []
+                                    ).filter(
+                                      (id: string) =>
+                                        !item.options
+                                          .map((o: any) => o.id)
+                                          .includes(id),
+                                    );
+                                    // Add this one
+                                    wSelections.push(opt.id);
+                                    setFormData({
+                                      ...formData,
+                                      selectedLayanan: wSelections,
+                                    });
+                                  }}
+                                  className={`px-3 py-1.5 rounded-lg border text-[10px] transition-all flex items-center gap-1.5 ${
+                                    isOptSelected
+                                      ? "border-blue-600 bg-white text-gray-800 font-bold shadow-sm"
+                                      : "border-gray-200 bg-white text-gray-400 font-medium hover:border-gray-300"
+                                  }`}
+                                >
+                                  <div
+                                    className={`w-1.5 h-1.5 rounded-full ${isOptSelected ? "bg-blue-600" : "bg-gray-300"}`}
+                                  ></div>
+                                  {opt.label}
+                                </button>
+                              );
+                            })}
                           </div>
-                        ))}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Expandable Wisata Options (Non-group DB item) */}
+                    {isWisata && isSelected && !isGroup && (
+                      <div className="px-4 pb-4 w-full">
+                        <div className="bg-white/60 backdrop-blur-sm rounded-xl p-4 border border-blue-100/50 animate-in fade-in slide-in-from-top-2">
+                          {WISATA_OPTIONS.map((cat) => (
+                            <div key={cat.category} className="mb-4 last:mb-0">
+                              <h5 className="text-[10px] font-black text-blue-600 uppercase tracking-widest mb-2 border-b border-blue-100 pb-1 inline-block">
+                                {cat.category}
+                              </h5>
+                              <div className="flex flex-wrap gap-2">
+                                {cat.items.map((opt) => {
+                                  const isOptSelected =
+                                    formData.selectedWisata?.includes(opt);
+                                  return (
+                                    <button
+                                      key={opt}
+                                      onClick={(e) => {
+                                        e.stopPropagation();
+                                        const wSelections =
+                                          formData.selectedWisata || [];
+                                        let newWSelections;
+                                        if (wSelections.includes(opt)) {
+                                          newWSelections = wSelections.filter(
+                                            (w: string) => w !== opt,
+                                          );
+                                        } else {
+                                          newWSelections = [
+                                            ...wSelections,
+                                            opt,
+                                          ];
+                                        }
+                                        setFormData({
+                                          ...formData,
+                                          selectedWisata: newWSelections,
+                                        });
+                                      }}
+                                      className={`px-3 py-1.5 rounded-lg border text-[10px] font-bold transition-all flex items-center gap-1 ${
+                                        isOptSelected
+                                          ? "border-blue-600 bg-white text-gray-800 shadow-sm"
+                                          : "border-gray-200 bg-gray-50 text-gray-400 hover:border-gray-300"
+                                      }`}
+                                    >
+                                      <div
+                                        className={`w-1.5 h-1.5 rounded-full ${isOptSelected ? "bg-amber-500" : "bg-gray-300"}`}
+                                      ></div>
+                                      {opt}
+                                    </button>
+                                  );
+                                })}
+                              </div>
+                            </div>
+                          ))}
+                        </div>
                       </div>
                     )}
                   </div>
@@ -1592,36 +3489,53 @@ export const PaketMasterWizard: React.FC<PaketMasterWizardProps> = ({ initialDat
             <div className="fixed sm:absolute bottom-0 sm:bottom-4 left-0 sm:left-4 right-0 sm:right-4 z-20">
               <div className="bg-[#111424] sm:rounded-2xl p-4 sm:p-6 shadow-2xl relative overflow-hidden border-t sm:border border-gray-800">
                 <Receipt className="absolute -right-6 -top-6 w-32 h-32 text-blue-900/20 z-0" />
-                
+
                 <div className="flex justify-between items-start mb-6 relative z-10">
                   <div className="flex items-center gap-3">
                     <div className="w-10 h-10 bg-blue-600 rounded-xl flex items-center justify-center shadow-lg shadow-blue-600/30">
                       <Receipt className="w-5 h-5 text-white" />
                     </div>
                     <div>
-                      <h3 className="text-white font-black text-sm uppercase tracking-wide">TOTAL BEBAN LAYANAN</h3>
-                      <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest">AKUMULASI BIAYA OPERASIONAL PER PAX</p>
+                      <h3 className="text-white font-black text-sm uppercase tracking-wide">
+                        TOTAL BEBAN LAYANAN
+                      </h3>
+                      <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest">
+                        AKUMULASI BIAYA OPERASIONAL PER PAX
+                      </p>
                     </div>
                   </div>
                   <button className="hidden sm:block px-3 py-1.5 border border-gray-700 bg-gray-800 rounded-lg text-[10px] font-bold text-gray-400 hover:text-white transition-colors">
                     DETAIL BIAYA
                   </button>
                 </div>
-                
+
                 <div className="flex justify-between items-end relative z-10">
                   <div className="flex items-center gap-2">
-                    <User className="w-4 h-4 text-blue-500"/>
-                    <span className="text-xs font-black text-blue-400 uppercase tracking-widest">PER JAMAAH</span>
+                    <User className="w-4 h-4 text-blue-500" />
+                    <span className="text-xs font-black text-blue-400 uppercase tracking-widest">
+                      PER JAMAAH
+                    </span>
                   </div>
                   <div className="text-white font-black text-2xl sm:text-3xl lg:text-4xl">
                     {(() => {
+                      // Total sum correctly retrieves `.harga` from DB items explicitly matching ID
                       const total = layananList.reduce((sum, item) => {
-                        if(formData.selectedLayanan?.includes(item.id)) {
-                          return sum + (item.harga || 0);
+                        let itemCost = 0;
+                        if (item.isGroup) {
+                          if (formData.selectedLayanan?.includes(item.id)) {
+                            const selectedOpt = item.options.find((opt: any) =>
+                              formData.selectedLayanan?.includes(opt.id),
+                            );
+                            if (selectedOpt) itemCost = selectedOpt.price;
+                          }
+                        } else {
+                          if (formData.selectedLayanan?.includes(item.id)) {
+                            itemCost = Number(item.harga) || 0;
+                          }
                         }
-                        return sum;
+                        return sum + itemCost;
                       }, 0);
-                      return `Rp ${total.toLocaleString('id-ID')}`;
+                      return `Rp ${total.toLocaleString("id-ID")}`;
                     })()}
                   </div>
                 </div>
@@ -1631,7 +3545,7 @@ export const PaketMasterWizard: React.FC<PaketMasterWizardProps> = ({ initialDat
         )}
 
         {/* Step 5: Harga & Review */}
-        {currentStepName === 'HARGA & REVIEW' && (
+        {currentStepName === "HARGA & REVIEW" && (
           <div className="space-y-8 animate-in fade-in slide-in-from-bottom-2 duration-300 pb-20">
             <div className="flex items-center gap-2 mb-6">
               <div className="w-1 h-5 bg-emerald-500 rounded-full"></div>
@@ -1642,22 +3556,81 @@ export const PaketMasterWizard: React.FC<PaketMasterWizardProps> = ({ initialDat
 
             {(() => {
               // Calculators
-              const hMadinah = hotelsList.find(h => h.id === formData.hotelMadinahId);
-              const hMakkah = hotelsList.find(h => h.id === formData.hotelMakkahId);
-              
-              const hQuadMadinah = (hMadinah?.priceQuad || 0) * formData.durasiMadinah;
-              const hQuadMakkah = (hMakkah?.priceQuad || 0) * formData.durasiMakkah;
-              const hTripleMadinah = (hMadinah?.priceTriple || 0) * formData.durasiMadinah;
-              const hTripleMakkah = (hMakkah?.priceTriple || 0) * formData.durasiMakkah;
-              const hDoubleMadinah = (hMadinah?.priceDouble || 0) * formData.durasiMadinah;
-              const hDoubleMakkah = (hMakkah?.priceDouble || 0) * formData.durasiMakkah;
+              const hMadinah = hotelsList.find(
+                (h) => h.id === formData.hotelMadinahId,
+              );
+              const hMakkah = hotelsList.find(
+                (h) => h.id === formData.hotelMakkahId,
+              );
+              const hWisata = hotelsList.find(
+                (h) => h.id === formData.hotelWisataId,
+              );
+
+              const hQuadMadinah =
+                (hMadinah?.priceQuad || 0) * formData.durasiMadinah;
+              const hQuadMakkah =
+                (hMakkah?.priceQuad || 0) * formData.durasiMakkah;
+              const hTripleMadinah =
+                (hMadinah?.priceTriple || 0) * formData.durasiMadinah;
+              const hTripleMakkah =
+                (hMakkah?.priceTriple || 0) * formData.durasiMakkah;
+              const hDoubleMadinah =
+                (hMadinah?.priceDouble || 0) * formData.durasiMadinah;
+              const hDoubleMakkah =
+                (hMakkah?.priceDouble || 0) * formData.durasiMakkah;
+
+              const hWisataTotalQuad =
+                formData.kategori === "UMRAH PLUS"
+                  ? (hWisata?.priceQuad || hWisata?.pricePerNight || 0) *
+                    (formData.durasiWisata || 0)
+                  : 0;
+              const hWisataTotalTriple =
+                formData.kategori === "UMRAH PLUS"
+                  ? (hWisata?.priceTriple || hWisata?.pricePerNight || 0) *
+                    (formData.durasiWisata || 0)
+                  : 0;
+              const hWisataTotalDouble =
+                formData.kategori === "UMRAH PLUS"
+                  ? (hWisata?.priceDouble || hWisata?.pricePerNight || 0) *
+                    (formData.durasiWisata || 0)
+                  : 0;
 
               const maskapai = Number(formData.estimasiHargaMaskapai) || 0;
-              const layananTotal = layananList.reduce((sum, item) => formData.selectedLayanan?.includes(item.id) ? sum + (item.harga || 0) : sum, 0);
+              const layananTotal = layananList.reduce((sum, item) => {
+                let itemCost = 0;
+                if (item.isGroup) {
+                  if (formData.selectedLayanan?.includes(item.id)) {
+                    const selectedOpt = item.options.find((opt: any) =>
+                      formData.selectedLayanan?.includes(opt.id),
+                    );
+                    if (selectedOpt) itemCost = selectedOpt.price;
+                  }
+                } else {
+                  if (formData.selectedLayanan?.includes(item.id)) {
+                    itemCost = Number(item.harga) || 0;
+                  }
+                }
+                return sum + itemCost;
+              }, 0);
 
-              const baseQuad = maskapai + hQuadMadinah + hQuadMakkah + layananTotal;
-              const baseTriple = maskapai + hTripleMadinah + hTripleMakkah + layananTotal;
-              const baseDouble = maskapai + hDoubleMadinah + hDoubleMakkah + layananTotal;
+              const baseQuad =
+                maskapai +
+                hQuadMadinah +
+                hQuadMakkah +
+                hWisataTotalQuad +
+                layananTotal;
+              const baseTriple =
+                maskapai +
+                hTripleMadinah +
+                hTripleMakkah +
+                hWisataTotalTriple +
+                layananTotal;
+              const baseDouble =
+                maskapai +
+                hDoubleMadinah +
+                hDoubleMakkah +
+                hWisataTotalDouble +
+                layananTotal;
 
               const margin = Number(formData.marginBersih) || 0;
               const adminFee = margin * 0.1;
@@ -1668,19 +3641,32 @@ export const PaketMasterWizard: React.FC<PaketMasterWizardProps> = ({ initialDat
                   {/* Bagian 1: HPP Dasar */}
                   <div>
                     <div className="flex justify-between items-center mb-4">
-                      <h4 className="text-[10px] sm:text-xs font-black text-gray-400 uppercase tracking-widest">1. HPP DASAR PER TIPE KAMAR</h4>
-                      <div className="px-2 py-1 bg-gray-100 rounded text-[9px] font-bold text-gray-500">BIAYA MODAL</div>
+                      <h4 className="text-[10px] sm:text-xs font-black text-gray-400 uppercase tracking-widest">
+                        1. HPP DASAR PER TIPE KAMAR
+                      </h4>
+                      <div className="px-2 py-1 bg-gray-100 rounded text-[9px] font-bold text-gray-500">
+                        BIAYA MODAL
+                      </div>
                     </div>
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                       {[
-                        { title: 'HPP QUAD', val: baseQuad },
-                        { title: 'HPP TRIPLE', val: baseTriple },
-                        { title: 'HPP DOUBLE', val: baseDouble }
-                      ].map(item => (
-                        <div key={item.title} className="bg-white border border-gray-100 p-5 rounded-2xl flex flex-col items-center justify-center text-center shadow-[0_2px_10px_-4px_rgba(0,0,0,0.05)]">
-                          <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">{item.title}</span>
-                          <span className="text-xl sm:text-2xl font-black text-gray-800">Rp {(item.val || 0).toLocaleString('id-ID')}</span>
-                          <span className="text-[9px] font-bold text-gray-300 mt-1">PER PAX</span>
+                        { title: "HPP QUAD", val: baseQuad },
+                        { title: "HPP TRIPLE", val: baseTriple },
+                        { title: "HPP DOUBLE", val: baseDouble },
+                      ].map((item) => (
+                        <div
+                          key={item.title}
+                          className="bg-white border border-gray-100 p-5 rounded-2xl flex flex-col items-center justify-center text-center shadow-[0_2px_10px_-4px_rgba(0,0,0,0.05)]"
+                        >
+                          <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">
+                            {item.title}
+                          </span>
+                          <span className="text-xl sm:text-2xl font-black text-gray-800">
+                            Rp {(item.val || 0).toLocaleString("id-ID")}
+                          </span>
+                          <span className="text-[9px] font-bold text-gray-300 mt-1">
+                            PER PAX
+                          </span>
                         </div>
                       ))}
                     </div>
@@ -1691,29 +3677,46 @@ export const PaketMasterWizard: React.FC<PaketMasterWizardProps> = ({ initialDat
                     <h4 className="text-[10px] sm:text-xs font-black text-blue-600 border-l-4 border-blue-600 pl-2 uppercase tracking-widest mb-4">
                       2. PENGATURAN PROFIT (UJROH MITRA)
                     </h4>
-                    
+
                     <div className="bg-white rounded-[2rem] p-6 sm:p-10 shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-gray-50 text-center relative overflow-hidden">
                       <div className="inline-block relative z-10 w-full max-w-sm mx-auto">
                         <div className="flex items-center justify-between mb-2">
-                          <button 
-                            onClick={() => setFormData({...formData, marginBersih: Math.max(0, margin - 50000)})}
+                          <button
+                            onClick={() =>
+                              setFormData({
+                                ...formData,
+                                marginBersih: Math.max(0, margin - 50000),
+                              })
+                            }
                             className="w-12 h-12 rounded-2xl border-2 border-gray-100 flex items-center justify-center text-gray-400 hover:text-blue-600 hover:border-blue-200 transition-colors bg-white shadow-sm"
                           >
                             <Minus className="w-5 h-5" />
                           </button>
-                          
+
                           <div className="flex-1 flex flex-col items-center px-4">
                             <div className="flex items-start text-blue-600">
-                              <span className="text-lg sm:text-2xl font-black mt-1 sm:mt-2 italic mr-1">Rp</span>
-                              <span className="text-4xl sm:text-6xl font-black italic tracking-tighter" style={{ fontFamily: 'Impact, sans-serif' }}>
-                                {(margin || 0).toLocaleString('id-ID')}
+                              <span className="text-lg sm:text-2xl font-black mt-1 sm:mt-2 italic mr-1">
+                                Rp
+                              </span>
+                              <span
+                                className="text-4xl sm:text-6xl font-black italic tracking-tighter"
+                                style={{ fontFamily: "Impact, sans-serif" }}
+                              >
+                                {(margin || 0).toLocaleString("id-ID")}
                               </span>
                             </div>
-                            <span className="px-3 py-1 bg-blue-50 text-blue-600 rounded-full text-[9px] font-bold uppercase tracking-widest mt-2">MARGIN BERSIH</span>
+                            <span className="px-3 py-1 bg-blue-50 text-blue-600 rounded-full text-[9px] font-bold uppercase tracking-widest mt-2">
+                              MARGIN BERSIH
+                            </span>
                           </div>
 
-                          <button 
-                            onClick={() => setFormData({...formData, marginBersih: margin + 50000})}
+                          <button
+                            onClick={() =>
+                              setFormData({
+                                ...formData,
+                                marginBersih: margin + 50000,
+                              })
+                            }
                             className="w-12 h-12 rounded-2xl bg-blue-600 flex items-center justify-center text-white shadow-lg shadow-blue-600/30 hover:bg-blue-700 transition-colors"
                           >
                             <Plus className="w-5 h-5" />
@@ -1723,19 +3726,29 @@ export const PaketMasterWizard: React.FC<PaketMasterWizardProps> = ({ initialDat
 
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-10 relative z-10 w-full max-w-lg mx-auto">
                         <div className="bg-gray-50 rounded-2xl p-5 border border-gray-100 relative overflow-hidden flex flex-col items-start text-left">
-                          <span className="text-[80px] font-black text-gray-100 absolute -right-4 -bottom-6 italic leading-none select-none">%</span>
-                          <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1 relative z-10">ADMIN FEE (10%)</span>
-                          <span className="text-xl font-black text-gray-800 italic relative z-10">Rp {(adminFee || 0).toLocaleString('id-ID')}</span>
+                          <span className="text-[80px] font-black text-gray-100 absolute -right-4 -bottom-6 italic leading-none select-none">
+                            %
+                          </span>
+                          <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1 relative z-10">
+                            ADMIN FEE (10%)
+                          </span>
+                          <span className="text-xl font-black text-gray-800 italic relative z-10">
+                            Rp {(adminFee || 0).toLocaleString("id-ID")}
+                          </span>
                         </div>
                         <div className="bg-blue-50 rounded-2xl p-5 border border-blue-100 relative flex flex-col items-start text-left">
                           <div className="absolute right-4 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center">
                             <Plus className="w-4 h-4 text-blue-400" />
                           </div>
-                          <span className="text-[10px] font-bold text-blue-400 uppercase tracking-widest mb-1">TOTAL MARKUP</span>
-                          <span className="text-xl font-black text-blue-600 italic">Rp {(totalMarkup || 0).toLocaleString('id-ID')}</span>
+                          <span className="text-[10px] font-bold text-blue-400 uppercase tracking-widest mb-1">
+                            TOTAL MARKUP
+                          </span>
+                          <span className="text-xl font-black text-blue-600 italic">
+                            Rp {(totalMarkup || 0).toLocaleString("id-ID")}
+                          </span>
                         </div>
                       </div>
-                      
+
                       <div className="text-[9px] font-bold text-gray-300 mt-6 uppercase tracking-widest">
                         DATA ADMIN DIGUNAKAN UNTUK PENGELOLAAN APLIKASI AMANAH.
                       </div>
@@ -1747,27 +3760,73 @@ export const PaketMasterWizard: React.FC<PaketMasterWizardProps> = ({ initialDat
                     <h4 className="text-[10px] sm:text-xs font-black text-[#009B66] border-l-4 border-[#009B66] pl-2 uppercase tracking-widest mb-4">
                       3. HARGA JUAL MARKETPLACE (FINAL)
                     </h4>
-                    <p className="text-[9px] font-bold text-gray-400 uppercase tracking-widest mb-4 pl-3 -mt-2">HARGA AKHIR PER PAX YANG AKAN TAYANG DI APLIKASI JAMAAH</p>
-                    
+                    <p className="text-[9px] font-bold text-gray-400 uppercase tracking-widest mb-4 pl-3 -mt-2">
+                      HARGA AKHIR PER PAX YANG AKAN TAYANG DI APLIKASI JAMAAH
+                    </p>
+
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-4 lg:gap-6 items-center">
                       {[
-                        { title: 'QUAD PACKAGE', val: baseQuad + totalMarkup, type: 'light', tagColor: 'text-[#009B66]' },
-                        { title: 'TRIPLE PACKAGE', val: baseTriple + totalMarkup, type: 'dark', tagColor: 'text-blue-400' },
-                        { title: 'DOUBLE PACKAGE', val: baseDouble + totalMarkup, type: 'light', tagColor: 'text-[#009B66]' },
+                        {
+                          title: "QUAD PACKAGE",
+                          val: baseQuad + totalMarkup,
+                          type: "light",
+                          tagColor: "text-[#009B66]",
+                        },
+                        {
+                          title: "TRIPLE PACKAGE",
+                          val: baseTriple + totalMarkup,
+                          type: "dark",
+                          tagColor: "text-blue-400",
+                        },
+                        {
+                          title: "DOUBLE PACKAGE",
+                          val: baseDouble + totalMarkup,
+                          type: "light",
+                          tagColor: "text-[#009B66]",
+                        },
                       ].map((item) => (
-                        <div key={item.title} className={item.type === 'dark' ? "bg-[#111424] border border-gray-800 p-6 sm:p-8 rounded-[2rem] flex flex-col items-center justify-center text-center shadow-2xl relative z-10 md:scale-110" : "bg-white border border-gray-100 p-6 sm:p-8 rounded-[2rem] flex flex-col items-center justify-center text-center shadow-[0_8px_30px_rgb(0,0,0,0.04)]"}>
-                           <div className={`px-3 py-1 ${item.type === 'dark' ? 'bg-white/10 border-white/10' : 'bg-[#F2FDF8] border-[#E5F9F1]'} border rounded-lg mb-4`}>
-                             <span className={`text-[8px] font-black uppercase tracking-widest ${item.tagColor}`}>{item.title}</span>
-                           </div>
-                           <div className={item.type === 'dark' ? "text-xl sm:text-3xl font-black text-white italic mb-2" : "text-xl sm:text-3xl font-black text-gray-900 italic mb-2"}>
-                             <span className="text-sm sm:text-lg mr-1 inline-block">Rp</span>{(item.val || 0).toLocaleString('id-ID')}
-                           </div>
-                           <span className={item.type === 'dark' ? "text-[8px] font-bold text-gray-500 uppercase tracking-widest" : "text-[8px] font-bold text-gray-400 uppercase tracking-widest"}>ALL-IN / PER PAX</span>
+                        <div
+                          key={item.title}
+                          className={
+                            item.type === "dark"
+                              ? "bg-[#111424] border border-gray-800 p-6 sm:p-8 rounded-[2rem] flex flex-col items-center justify-center text-center shadow-2xl relative z-10 md:scale-110"
+                              : "bg-white border border-gray-100 p-6 sm:p-8 rounded-[2rem] flex flex-col items-center justify-center text-center shadow-[0_8px_30px_rgb(0,0,0,0.04)]"
+                          }
+                        >
+                          <div
+                            className={`px-3 py-1 ${item.type === "dark" ? "bg-white/10 border-white/10" : "bg-[#F2FDF8] border-[#E5F9F1]"} border rounded-lg mb-4`}
+                          >
+                            <span
+                              className={`text-[8px] font-black uppercase tracking-widest ${item.tagColor}`}
+                            >
+                              {item.title}
+                            </span>
+                          </div>
+                          <div
+                            className={
+                              item.type === "dark"
+                                ? "text-xl sm:text-3xl font-black text-white italic mb-2"
+                                : "text-xl sm:text-3xl font-black text-gray-900 italic mb-2"
+                            }
+                          >
+                            <span className="text-sm sm:text-lg mr-1 inline-block">
+                              Rp
+                            </span>
+                            {(item.val || 0).toLocaleString("id-ID")}
+                          </div>
+                          <span
+                            className={
+                              item.type === "dark"
+                                ? "text-[8px] font-bold text-gray-500 uppercase tracking-widest"
+                                : "text-[8px] font-bold text-gray-400 uppercase tracking-widest"
+                            }
+                          >
+                            ALL-IN / PER PAX
+                          </span>
                         </div>
                       ))}
                     </div>
                   </div>
-                  
                 </div>
               );
             })()}
@@ -1776,461 +3835,736 @@ export const PaketMasterWizard: React.FC<PaketMasterWizardProps> = ({ initialDat
 
         {/* Removed duplicate step 7 block */}
 
-        {currentStepName === 'REVIEW FASILITAS' && formData.kategori !== 'WISATA HALAL' && (
-          <div className="space-y-6 animate-in fade-in slide-in-from-bottom-2 duration-300 pb-20">
-            
-            {/* Top Action Buttons */}
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
-              <button className="flex items-center justify-center gap-2 bg-[#1A1C29] text-white py-4 rounded-xl font-bold text-xs uppercase tracking-wider hover:bg-gray-800 transition-colors shadow-lg">
-                <Download className="w-4 h-4" />
-                SIMPAN DESKRIPSI (PDF)
-              </button>
-              <button className="flex items-center justify-center gap-2 bg-blue-600 text-white py-4 rounded-xl font-bold text-xs uppercase tracking-wider hover:bg-blue-700 transition-colors shadow-lg shadow-blue-600/20">
-                <Sparkles className="w-4 h-4" />
-                GENERATE ITINERARY AI
-              </button>
-              <button className="flex items-center justify-center gap-2 bg-emerald-600 text-white py-4 rounded-xl font-bold text-xs uppercase tracking-wider hover:bg-emerald-700 transition-colors shadow-lg shadow-emerald-600/20">
-                <Sparkles className="w-4 h-4" />
-                GENERATE MARKETING AI
-              </button>
-            </div>
+        {currentStepName === "REVIEW FASILITAS" &&
+          formData.kategori !== "WISATA HALAL" && (
+            <div className="space-y-6 animate-in fade-in slide-in-from-bottom-2 duration-300 pb-20">
+              {/* Top Action Buttons */}
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
+                <button className="flex items-center justify-center gap-2 bg-[#1A1C29] text-white py-4 rounded-xl font-bold text-xs uppercase tracking-wider hover:bg-gray-800 transition-colors shadow-lg">
+                  <Download className="w-4 h-4" />
+                  SIMPAN DESKRIPSI (PDF)
+                </button>
+                <button className="flex items-center justify-center gap-2 bg-blue-600 text-white py-4 rounded-xl font-bold text-xs uppercase tracking-wider hover:bg-blue-700 transition-colors shadow-lg shadow-blue-600/20">
+                  <Sparkles className="w-4 h-4" />
+                  GENERATE ITINERARY AI
+                </button>
+                <button className="flex items-center justify-center gap-2 bg-emerald-600 text-white py-4 rounded-xl font-bold text-xs uppercase tracking-wider hover:bg-emerald-700 transition-colors shadow-lg shadow-emerald-600/20">
+                  <Sparkles className="w-4 h-4" />
+                  GENERATE MARKETING AI
+                </button>
+              </div>
 
-            {(() => {
-              // Same Calculators as Step 5
-              const hMadinah = hotelsList.find(h => h.id === formData.hotelMadinahId);
-              const hMakkah = hotelsList.find(h => h.id === formData.hotelMakkahId);
-              
-              const hWisata = hotelsList.find(h => h.id === formData.hotelWisataId);
-              
-              const hQuadMadinah = (hMadinah?.priceQuad || 0) * formData.durasiMadinah;
-              const hQuadMakkah = (hMakkah?.priceQuad || 0) * formData.durasiMakkah;
-              const hTripleMadinah = (hMadinah?.priceTriple || 0) * formData.durasiMadinah;
-              const hTripleMakkah = (hMakkah?.priceTriple || 0) * formData.durasiMakkah;
-              const hDoubleMadinah = (hMadinah?.priceDouble || 0) * formData.durasiMadinah;
-              const hDoubleMakkah = (hMakkah?.priceDouble || 0) * formData.durasiMakkah;
-              
-              const hWisataTotal = formData.kategori === 'UMRAH PLUS' ? ((hWisata?.priceQuad || hWisata?.pricePerNight || 0) * (formData.durasiWisata || 0)) : 0;
+              {(() => {
+                // Same Calculators as Step 5
+                const hMadinah = hotelsList.find(
+                  (h) => h.id === formData.hotelMadinahId,
+                );
+                const hMakkah = hotelsList.find(
+                  (h) => h.id === formData.hotelMakkahId,
+                );
 
-              const maskapai = Number(formData.estimasiHargaMaskapai) || 0;
-              const selectedLayanans = layananList.filter(item => formData.selectedLayanan?.includes(item.id));
-              const layananTotal = selectedLayanans.reduce((sum, item) => sum + (item.harga || 0), 0);
+                const hWisata = hotelsList.find(
+                  (h) => h.id === formData.hotelWisataId,
+                );
 
-              const baseQuad = maskapai + hWisataTotal + hQuadMadinah + hQuadMakkah + layananTotal;
-              const baseTriple = maskapai + hWisataTotal + hTripleMadinah + hTripleMakkah + layananTotal;
-              const baseDouble = maskapai + hWisataTotal + hDoubleMadinah + hDoubleMakkah + layananTotal;
+                const hQuadMadinah =
+                  (hMadinah?.priceQuad || 0) * formData.durasiMadinah;
+                const hQuadMakkah =
+                  (hMakkah?.priceQuad || 0) * formData.durasiMakkah;
+                const hTripleMadinah =
+                  (hMadinah?.priceTriple || 0) * formData.durasiMadinah;
+                const hTripleMakkah =
+                  (hMakkah?.priceTriple || 0) * formData.durasiMakkah;
+                const hDoubleMadinah =
+                  (hMadinah?.priceDouble || 0) * formData.durasiMadinah;
+                const hDoubleMakkah =
+                  (hMakkah?.priceDouble || 0) * formData.durasiMakkah;
 
-              const margin = Number(formData.marginBersih) || 0;
-              const adminFee = margin * 0.1;
-              const totalMarkup = margin + adminFee;
+                const hWisataTotal =
+                  formData.kategori === "UMRAH PLUS"
+                    ? (hWisata?.priceQuad || hWisata?.pricePerNight || 0) *
+                      (formData.durasiWisata || 0)
+                    : 0;
 
-              const finalQuad = baseQuad + totalMarkup;
-              const finalTriple = baseTriple + totalMarkup;
-              const finalDouble = baseDouble + totalMarkup;
+                const maskapai = Number(formData.estimasiHargaMaskapai) || 0;
+                const selectedLayanans = layananList.filter((item) =>
+                  formData.selectedLayanan?.includes(item.id),
+                );
+                const layananTotal = layananList.reduce((sum, item) => {
+                  let itemCost = 0;
+                  if (item.isGroup) {
+                    if (formData.selectedLayanan?.includes(item.id)) {
+                      const selectedOpt = item.options.find((opt: any) =>
+                        formData.selectedLayanan?.includes(opt.id),
+                      );
+                      if (selectedOpt) itemCost = selectedOpt.price;
+                    }
+                  } else {
+                    if (formData.selectedLayanan?.includes(item.id)) {
+                      itemCost = Number(item.harga) || 0;
+                    }
+                  }
+                  return sum + itemCost;
+                }, 0);
 
-              return (
-                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
-                  
-                  {/* Left Column (Informasi & Fasilitas) */}
-                  <div className="lg:col-span-2 space-y-6">
-                    
-                    {/* Card 1: Informasi Dasar */}
-                    <div className="bg-white rounded-3xl p-6 sm:p-8 border border-gray-100 shadow-[0_8px_30px_rgb(0,0,0,0.04)]">
-                      <div className="flex items-center gap-3 mb-8 pb-4 border-b border-gray-50">
-                        <div className="w-10 h-10 rounded-xl bg-blue-50 flex items-center justify-center text-blue-600">
-                          <FileText className="w-5 h-5" />
+                const baseQuad =
+                  maskapai +
+                  hWisataTotal +
+                  hQuadMadinah +
+                  hQuadMakkah +
+                  layananTotal;
+                const baseTriple =
+                  maskapai +
+                  hWisataTotal +
+                  hTripleMadinah +
+                  hTripleMakkah +
+                  layananTotal;
+                const baseDouble =
+                  maskapai +
+                  hWisataTotal +
+                  hDoubleMadinah +
+                  hDoubleMakkah +
+                  layananTotal;
+
+                const margin = Number(formData.marginBersih) || 0;
+                const adminFee = margin * 0.1;
+                const totalMarkup = margin + adminFee;
+
+                const finalQuad = baseQuad + totalMarkup;
+                const finalTriple = baseTriple + totalMarkup;
+                const finalDouble = baseDouble + totalMarkup;
+
+                return (
+                  <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
+                    {/* Left Column (Informasi & Fasilitas) */}
+                    <div className="lg:col-span-2 space-y-6">
+                      {/* Card 1: Informasi Dasar */}
+                      <div className="bg-white rounded-3xl p-6 sm:p-8 border border-gray-100 shadow-[0_8px_30px_rgb(0,0,0,0.04)]">
+                        <div className="flex items-center gap-3 mb-8 pb-4 border-b border-gray-50">
+                          <div className="w-10 h-10 rounded-xl bg-blue-50 flex items-center justify-center text-blue-600">
+                            <FileText className="w-5 h-5" />
+                          </div>
+                          <h3 className="font-black text-gray-900 text-sm uppercase tracking-widest">
+                            INFORMASI DASAR PAKET
+                          </h3>
                         </div>
-                        <h3 className="font-black text-gray-900 text-sm uppercase tracking-widest">INFORMASI DASAR PAKET</h3>
+
+                        <div className="space-y-6">
+                          <div>
+                            <p className="text-[10px] sm:text-xs font-bold text-gray-400 uppercase tracking-widest mb-1">
+                              NAMA PAKET IBADAH
+                            </p>
+                            <h4 className="text-xl sm:text-2xl font-black text-gray-800 italic uppercase">
+                              {formData.nama || "UNTITLED PACKAGE"}
+                            </h4>
+                          </div>
+
+                          <div className="grid grid-cols-2 gap-6">
+                            <div>
+                              <p className="text-[9px] sm:text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">
+                                KATEGORI & PROGRAM
+                              </p>
+                              <p className="text-xs sm:text-sm font-black text-gray-700 uppercase">
+                                {formData.kategori || "UMRAH REGULER"}{" "}
+                                {formData.kategori === "UMRAH PLUS" &&
+                                  `(+ ${formData.negaraWisata || "TURKEY"})`}{" "}
+                                • {formData.periode || "-"}
+                              </p>
+                            </div>
+                            <div>
+                              <p className="text-[9px] sm:text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">
+                                DURASI & JAMAAH
+                              </p>
+                              <p className="text-xs sm:text-sm font-black text-gray-700 uppercase">
+                                {formData.durasiHari || 9} HARI{" "}
+                                {formData.kategori === "UMRAH PLUS" &&
+                                  `(${formData.durasiWisata || 0} HARI WISATA)`}{" "}
+                                - {formData.targetJamaah} PAX
+                              </p>
+                            </div>
+                            <div className="col-span-2 sm:col-span-1">
+                              <p className="text-[9px] sm:text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">
+                                KEBERANGKATAN
+                              </p>
+                              <p className="text-xs sm:text-sm font-black text-gray-700 uppercase flex items-center gap-2">
+                                {formData.kotaKeberangkatan || "JAKARTA"}
+                                <ArrowRight className="w-3 h-3 text-gray-400" />
+                                {formData.kategori === "UMRAH PLUS" ? (
+                                  <>
+                                    {formData.alurPerjalanan ===
+                                    "WISATA TERLEBIH DAHULU" ? (
+                                      <>
+                                        {formData.negaraWisata || "TURKEY"}{" "}
+                                        <ArrowRight className="w-3 h-3 text-gray-400" />{" "}
+                                        SAUDI
+                                      </>
+                                    ) : (
+                                      <>
+                                        SAUDI{" "}
+                                        <ArrowRight className="w-3 h-3 text-gray-400" />{" "}
+                                        {formData.negaraWisata || "TURKEY"}
+                                      </>
+                                    )}
+                                  </>
+                                ) : (
+                                  "SAUDI"
+                                )}
+                              </p>
+                            </div>
+                            <div className="col-span-2 sm:col-span-1">
+                              <p className="text-[9px] sm:text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">
+                                TANGGAL & URUTAN
+                              </p>
+                              <p className="text-xs sm:text-sm font-black text-gray-700 uppercase">
+                                {formData.tglBerangkat || "-"} •{" "}
+                                {formData.kategori === "UMRAH PLUS"
+                                  ? formData.alurPerjalanan
+                                  : formData.urutanKunjungan ||
+                                    "MADINAH-MAKKAH"}
+                              </p>
+                            </div>
+                          </div>
+                        </div>
                       </div>
 
-                      <div className="space-y-6">
-                        <div>
-                          <p className="text-[10px] sm:text-xs font-bold text-gray-400 uppercase tracking-widest mb-1">NAMA PAKET IBADAH</p>
-                          <h4 className="text-xl sm:text-2xl font-black text-gray-800 italic uppercase">
-                            {formData.nama || 'UNTITLED PACKAGE'}
-                          </h4>
+                      {/* Card 2: Fasilitas & Rincian Harga */}
+                      <div className="bg-white rounded-3xl p-6 sm:p-8 border border-gray-100 shadow-[0_8px_30px_rgb(0,0,0,0.04)]">
+                        <div className="flex items-center gap-3 mb-6 pb-4 border-b border-gray-50">
+                          <div className="w-10 h-10 rounded-xl bg-blue-50 flex items-center justify-center text-blue-600">
+                            <Check className="w-5 h-5" />
+                          </div>
+                          <h3 className="font-black text-gray-900 text-sm uppercase tracking-widest">
+                            FASILITAS & RINCIAN HARGA
+                          </h3>
                         </div>
 
-                        <div className="grid grid-cols-2 gap-6">
-                          <div>
-                            <p className="text-[9px] sm:text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">KATEGORI & PROGRAM</p>
-                            <p className="text-xs sm:text-sm font-black text-gray-700 uppercase">
-                              {formData.kategori || 'UMRAH REGULER'} {formData.kategori === 'UMRAH PLUS' && `(+ ${formData.negaraWisata || 'TURKEY'})`} • {formData.periode || '-'}
-                            </p>
+                        <div className="space-y-4">
+                          {/* Maskapai */}
+                          <div className="flex justify-between items-center py-2">
+                            <div className="flex items-center gap-3">
+                              <div className="w-8 h-8 rounded-lg bg-blue-50 flex items-center justify-center text-blue-500">
+                                <Plane className="w-4 h-4" />
+                              </div>
+                              <span className="font-bold text-xs sm:text-sm text-gray-700 uppercase">
+                                {maskapaiList.find(
+                                  (m) => m.id === formData.maskapaiId,
+                                )?.name || "MASKAPAI"}{" "}
+                                ({formData.kelasPenerbangan || "EKONOMI"})
+                              </span>
+                            </div>
+                            <span className="font-black text-xs sm:text-sm text-blue-600 italic">
+                              Rp{" "}
+                              {Number(
+                                formData.estimasiHargaMaskapai || 0,
+                              ).toLocaleString("id-ID")}
+                            </span>
                           </div>
-                          <div>
-                            <p className="text-[9px] sm:text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">DURASI & JAMAAH</p>
-                            <p className="text-xs sm:text-sm font-black text-gray-700 uppercase">
-                              {formData.durasiHari || 9} HARI {formData.kategori === 'UMRAH PLUS' && `(${formData.durasiWisata || 0} HARI WISATA)`} - {formData.targetJamaah} PAX
-                            </p>
-                          </div>
-                          <div className="col-span-2 sm:col-span-1">
-                            <p className="text-[9px] sm:text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">KEBERANGKATAN</p>
-                            <p className="text-xs sm:text-sm font-black text-gray-700 uppercase flex items-center gap-2">
-                              {formData.kotaKeberangkatan || 'JAKARTA'} 
-                              <ArrowRight className="w-3 h-3 text-gray-400" />
-                              {formData.kategori === 'UMRAH PLUS' ? (
-                                <>
-                                  {formData.alurPerjalanan === 'WISATA TERLEBIH DAHULU' ? (
-                                    <>{formData.negaraWisata || 'TURKEY'} <ArrowRight className="w-3 h-3 text-gray-400" /> SAUDI</>
-                                  ) : (
-                                    <>SAUDI <ArrowRight className="w-3 h-3 text-gray-400" /> {formData.negaraWisata || 'TURKEY'}</>
-                                  )}
-                                </>
-                              ) : (
-                                'SAUDI'
-                              )}
-                            </p>
-                          </div>
-                          <div className="col-span-2 sm:col-span-1">
-                            <p className="text-[9px] sm:text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">TANGGAL & URUTAN</p>
-                            <p className="text-xs sm:text-sm font-black text-gray-700 uppercase">
-                              {formData.tglBerangkat || '-'} • {formData.kategori === 'UMRAH PLUS' ? formData.alurPerjalanan : formData.urutanKunjungan || 'MADINAH-MAKKAH'}
-                            </p>
-                          </div>
+
+                          {/* Hotel Wisata IF Umrah Plus */}
+                          {formData.kategori === "UMRAH PLUS" && (
+                            <div className="flex justify-between items-center py-2">
+                              <div className="flex items-center gap-3">
+                                <div className="w-8 h-8 rounded-lg bg-emerald-50 flex items-center justify-center text-emerald-500">
+                                  <MapPin className="w-4 h-4" />
+                                </div>
+                                <span className="font-bold text-xs sm:text-sm text-gray-700 uppercase">
+                                  HOTEL {formData.negaraWisata || "TURKEY"} ★
+                                  {hWisata?.bintang || 5} (
+                                  {hWisata?.nama || "HILTON"} -{" "}
+                                  {(formData.durasiWisata || 0) + 1} HARI{" "}
+                                  {formData.durasiWisata || 0} MALAM)
+                                </span>
+                              </div>
+                              <span className="font-black text-xs sm:text-sm text-blue-600 italic">
+                                Rp {hWisataTotal.toLocaleString("id-ID")}
+                              </span>
+                            </div>
+                          )}
+
+                          {hMadinah && (
+                            <div className="flex justify-between items-center py-2">
+                              <div className="flex items-center gap-3">
+                                <div className="w-8 h-8 rounded-lg bg-gray-50 flex items-center justify-center text-gray-400">
+                                  <Building2 className="w-4 h-4" />
+                                </div>
+                                <span className="font-bold text-xs sm:text-sm text-gray-700 uppercase">
+                                  {hMadinah.nama} ★{hMadinah.bintang || 5} (
+                                  {(formData.durasiMadinah || 3) + 1} HARI{" "}
+                                  {formData.durasiMadinah || 3} MALAM)
+                                </span>
+                              </div>
+                              <span className="font-black text-xs sm:text-sm text-blue-600 italic">
+                                Rp {(hQuadMadinah || 0).toLocaleString("id-ID")}
+                              </span>
+                            </div>
+                          )}
+                          {hMakkah && (
+                            <div className="flex justify-between items-center py-2">
+                              <div className="flex items-center gap-3">
+                                <div className="w-8 h-8 rounded-lg bg-gray-50 flex items-center justify-center text-gray-400">
+                                  <Building2 className="w-4 h-4" />
+                                </div>
+                                <span className="font-bold text-xs sm:text-sm text-gray-700 uppercase">
+                                  {hMakkah.nama} ★{hMakkah.bintang || 5} (
+                                  {(formData.durasiMakkah || 4) + 1} HARI{" "}
+                                  {formData.durasiMakkah || 4} MALAM)
+                                </span>
+                              </div>
+                              <span className="font-black text-xs sm:text-sm text-blue-600 italic">
+                                Rp {(hQuadMakkah || 0).toLocaleString("id-ID")}
+                              </span>
+                            </div>
+                          )}
+
+                          {layananList
+                            .reduce((selectedArray: any[], item: any) => {
+                              const isGroup = !!item.isGroup;
+                              if (isGroup) {
+                                if (
+                                  formData.selectedLayanan?.includes(item.id)
+                                ) {
+                                  const selectedOpt = item.options.find(
+                                    (opt: any) =>
+                                      formData.selectedLayanan?.includes(
+                                        opt.id,
+                                      ),
+                                  );
+                                  if (selectedOpt) {
+                                    selectedArray.push({
+                                      id: selectedOpt.id,
+                                      nama: `${item.nama}: ${selectedOpt.label}`,
+                                      harga: selectedOpt.price,
+                                    });
+                                  }
+                                }
+                              } else {
+                                if (
+                                  formData.selectedLayanan?.includes(item.id)
+                                ) {
+                                  selectedArray.push(item);
+                                }
+                              }
+                              return selectedArray;
+                            }, [])
+                            .map((item) => (
+                              <div
+                                key={item.id}
+                                className="flex justify-between items-center py-2 border-b border-gray-50 last:border-0 border-dashed"
+                              >
+                                <div className="flex items-center gap-3">
+                                  <div className="w-8 h-8 rounded-lg bg-gray-50 flex items-center justify-center text-gray-400">
+                                    <Check className="w-4 h-4 text-emerald-500" />
+                                  </div>
+                                  <span className="font-bold text-xs sm:text-sm text-gray-700 uppercase">
+                                    {item.nama}
+                                  </span>
+                                </div>
+                                <span className="font-black text-xs sm:text-sm text-blue-600 italic">
+                                  Rp {(item.harga || 0).toLocaleString("id-ID")}
+                                </span>
+                              </div>
+                            ))}
                         </div>
                       </div>
                     </div>
 
-                    {/* Card 2: Fasilitas & Rincian Harga */}
-                    <div className="bg-white rounded-3xl p-6 sm:p-8 border border-gray-100 shadow-[0_8px_30px_rgb(0,0,0,0.04)]">
-                      <div className="flex items-center gap-3 mb-6 pb-4 border-b border-gray-50">
-                        <div className="w-10 h-10 rounded-xl bg-blue-50 flex items-center justify-center text-blue-600">
-                          <Check className="w-5 h-5" />
+                    {/* Right Column (Panel Harga Final - Sticky) */}
+                    <div className="lg:sticky lg:top-8 bg-[#1A1C29] rounded-[2rem] p-6 sm:p-8 shadow-2xl relative overflow-hidden text-white border border-gray-800">
+                      <Receipt className="absolute -right-8 -top-8 w-40 h-40 text-blue-900/20 z-0" />
+
+                      <div className="relative z-10 text-center mb-8 pb-6 border-b border-gray-800">
+                        <div className="inline-block px-4 py-1.5 rounded-full border border-blue-900/50 bg-blue-900/20 text-blue-400 text-[10px] font-black uppercase tracking-widest mb-2">
+                          HARGA JUAL FINAL
                         </div>
-                        <h3 className="font-black text-gray-900 text-sm uppercase tracking-widest">FASILITAS & RINCIAN HARGA</h3>
+                        <p className="text-[9px] text-gray-400 font-bold uppercase tracking-widest">
+                          LUMRAH DIBAYARKAN JAMAAH
+                        </p>
                       </div>
 
-                      <div className="space-y-4">
-                        {/* Maskapai */}
-                        <div className="flex justify-between items-center py-2">
-                          <div className="flex items-center gap-3">
-                            <div className="w-8 h-8 rounded-lg bg-blue-50 flex items-center justify-center text-blue-500">
-                              <Plane className="w-4 h-4" />
+                      <div className="relative z-10 space-y-8">
+                        {[
+                          { title: "QUAD ROOM", val: finalQuad },
+                          { title: "TRIPLE ROOM", val: finalTriple },
+                          { title: "DOUBLE ROOM", val: finalDouble },
+                        ].map((item, idx) => (
+                          <div
+                            key={item.title}
+                            className={
+                              idx !== 2 ? "border-b border-gray-800 pb-8" : ""
+                            }
+                          >
+                            <div className="flex justify-between items-center mb-2">
+                              <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">
+                                {item.title}
+                              </span>
+                              <span className="px-2 py-0.5 bg-blue-600 rounded text-[8px] font-black italic">
+                                PROFIT
+                              </span>
                             </div>
-                            <span className="font-bold text-xs sm:text-sm text-gray-700 uppercase">{maskapaiList.find(m => m.id === formData.maskapaiId)?.name || 'MASKAPAI'} ({formData.kelasPenerbangan || 'EKONOMI'})</span>
-                          </div>
-                          <span className="font-black text-xs sm:text-sm text-blue-600 italic">Rp {Number(formData.estimasiHargaMaskapai || 0).toLocaleString('id-ID')}</span>
-                        </div>
-
-                        {/* Hotel Wisata IF Umrah Plus */}
-                        {formData.kategori === 'UMRAH PLUS' && (
-                          <div className="flex justify-between items-center py-2">
-                            <div className="flex items-center gap-3">
-                              <div className="w-8 h-8 rounded-lg bg-emerald-50 flex items-center justify-center text-emerald-500">
-                                <MapPin className="w-4 h-4" />
-                              </div>
-                              <span className="font-bold text-xs sm:text-sm text-gray-700 uppercase">HOTEL {formData.negaraWisata || 'TURKEY'} ({hWisata?.nama || 'HILTON'})</span>
+                            <div className="text-2xl sm:text-3xl font-black italic mb-1 flex items-start">
+                              <span className="text-lg mt-1 mr-1">Rp</span>
+                              {(item.val || 0).toLocaleString("id-ID")}
                             </div>
-                            <span className="font-black text-xs sm:text-sm text-blue-600 italic">Rp {hWisataTotal.toLocaleString('id-ID')}</span>
-                          </div>
-                        )}
-
-                        {hMadinah && (
-                          <div className="flex justify-between items-center py-2">
-                            <div className="flex items-center gap-3">
-                              <div className="w-8 h-8 rounded-lg bg-gray-50 flex items-center justify-center text-gray-400">
-                                <Building2 className="w-4 h-4" />
-                              </div>
-                              <span className="font-bold text-xs sm:text-sm text-gray-700 uppercase">{hMadinah.nama} ({formData.durasiMadinah || 3}M)</span>
+                            <div className="flex items-center gap-1.5 text-[9px] text-gray-500 font-bold uppercase tracking-widest">
+                              <Layers className="w-3 h-3" />
+                              INC. ADMIN (RP{" "}
+                              {(adminFee || 0).toLocaleString("id-ID")})
                             </div>
-                            <span className="font-black text-xs sm:text-sm text-blue-600 italic">Rp {(hQuadMadinah || 0).toLocaleString('id-ID')}</span>
-                          </div>
-                        )}
-                        {hMakkah && (
-                          <div className="flex justify-between items-center py-2">
-                            <div className="flex items-center gap-3">
-                              <div className="w-8 h-8 rounded-lg bg-gray-50 flex items-center justify-center text-gray-400">
-                                <Building2 className="w-4 h-4" />
-                              </div>
-                              <span className="font-bold text-xs sm:text-sm text-gray-700 uppercase">{hMakkah.nama} ({formData.durasiMakkah || 4}M)</span>
-                            </div>
-                            <span className="font-black text-xs sm:text-sm text-blue-600 italic">Rp {(hQuadMakkah || 0).toLocaleString('id-ID')}</span>
-                          </div>
-                        )}
-
-                        {selectedLayanans.map(item => (
-                          <div key={item.id} className="flex justify-between items-center py-2">
-                            <div className="flex items-center gap-3">
-                              <div className="w-8 h-8 rounded-lg bg-gray-50 flex items-center justify-center text-gray-400">
-                                <Check className="w-4 h-4 text-emerald-500" />
-                              </div>
-                              <span className="font-bold text-xs sm:text-sm text-gray-700 uppercase">{item.nama}</span>
-                            </div>
-                            <span className="font-black text-xs sm:text-sm text-blue-600 italic">Rp {(item.harga || 0).toLocaleString('id-ID')}</span>
                           </div>
                         ))}
                       </div>
                     </div>
-
                   </div>
-
-                  {/* Right Column (Panel Harga Final - Sticky) */}
-                  <div className="lg:sticky lg:top-8 bg-[#1A1C29] rounded-[2rem] p-6 sm:p-8 shadow-2xl relative overflow-hidden text-white border border-gray-800">
-                    <Receipt className="absolute -right-8 -top-8 w-40 h-40 text-blue-900/20 z-0" />
-                    
-                    <div className="relative z-10 text-center mb-8 pb-6 border-b border-gray-800">
-                      <div className="inline-block px-4 py-1.5 rounded-full border border-blue-900/50 bg-blue-900/20 text-blue-400 text-[10px] font-black uppercase tracking-widest mb-2">
-                        HARGA JUAL FINAL
-                      </div>
-                      <p className="text-[9px] text-gray-400 font-bold uppercase tracking-widest">LUMRAH DIBAYARKAN JAMAAH</p>
-                    </div>
-
-                    <div className="relative z-10 space-y-8">
-                      {[
-                        { title: 'QUAD ROOM', val: finalQuad },
-                        { title: 'TRIPLE ROOM', val: finalTriple },
-                        { title: 'DOUBLE ROOM', val: finalDouble },
-                      ].map((item, idx) => (
-                        <div key={item.title} className={idx !== 2 ? "border-b border-gray-800 pb-8" : ""}>
-                          <div className="flex justify-between items-center mb-2">
-                            <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">{item.title}</span>
-                            <span className="px-2 py-0.5 bg-blue-600 rounded text-[8px] font-black italic">PROFIT</span>
-                          </div>
-                          <div className="text-2xl sm:text-3xl font-black italic mb-1 flex items-start">
-                            <span className="text-lg mt-1 mr-1">Rp</span>
-                            {(item.val || 0).toLocaleString('id-ID')}
-                          </div>
-                          <div className="flex items-center gap-1.5 text-[9px] text-gray-500 font-bold uppercase tracking-widest">
-                            <Layers className="w-3 h-3" />
-                            INC. ADMIN (RP {(adminFee || 0).toLocaleString('id-ID')})
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-
-                </div>
-              );
-            })()}
-          </div>
-        )}
-
-        {currentStepName === 'RINGKASAN HARGA' && formData.kategori === 'WISATA HALAL' && (() => {
-          const baseIDR = (formData.hargaDasar || 1350) * 16000;
-          let addonsTotal = 0;
-          if (formData.wisataAddon_tourLeader) addonsTotal += 250000 * (Number(formData.wisataAddon_tourLeaderCount) || 1);
-          if (formData.wisataAddon_handling) addonsTotal += 250000;
-          if (formData.wisataAddon_travelKits) addonsTotal += 250000;
-          if (formData.wisataAddon_merch_koper) addonsTotal += 1500000;
-          if (formData.wisataAddon_merch_slingbag) addonsTotal += 50000;
-          if (formData.wisataAddon_merch_kaos) addonsTotal += 150000;
-          if (formData.wisataAddon_merch_jaket) addonsTotal += 250000;
-          if (formData.wisataAddon_merch_tasserut) addonsTotal += 25000;
-          if (formData.wisataAddon_merch_topi) addonsTotal += 35000;
-          if (formData.wisataAddon_merch_spanduk) addonsTotal += 150000;
-          
-          const currentMargin = formData.wisataMargin !== undefined ? formData.wisataMargin : 100000;
-          const adminFee = currentMargin * 0.1;
-          const finalPrice = baseIDR + addonsTotal + currentMargin + adminFee;
-
-          return (
-            <div className="animate-in fade-in slide-in-from-right-2 duration-300">
-              {/* Header Title */}
-              <div className="flex flex-col items-center justify-center mb-8 relative">
-                <h3 className="text-xl sm:text-2xl font-black text-[#1A1C29] tracking-wider uppercase mb-1 italic">
-                  RINGKASAN HARGA PAKET
-                </h3>
-                <p className="text-[9px] sm:text-[10px] font-bold text-gray-400 tracking-widest uppercase">
-                  RINCIAN BIAYA DAN HARGA JUAL FINAL JAMAAH
-                </p>
-                <div className="sm:absolute sm:right-0 top-0 mt-4 sm:mt-0">
-                  <button className="flex items-center gap-2 px-4 py-2 border border-gray-200 rounded-lg text-[9px] font-bold text-gray-600 hover:bg-gray-50 transition-colors uppercase tracking-widest">
-                    <FileText className="w-3.5 h-3.5" /> PDF RINGKASAN
-                  </button>
-                </div>
-              </div>
-
-              {/* Layout Content */}
-              <div className="flex flex-col lg:flex-row gap-6 lg:items-stretch">
-                
-                {/* Left Column: Details */}
-                <div className="flex-1 border border-gray-100 rounded-[2rem] p-6 lg:p-8 bg-white shadow-xl shadow-gray-200/40">
-                  {/* INFORMASI DASAR PAKET */}
-                  <div className="mb-8">
-                    <div className="flex items-center justify-between mb-6 pb-4 border-b border-gray-100">
-                      <div className="flex items-center gap-3">
-                        <div className="w-8 h-8 rounded-full bg-gray-900 text-white flex items-center justify-center">
-                          <BookOpen className="w-4 h-4" />
-                        </div>
-                        <h4 className="font-black text-xs text-[#1A1C29] uppercase tracking-wider">INFORMASI DASAR PAKET</h4>
-                      </div>
-                      <button className="flex items-center gap-1 px-3 py-1.5 border border-gray-200 rounded-lg text-[8px] font-bold text-gray-600 hover:bg-gray-50 uppercase">
-                        <FileText className="w-3 h-3" /> PDF
-                      </button>
-                    </div>
-                    
-                    <div className="grid grid-cols-2 gap-y-6 gap-x-4">
-                      <div>
-                        <p className="text-[8px] font-bold text-gray-400 uppercase tracking-widest mb-1">NAMA PAKET</p>
-                        <h5 className="font-black text-xs text-gray-900 uppercase">{formData.nama || 'BELUM DIISI'}</h5>
-                      </div>
-                      <div>
-                        <p className="text-[8px] font-bold text-gray-400 uppercase tracking-widest mb-1">DESTINASI & NEGARA</p>
-                        <h5 className="font-black text-xs text-gray-900 uppercase">{formData.urutanKunjungan || 'BELUM DIISI'}</h5>
-                        <p className="text-[9px] font-black text-blue-600 uppercase mt-0.5">{formData.negaraWisata || 'BELUM DIISI'}</p>
-                      </div>
-                      <div>
-                        <p className="text-[8px] font-bold text-gray-400 uppercase tracking-widest mb-1">TARGET JAMAAH & KEBERANGKATAN</p>
-                        <h5 className="font-black text-xs text-gray-900 uppercase">{formData.targetJamaah || 0} PAX • {formData.tglBerangkat || 'BELUM DIISI'}</h5>
-                      </div>
-                      <div>
-                        <p className="text-[8px] font-bold text-gray-400 uppercase tracking-widest mb-1">DURASI & PILIHAN PAX</p>
-                        <h5 className="font-black text-xs text-gray-900 uppercase">{formData.durasiHari || 0} HARI / PAX</h5>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* FASILITAS TERMASUK */}
-                  <div>
-                    <div className="flex items-center gap-3 mb-6 pb-4 border-b border-gray-100">
-                      <div className="w-8 h-8 rounded-full bg-blue-50 text-blue-500 flex items-center justify-center">
-                        <ListCheck className="w-4 h-4" />
-                      </div>
-                      <h4 className="font-black text-xs text-[#1A1C29] uppercase tracking-wider">FASILITAS TERMASUK & RINCIAN HARGA</h4>
-                    </div>
-
-                    <div className="space-y-4">
-                      {/* Base items */}
-                      <div className="flex items-center justify-between pb-3 border-b border-gray-50 border-dotted">
-                        <div className="flex items-center gap-3">
-                          <div className="w-6 h-6 rounded-md bg-gray-50 flex items-center justify-center text-gray-400">
-                            <Plane className="w-3.5 h-3.5" />
-                          </div>
-                          <p className="text-[10px] font-black text-gray-700 uppercase tracking-wider">TIKET PESAWAT PP</p>
-                        </div>
-                        <p className="text-[10px] font-bold text-gray-500 italic">Termasuk dalam Paket Dasar</p>
-                      </div>
-                      <div className="flex items-center justify-between pb-3 border-b border-gray-50 border-dotted">
-                        <div className="flex items-center gap-3">
-                          <div className="w-6 h-6 rounded-md bg-indigo-50 flex items-center justify-center text-indigo-400">
-                            <Building2 className="w-3.5 h-3.5" />
-                          </div>
-                          <p className="text-[10px] font-black text-gray-700 uppercase tracking-wider">AKOMODASI HOTEL WISATA</p>
-                        </div>
-                        <p className="text-[10px] font-black text-gray-700 italic">Rp {baseIDR.toLocaleString('id-ID')}</p>
-                      </div>
-
-                      {/* Addons List */}
-                      {formData.wisataAddon_handling && (
-                        <div className="flex items-center justify-between pb-3 border-b border-gray-50 border-dotted">
-                          <div className="flex items-center gap-3">
-                            <div className="w-6 h-6 rounded-md bg-gray-50 flex items-center justify-center text-gray-400">
-                              <Shield className="w-3.5 h-3.5" />
-                            </div>
-                            <p className="text-[10px] font-black text-gray-700 uppercase tracking-wider">HANDLING DOMESTIK</p>
-                          </div>
-                          <p className="text-[10px] font-black text-gray-700 italic">Rp 250.000</p>
-                        </div>
-                      )}
-                      
-                      {formData.wisataAddon_travelKits && (
-                        <div className="flex items-center justify-between pb-3 border-b border-gray-50 border-dotted">
-                          <div className="flex items-center gap-3">
-                            <div className="w-6 h-6 rounded-md bg-gray-50 flex items-center justify-center text-gray-400">
-                              <Briefcase className="w-3.5 h-3.5" />
-                            </div>
-                            <p className="text-[10px] font-black text-gray-700 uppercase tracking-wider">TRAVEL KITS</p>
-                          </div>
-                          <p className="text-[10px] font-black text-gray-700 italic">Rp 250.000</p>
-                        </div>
-                      )}
-                      
-                      {formData.wisataAddon_tourLeader && (
-                        <div className="flex items-center justify-between pb-3 border-b border-gray-50 border-dotted">
-                          <div className="flex items-center gap-3">
-                            <div className="w-6 h-6 rounded-md bg-gray-50 flex items-center justify-center text-gray-400">
-                              <UserCheck className="w-3.5 h-3.5" />
-                            </div>
-                            <p className="text-[10px] font-black text-gray-700 uppercase tracking-wider">TOUR LEADER ({formData.wisataAddon_tourLeaderCount || 1} PAX)</p>
-                          </div>
-                          <p className="text-[10px] font-black text-gray-700 italic">Rp {(250000 * (Number(formData.wisataAddon_tourLeaderCount) || 1)).toLocaleString('id-ID')}</p>
-                        </div>
-                      )}
-
-                      {/* Merch */}
-                      {[
-                        {id: 'koper', name: 'KOPER CUSTOM', price: 1500000, icon: Briefcase},
-                        {id: 'slingbag', name: 'SLING BAG', price: 50000, icon: ShoppingBag},
-                        {id: 'kaos', name: 'KAOS GRUP', price: 150000, icon: Shirt},
-                        {id: 'jaket', name: 'JACKET GRUP', price: 250000, icon: Shirt},
-                        {id: 'tasserut', name: 'TAS SERUT', price: 25000, icon: ShoppingBag},
-                        {id: 'topi', name: 'TOPI', price: 35000, icon: User},
-                        {id: 'spanduk', name: 'SPANDUK ROMBONGAN', price: 150000, icon: FileText},
-                      ].map(item => {
-                         if (!formData[`wisataAddon_merch_${item.id}`]) return null;
-                         const Icon = item.icon;
-                         return (
-                           <div key={item.id} className="flex items-center justify-between pb-3 border-b border-gray-50 border-dotted">
-                             <div className="flex items-center gap-3">
-                               <div className="w-6 h-6 rounded-md bg-gray-50 flex items-center justify-center text-gray-400">
-                                 <Icon className="w-3.5 h-3.5" />
-                               </div>
-                               <p className="text-[10px] font-black text-gray-700 uppercase tracking-wider">{item.name}</p>
-                             </div>
-                             <p className="text-[10px] font-black text-gray-700 italic">Rp {item.price.toLocaleString('id-ID')}</p>
-                           </div>
-                         )
-                      })}
-
-                      {/* Margins */}
-                      <div className="flex items-center justify-between pt-2 pb-3 border-b border-gray-50 border-dotted">
-                        <div className="flex items-center gap-3">
-                          <div className="w-6 h-6 rounded-md bg-green-50 flex items-center justify-center text-green-500">
-                            <Sparkles className="w-3.5 h-3.5" />
-                          </div>
-                          <p className="text-[10px] font-black text-green-600 uppercase tracking-wider">KOMISI MITRA / PAX</p>
-                        </div>
-                        <p className="text-[10px] font-black text-green-600 italic">Rp {currentMargin.toLocaleString('id-ID')}</p>
-                      </div>
-
-                      <div className="flex items-center justify-between pb-3 border-b border-gray-50 border-dotted mb-4">
-                        <div className="flex items-center gap-3">
-                          <div className="w-6 h-6 rounded-md bg-gray-50 flex items-center justify-center text-gray-400">
-                            <ArrowRightLeft className="w-3.5 h-3.5" />
-                          </div>
-                          <p className="text-[10px] font-black text-gray-700 uppercase tracking-wider">ADMIN FEE (10%)</p>
-                        </div>
-                        <p className="text-[10px] font-black text-gray-700 italic">Rp {adminFee.toLocaleString('id-ID')}</p>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Right Column: Hero Final Price */}
-                <div className="w-full lg:w-[320px] bg-[#131620] rounded-[2rem] p-8 flex flex-col items-center justify-center text-center relative overflow-hidden shadow-2xl">
-                  {/* Decorative Elements */}
-                  <div className="absolute top-0 inset-x-0 h-40 bg-gradient-to-b from-blue-500/10 to-transparent pointer-events-none"></div>
-                  <div className="absolute bottom-0 right-[-20%] w-64 h-64 bg-teal-500/10 rounded-full blur-3xl pointer-events-none"></div>
-                  
-                  <h4 className="text-[10px] font-black text-blue-400 uppercase tracking-widest mb-1 z-10">HARGA JUAL FINAL</h4>
-                  <p className="text-[8px] font-bold text-gray-500 uppercase tracking-widest mb-10 z-10">PER PAX (ALL-IN)</p>
-
-                  <div className="z-10 mt-10 mb-8">
-                    <h1 className="font-black text-4xl text-white tracking-tight italic flex flex-col items-center">
-                      <span className="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-teal-400 to-blue-500 mb-1">Rp</span>
-                      {finalPrice.toLocaleString('id-ID')}
-                    </h1>
-                  </div>
-
-                  <div className="bg-white/10 backdrop-blur-md px-4 py-1.5 rounded border border-white/10 mt-4 z-10">
-                    <span className="text-[7px] font-black text-gray-300 uppercase tracking-widest">HARGA JUAL JAMAAH</span>
-                  </div>
-                </div>
-
-              </div>
+                );
+              })()}
             </div>
-          );
-        })()}
+          )}
 
-        {currentStepName === 'PUBLIKASI & DESKRIPSI' && (
+        {currentStepName === "RINGKASAN HARGA" &&
+          formData.kategori === "WISATA HALAL" &&
+          (() => {
+            const baseIDR = (formData.hargaDasar || 1350) * 16000;
+            let addonsTotal = 0;
+            if (formData.wisataAddon_tourLeader)
+              addonsTotal +=
+                250000 * (Number(formData.wisataAddon_tourLeaderCount) || 1);
+            if (formData.wisataAddon_handling) addonsTotal += 250000;
+            if (formData.wisataAddon_travelKits) addonsTotal += 250000;
+            if (formData.wisataAddon_merch_koper) addonsTotal += 1500000;
+            if (formData.wisataAddon_merch_slingbag) addonsTotal += 50000;
+            if (formData.wisataAddon_merch_kaos) addonsTotal += 150000;
+            if (formData.wisataAddon_merch_jaket) addonsTotal += 250000;
+            if (formData.wisataAddon_merch_tasserut) addonsTotal += 25000;
+            if (formData.wisataAddon_merch_topi) addonsTotal += 35000;
+            if (formData.wisataAddon_merch_spanduk) addonsTotal += 150000;
+
+            const currentMargin =
+              formData.wisataMargin !== undefined
+                ? formData.wisataMargin
+                : 100000;
+            const adminFee = currentMargin * 0.1;
+            const finalPrice = baseIDR + addonsTotal + currentMargin + adminFee;
+
+            return (
+              <div className="animate-in fade-in slide-in-from-right-2 duration-300">
+                {/* Header Title */}
+                <div className="flex flex-col items-center justify-center mb-8 relative">
+                  <h3 className="text-xl sm:text-2xl font-black text-[#1A1C29] tracking-wider uppercase mb-1 italic">
+                    RINGKASAN HARGA PAKET
+                  </h3>
+                  <p className="text-[9px] sm:text-[10px] font-bold text-gray-400 tracking-widest uppercase">
+                    RINCIAN BIAYA DAN HARGA JUAL FINAL JAMAAH
+                  </p>
+                  <div className="sm:absolute sm:right-0 top-0 mt-4 sm:mt-0">
+                    <button className="flex items-center gap-2 px-4 py-2 border border-gray-200 rounded-lg text-[9px] font-bold text-gray-600 hover:bg-gray-50 transition-colors uppercase tracking-widest">
+                      <FileText className="w-3.5 h-3.5" /> PDF RINGKASAN
+                    </button>
+                  </div>
+                </div>
+
+                {/* Layout Content */}
+                <div className="flex flex-col lg:flex-row gap-6 lg:items-stretch">
+                  {/* Left Column: Details */}
+                  <div className="flex-1 border border-gray-100 rounded-[2rem] p-6 lg:p-8 bg-white shadow-xl shadow-gray-200/40">
+                    {/* INFORMASI DASAR PAKET */}
+                    <div className="mb-8">
+                      <div className="flex items-center justify-between mb-6 pb-4 border-b border-gray-100">
+                        <div className="flex items-center gap-3">
+                          <div className="w-8 h-8 rounded-full bg-gray-900 text-white flex items-center justify-center">
+                            <BookOpen className="w-4 h-4" />
+                          </div>
+                          <h4 className="font-black text-xs text-[#1A1C29] uppercase tracking-wider">
+                            INFORMASI DASAR PAKET
+                          </h4>
+                        </div>
+                        <button className="flex items-center gap-1 px-3 py-1.5 border border-gray-200 rounded-lg text-[8px] font-bold text-gray-600 hover:bg-gray-50 uppercase">
+                          <FileText className="w-3 h-3" /> PDF
+                        </button>
+                      </div>
+
+                      <div className="grid grid-cols-2 gap-y-6 gap-x-4">
+                        <div>
+                          <p className="text-[8px] font-bold text-gray-400 uppercase tracking-widest mb-1">
+                            NAMA PAKET
+                          </p>
+                          <h5 className="font-black text-xs text-gray-900 uppercase">
+                            {formData.nama || "BELUM DIISI"}
+                          </h5>
+                        </div>
+                        <div>
+                          <p className="text-[8px] font-bold text-gray-400 uppercase tracking-widest mb-1">
+                            DESTINASI & NEGARA
+                          </p>
+                          <h5 className="font-black text-xs text-gray-900 uppercase">
+                            {formData.urutanKunjungan || "BELUM DIISI"}
+                          </h5>
+                          <p className="text-[9px] font-black text-blue-600 uppercase mt-0.5">
+                            {formData.negaraWisata || "BELUM DIISI"}
+                          </p>
+                        </div>
+                        <div>
+                          <p className="text-[8px] font-bold text-gray-400 uppercase tracking-widest mb-1">
+                            TARGET JAMAAH & KEBERANGKATAN
+                          </p>
+                          <h5 className="font-black text-xs text-gray-900 uppercase">
+                            {formData.targetJamaah || 0} PAX •{" "}
+                            {formData.tglBerangkat || "BELUM DIISI"}
+                          </h5>
+                        </div>
+                        <div>
+                          <p className="text-[8px] font-bold text-gray-400 uppercase tracking-widest mb-1">
+                            DURASI & PILIHAN PAX
+                          </p>
+                          <h5 className="font-black text-xs text-gray-900 uppercase">
+                            {formData.durasiHari || 0} HARI / PAX
+                          </h5>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* FASILITAS TERMASUK */}
+                    <div>
+                      <div className="flex items-center gap-3 mb-6 pb-4 border-b border-gray-100">
+                        <div className="w-8 h-8 rounded-full bg-blue-50 text-blue-500 flex items-center justify-center">
+                          <ListCheck className="w-4 h-4" />
+                        </div>
+                        <h4 className="font-black text-xs text-[#1A1C29] uppercase tracking-wider">
+                          FASILITAS TERMASUK & RINCIAN HARGA
+                        </h4>
+                      </div>
+
+                      <div className="space-y-4">
+                        {/* Base items */}
+                        <div className="flex items-center justify-between pb-3 border-b border-gray-50 border-dotted">
+                          <div className="flex items-center gap-3">
+                            <div className="w-6 h-6 rounded-md bg-gray-50 flex items-center justify-center text-gray-400">
+                              <Plane className="w-3.5 h-3.5" />
+                            </div>
+                            <p className="text-[10px] font-black text-gray-700 uppercase tracking-wider">
+                              TIKET PESAWAT PP
+                            </p>
+                          </div>
+                          <p className="text-[10px] font-bold text-gray-500 italic">
+                            Termasuk dalam Paket Dasar
+                          </p>
+                        </div>
+                        <div className="flex items-center justify-between pb-3 border-b border-gray-50 border-dotted">
+                          <div className="flex items-center gap-3">
+                            <div className="w-6 h-6 rounded-md bg-indigo-50 flex items-center justify-center text-indigo-400">
+                              <Building2 className="w-3.5 h-3.5" />
+                            </div>
+                            <p className="text-[10px] font-black text-gray-700 uppercase tracking-wider">
+                              AKOMODASI HOTEL WISATA
+                            </p>
+                          </div>
+                          <p className="text-[10px] font-black text-gray-700 italic">
+                            Rp {baseIDR.toLocaleString("id-ID")}
+                          </p>
+                        </div>
+
+                        {/* Addons List */}
+                        {formData.wisataAddon_handling && (
+                          <div className="flex items-center justify-between pb-3 border-b border-gray-50 border-dotted">
+                            <div className="flex items-center gap-3">
+                              <div className="w-6 h-6 rounded-md bg-gray-50 flex items-center justify-center text-gray-400">
+                                <Shield className="w-3.5 h-3.5" />
+                              </div>
+                              <p className="text-[10px] font-black text-gray-700 uppercase tracking-wider">
+                                HANDLING DOMESTIK
+                              </p>
+                            </div>
+                            <p className="text-[10px] font-black text-gray-700 italic">
+                              Rp 250.000
+                            </p>
+                          </div>
+                        )}
+
+                        {formData.wisataAddon_travelKits && (
+                          <div className="flex items-center justify-between pb-3 border-b border-gray-50 border-dotted">
+                            <div className="flex items-center gap-3">
+                              <div className="w-6 h-6 rounded-md bg-gray-50 flex items-center justify-center text-gray-400">
+                                <Briefcase className="w-3.5 h-3.5" />
+                              </div>
+                              <p className="text-[10px] font-black text-gray-700 uppercase tracking-wider">
+                                TRAVEL KITS
+                              </p>
+                            </div>
+                            <p className="text-[10px] font-black text-gray-700 italic">
+                              Rp 250.000
+                            </p>
+                          </div>
+                        )}
+
+                        {formData.wisataAddon_tourLeader && (
+                          <div className="flex items-center justify-between pb-3 border-b border-gray-50 border-dotted">
+                            <div className="flex items-center gap-3">
+                              <div className="w-6 h-6 rounded-md bg-gray-50 flex items-center justify-center text-gray-400">
+                                <UserCheck className="w-3.5 h-3.5" />
+                              </div>
+                              <p className="text-[10px] font-black text-gray-700 uppercase tracking-wider">
+                                TOUR LEADER (
+                                {formData.wisataAddon_tourLeaderCount || 1} PAX)
+                              </p>
+                            </div>
+                            <p className="text-[10px] font-black text-gray-700 italic">
+                              Rp{" "}
+                              {(
+                                250000 *
+                                (Number(formData.wisataAddon_tourLeaderCount) ||
+                                  1)
+                              ).toLocaleString("id-ID")}
+                            </p>
+                          </div>
+                        )}
+
+                        {/* Merch */}
+                        {[
+                          {
+                            id: "koper",
+                            name: "KOPER CUSTOM",
+                            price: 1500000,
+                            icon: Briefcase,
+                          },
+                          {
+                            id: "slingbag",
+                            name: "SLING BAG",
+                            price: 50000,
+                            icon: ShoppingBag,
+                          },
+                          {
+                            id: "kaos",
+                            name: "KAOS GRUP",
+                            price: 150000,
+                            icon: Shirt,
+                          },
+                          {
+                            id: "jaket",
+                            name: "JACKET GRUP",
+                            price: 250000,
+                            icon: Shirt,
+                          },
+                          {
+                            id: "tasserut",
+                            name: "TAS SERUT",
+                            price: 25000,
+                            icon: ShoppingBag,
+                          },
+                          {
+                            id: "topi",
+                            name: "TOPI",
+                            price: 35000,
+                            icon: User,
+                          },
+                          {
+                            id: "spanduk",
+                            name: "SPANDUK ROMBONGAN",
+                            price: 150000,
+                            icon: FileText,
+                          },
+                        ].map((item) => {
+                          if (!formData[`wisataAddon_merch_${item.id}`])
+                            return null;
+                          const Icon = item.icon;
+                          return (
+                            <div
+                              key={item.id}
+                              className="flex items-center justify-between pb-3 border-b border-gray-50 border-dotted"
+                            >
+                              <div className="flex items-center gap-3">
+                                <div className="w-6 h-6 rounded-md bg-gray-50 flex items-center justify-center text-gray-400">
+                                  <Icon className="w-3.5 h-3.5" />
+                                </div>
+                                <p className="text-[10px] font-black text-gray-700 uppercase tracking-wider">
+                                  {item.name}
+                                </p>
+                              </div>
+                              <p className="text-[10px] font-black text-gray-700 italic">
+                                Rp {item.price.toLocaleString("id-ID")}
+                              </p>
+                            </div>
+                          );
+                        })}
+
+                        {/* Margins */}
+                        <div className="flex items-center justify-between pt-2 pb-3 border-b border-gray-50 border-dotted">
+                          <div className="flex items-center gap-3">
+                            <div className="w-6 h-6 rounded-md bg-green-50 flex items-center justify-center text-green-500">
+                              <Sparkles className="w-3.5 h-3.5" />
+                            </div>
+                            <p className="text-[10px] font-black text-green-600 uppercase tracking-wider">
+                              KOMISI MITRA / PAX
+                            </p>
+                          </div>
+                          <p className="text-[10px] font-black text-green-600 italic">
+                            Rp {currentMargin.toLocaleString("id-ID")}
+                          </p>
+                        </div>
+
+                        <div className="flex items-center justify-between pb-3 border-b border-gray-50 border-dotted mb-4">
+                          <div className="flex items-center gap-3">
+                            <div className="w-6 h-6 rounded-md bg-gray-50 flex items-center justify-center text-gray-400">
+                              <ArrowRightLeft className="w-3.5 h-3.5" />
+                            </div>
+                            <p className="text-[10px] font-black text-gray-700 uppercase tracking-wider">
+                              ADMIN FEE (10%)
+                            </p>
+                          </div>
+                          <p className="text-[10px] font-black text-gray-700 italic">
+                            Rp {adminFee.toLocaleString("id-ID")}
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Right Column: Hero Final Price */}
+                  <div className="w-full lg:w-[320px] bg-[#131620] rounded-[2rem] p-8 flex flex-col items-center justify-center text-center relative overflow-hidden shadow-2xl">
+                    {/* Decorative Elements */}
+                    <div className="absolute top-0 inset-x-0 h-40 bg-gradient-to-b from-blue-500/10 to-transparent pointer-events-none"></div>
+                    <div className="absolute bottom-0 right-[-20%] w-64 h-64 bg-teal-500/10 rounded-full blur-3xl pointer-events-none"></div>
+
+                    <h4 className="text-[10px] font-black text-blue-400 uppercase tracking-widest mb-1 z-10">
+                      HARGA JUAL FINAL
+                    </h4>
+                    <p className="text-[8px] font-bold text-gray-500 uppercase tracking-widest mb-10 z-10">
+                      PER PAX (ALL-IN)
+                    </p>
+
+                    <div className="z-10 mt-10 mb-8">
+                      <h1 className="font-black text-4xl text-white tracking-tight italic flex flex-col items-center">
+                        <span className="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-teal-400 to-blue-500 mb-1">
+                          Rp
+                        </span>
+                        {finalPrice.toLocaleString("id-ID")}
+                      </h1>
+                    </div>
+
+                    <div className="bg-white/10 backdrop-blur-md px-4 py-1.5 rounded border border-white/10 mt-4 z-10">
+                      <span className="text-[7px] font-black text-gray-300 uppercase tracking-widest">
+                        HARGA JUAL JAMAAH
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            );
+          })()}
+
+        {currentStepName === "PUBLIKASI & DESKRIPSI" && (
           <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500 pb-20">
             {/* 1. UPLOAD FOTO UTAMA */}
             <div className="space-y-4">
               <div className="flex items-start gap-3">
-                <span className="w-6 h-6 rounded-md bg-blue-600 text-white flex items-center justify-center text-[10px] font-black mt-0.5">1.</span>
+                <span className="w-6 h-6 rounded-md bg-blue-600 text-white flex items-center justify-center text-[10px] font-black mt-0.5">
+                  1.
+                </span>
                 <div className="flex flex-col">
-                  <h3 className="font-black text-gray-900 text-sm tracking-widest uppercase">UPLOAD FOTO UTAMA PAKET</h3>
-                  <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mt-1">GUNAKAN FOTO TERBAIK UNTUK MENARIK JAMAAH</p>
+                  <h3 className="font-black text-gray-900 text-sm tracking-widest uppercase">
+                    UPLOAD FOTO UTAMA PAKET
+                  </h3>
+                  <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mt-1">
+                    GUNAKAN FOTO TERBAIK UNTUK MENARIK JAMAAH
+                  </p>
                 </div>
               </div>
 
@@ -2239,9 +4573,17 @@ export const PaketMasterWizard: React.FC<PaketMasterWizardProps> = ({ initialDat
                   <div className="w-16 h-16 rounded-2xl bg-white shadow-sm flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
                     <ImagePlus className="w-8 h-8 text-gray-300" />
                   </div>
-                  <p className="text-xs font-black text-gray-700 uppercase tracking-wider">Klik atau seret foto ke sini</p>
-                  <p className="text-[10px] font-bold text-gray-400 mt-2">PNG, JPG (MAX 5MB)</p>
-                  <input type="file" className="absolute inset-0 opacity-0 cursor-pointer" accept="image/*" />
+                  <p className="text-xs font-black text-gray-700 uppercase tracking-wider">
+                    Klik atau seret foto ke sini
+                  </p>
+                  <p className="text-[10px] font-bold text-gray-400 mt-2">
+                    PNG, JPG (MAX 5MB)
+                  </p>
+                  <input
+                    type="file"
+                    className="absolute inset-0 opacity-0 cursor-pointer"
+                    accept="image/*"
+                  />
                 </div>
               </div>
             </div>
@@ -2250,28 +4592,36 @@ export const PaketMasterWizard: React.FC<PaketMasterWizardProps> = ({ initialDat
               {/* 2. TIPE PUBLIKASI */}
               <div className="space-y-4">
                 <div className="flex items-start gap-3">
-                  <span className="w-6 h-6 rounded-md bg-blue-600 text-white flex items-center justify-center text-[10px] font-black mt-0.5">2.</span>
+                  <span className="w-6 h-6 rounded-md bg-blue-600 text-white flex items-center justify-center text-[10px] font-black mt-0.5">
+                    2.
+                  </span>
                   <div className="flex flex-col">
-                    <h3 className="font-black text-gray-900 text-sm tracking-widest uppercase">TIPE PUBLIKASI</h3>
+                    <h3 className="font-black text-gray-900 text-sm tracking-widest uppercase">
+                      TIPE PUBLIKASI
+                    </h3>
                   </div>
                 </div>
-                
+
                 <div className="grid grid-cols-2 gap-3 mt-4">
                   {[
-                    { id: 'PAKET PRIBADI', icon: Lock },
-                    { id: 'TEMPLATE PUBLIK', icon: Globe }
-                  ].map(item => (
+                    { id: "PAKET PRIBADI", icon: Lock },
+                    { id: "TEMPLATE PUBLIK", icon: Globe },
+                  ].map((item) => (
                     <button
                       key={item.id}
-                      onClick={() => setFormData({...formData, tipePublikasi: item.id})}
+                      onClick={() =>
+                        setFormData({ ...formData, tipePublikasi: item.id })
+                      }
                       className={`p-6 rounded-2xl border-2 flex flex-col items-center justify-center gap-3 transition-all ${
-                        formData.tipePublikasi === item.id 
-                          ? 'border-blue-600 bg-blue-50 text-blue-600 shadow-md' 
-                          : 'border-gray-100 bg-white text-gray-400 hover:border-gray-200'
+                        formData.tipePublikasi === item.id
+                          ? "border-blue-600 bg-blue-50 text-blue-600 shadow-md"
+                          : "border-gray-100 bg-white text-gray-400 hover:border-gray-200"
                       }`}
                     >
                       <item.icon className="w-8 h-8" strokeWidth={1.5} />
-                      <span className="text-[10px] font-black tracking-widest uppercase text-center">{item.id}</span>
+                      <span className="text-[10px] font-black tracking-widest uppercase text-center">
+                        {item.id}
+                      </span>
                     </button>
                   ))}
                 </div>
@@ -2280,28 +4630,36 @@ export const PaketMasterWizard: React.FC<PaketMasterWizardProps> = ({ initialDat
               {/* 3. TIPE PENJUALAN */}
               <div className="space-y-4">
                 <div className="flex items-start gap-3">
-                  <span className="w-6 h-6 rounded-md bg-blue-600 text-white flex items-center justify-center text-[10px] font-black mt-0.5">3.</span>
+                  <span className="w-6 h-6 rounded-md bg-blue-600 text-white flex items-center justify-center text-[10px] font-black mt-0.5">
+                    3.
+                  </span>
                   <div className="flex flex-col">
-                    <h3 className="font-black text-gray-900 text-sm tracking-widest uppercase">TIPE PENJUALAN</h3>
+                    <h3 className="font-black text-gray-900 text-sm tracking-widest uppercase">
+                      TIPE PENJUALAN
+                    </h3>
                   </div>
                 </div>
 
                 <div className="grid grid-cols-2 gap-3 mt-4">
                   {[
-                    { id: 'JUAL SENDIRI', icon: User },
-                    { id: 'JUAL BERSAMA', icon: Users }
-                  ].map(item => (
+                    { id: "JUAL SENDIRI", icon: User },
+                    { id: "JUAL BERSAMA", icon: Users },
+                  ].map((item) => (
                     <button
                       key={item.id}
-                      onClick={() => setFormData({...formData, tipePenjualan: item.id})}
+                      onClick={() =>
+                        setFormData({ ...formData, tipePenjualan: item.id })
+                      }
                       className={`p-6 rounded-2xl border-2 flex flex-col items-center justify-center gap-3 transition-all ${
-                        formData.tipePenjualan === item.id 
-                          ? 'border-blue-600 bg-blue-50 text-blue-600 shadow-md' 
-                          : 'border-gray-100 bg-white text-gray-400 hover:border-gray-200'
+                        formData.tipePenjualan === item.id
+                          ? "border-blue-600 bg-blue-50 text-blue-600 shadow-md"
+                          : "border-gray-100 bg-white text-gray-400 hover:border-gray-200"
                       }`}
                     >
                       <item.icon className="w-8 h-8" strokeWidth={1.5} />
-                      <span className="text-[10px] font-black tracking-widest uppercase text-center">{item.id}</span>
+                      <span className="text-[10px] font-black tracking-widest uppercase text-center">
+                        {item.id}
+                      </span>
                     </button>
                   ))}
                 </div>
@@ -2309,7 +4667,7 @@ export const PaketMasterWizard: React.FC<PaketMasterWizardProps> = ({ initialDat
             </div>
 
             {/* Bagian 4: Pembagian Hasil (hanya muncul jika jual bersama) */}
-            {formData.tipePenjualan === 'JUAL BERSAMA' && (
+            {formData.tipePenjualan === "JUAL BERSAMA" && (
               <div className="bg-[#1A1C29] p-8 rounded-[2rem] text-white shadow-2xl relative overflow-hidden animate-in fade-in slide-in-from-top-4 duration-300 mt-8 border border-gray-800">
                 {/* Header Panel */}
                 <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-10 pb-6 border-b border-gray-800 space-y-4 sm:space-y-0">
@@ -2318,8 +4676,12 @@ export const PaketMasterWizard: React.FC<PaketMasterWizardProps> = ({ initialDat
                       <ArrowRightLeft className="w-6 h-6" />
                     </div>
                     <div>
-                      <h4 className="text-emerald-400 font-black text-lg uppercase tracking-wide">PEMBAGIAN HASIL (SHARING)</h4>
-                      <p className="text-xs text-gray-400 font-bold uppercase tracking-widest">TENTUKAN KOMISI UNTUK MITRA PENJUAL (RESELLER/AGEN)</p>
+                      <h4 className="text-emerald-400 font-black text-lg uppercase tracking-wide">
+                        PEMBAGIAN HASIL (SHARING)
+                      </h4>
+                      <p className="text-xs text-gray-400 font-bold uppercase tracking-widest">
+                        TENTUKAN KOMISI UNTUK MITRA PENJUAL (RESELLER/AGEN)
+                      </p>
                     </div>
                   </div>
                   <div className="px-4 py-2 bg-emerald-950/40 border border-emerald-500/40 rounded-full text-emerald-400 text-[10px] font-black tracking-widest uppercase">
@@ -2328,27 +4690,50 @@ export const PaketMasterWizard: React.FC<PaketMasterWizardProps> = ({ initialDat
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-10 lg:gap-16 items-center z-10 relative">
-                  
                   {/* Left: Input Ujroh Partner */}
                   <div>
                     <div className="flex justify-between items-center mb-3">
-                      <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Ujroh Sharing</span>
+                      <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">
+                        Ujroh Sharing
+                      </span>
                       <span className="text-[10px] font-black text-emerald-400 uppercase tracking-widest">
-                        MAKS. RP {(Number(formData.marginBersih) || 0).toLocaleString('id-ID')}
+                        MAKS. RP{" "}
+                        {(Number(formData.marginBersih) || 0).toLocaleString(
+                          "id-ID",
+                        )}
                       </span>
                     </div>
                     <div className="flex items-center justify-between bg-[#11131C] border border-gray-800 rounded-2xl p-4 shadow-inner">
-                      <button 
-                        onClick={() => setFormData({...formData, ujrohPartner: Math.max(0, (Number(formData.ujrohPartner) || 0) - 50000)})}
+                      <button
+                        onClick={() =>
+                          setFormData({
+                            ...formData,
+                            ujrohPartner: Math.max(
+                              0,
+                              (Number(formData.ujrohPartner) || 0) - 50000,
+                            ),
+                          })
+                        }
                         className="w-10 h-10 rounded-xl bg-gray-800 flex flex-col items-center justify-center text-gray-400 hover:bg-gray-700 hover:text-white transition-colors"
                       >
                         <Minus className="w-5 h-5" />
                       </button>
                       <div className="text-2xl font-black italic">
-                        Rp {(Number(formData.ujrohPartner) || 0).toLocaleString('id-ID')}
+                        Rp{" "}
+                        {(Number(formData.ujrohPartner) || 0).toLocaleString(
+                          "id-ID",
+                        )}
                       </div>
-                      <button 
-                        onClick={() => setFormData({...formData, ujrohPartner: Math.min((Number(formData.marginBersih) || 0), (Number(formData.ujrohPartner) || 0) + 50000)})}
+                      <button
+                        onClick={() =>
+                          setFormData({
+                            ...formData,
+                            ujrohPartner: Math.min(
+                              Number(formData.marginBersih) || 0,
+                              (Number(formData.ujrohPartner) || 0) + 50000,
+                            ),
+                          })
+                        }
                         className="w-10 h-10 rounded-xl bg-emerald-500 flex flex-col items-center justify-center text-emerald-950 hover:bg-emerald-400 hover:scale-105 transition-all"
                       >
                         <Plus className="w-5 h-5" />
@@ -2359,96 +4744,130 @@ export const PaketMasterWizard: React.FC<PaketMasterWizardProps> = ({ initialDat
                   {/* Right: Breakdown Dashboard */}
                   <div className="border border-gray-800 rounded-2xl p-6 bg-[#11131C] space-y-4">
                     <div className="flex justify-between items-center pb-4 border-b border-gray-800">
-                      <span className="text-[10px] sm:text-xs font-bold text-gray-400 uppercase tracking-widest">UJROH ANDA (OWNER)</span>
-                      <span className="font-black text-sm sm:text-base italic text-white">Rp {((Number(formData.marginBersih) || 0) - (Number(formData.ujrohPartner) || 0)).toLocaleString('id-ID')}</span>
+                      <span className="text-[10px] sm:text-xs font-bold text-gray-400 uppercase tracking-widest">
+                        UJROH ANDA (OWNER)
+                      </span>
+                      <span className="font-black text-sm sm:text-base italic text-white">
+                        Rp{" "}
+                        {(
+                          (Number(formData.marginBersih) || 0) -
+                          (Number(formData.ujrohPartner) || 0)
+                        ).toLocaleString("id-ID")}
+                      </span>
                     </div>
                     <div className="flex justify-between items-center pb-4 border-b border-gray-800">
-                      <span className="text-[10px] sm:text-xs font-bold text-gray-400 uppercase tracking-widest">UJROH PARTNER (SELLER)</span>
-                      <span className="font-black text-sm sm:text-base italic text-emerald-400">Rp {(Number(formData.ujrohPartner) || 0).toLocaleString('id-ID')}</span>
+                      <span className="text-[10px] sm:text-xs font-bold text-gray-400 uppercase tracking-widest">
+                        UJROH PARTNER (SELLER)
+                      </span>
+                      <span className="font-black text-sm sm:text-base italic text-emerald-400">
+                        Rp{" "}
+                        {(Number(formData.ujrohPartner) || 0).toLocaleString(
+                          "id-ID",
+                        )}
+                      </span>
                     </div>
                     <div className="flex justify-between items-center pt-2">
-                      <span className="text-[10px] sm:text-xs font-bold text-blue-400 uppercase tracking-widest">TOTAL UJROH PAKET</span>
-                      <span className="font-black text-base sm:text-lg italic text-blue-400">Rp {(Number(formData.marginBersih) || 0).toLocaleString('id-ID')}</span>
+                      <span className="text-[10px] sm:text-xs font-bold text-blue-400 uppercase tracking-widest">
+                        TOTAL UJROH PAKET
+                      </span>
+                      <span className="font-black text-base sm:text-lg italic text-blue-400">
+                        Rp{" "}
+                        {(Number(formData.marginBersih) || 0).toLocaleString(
+                          "id-ID",
+                        )}
+                      </span>
                     </div>
                   </div>
-
                 </div>
               </div>
             )}
           </div>
         )}
 
-        {currentStepName === 'VALIDASI AKHIR' && (
+        {currentStepName === "VALIDASI AKHIR" && (
           <div className="flex flex-col items-center justify-center py-16 text-center animate-in zoom-in-95 duration-500">
             <div className="w-24 h-24 bg-emerald-50 rounded-full flex items-center justify-center mb-6 relative">
               <div className="w-14 h-14 bg-emerald-500 rounded-full flex items-center justify-center shadow-lg shadow-emerald-500/30">
                 <Check className="w-6 h-6 text-white" strokeWidth={3} />
               </div>
             </div>
-            
-            <h3 className="text-2xl font-black text-[#1A1C29] mb-3 uppercase tracking-wide">PAKET SIAP DIVALIDASI!</h3>
+
+            <h3 className="text-2xl font-black text-[#1A1C29] mb-3 uppercase tracking-wide">
+              PAKET SIAP DIVALIDASI!
+            </h3>
             <p className="text-[11px] font-bold text-gray-500 max-w-md mx-auto leading-relaxed mb-10">
-              Paket Anda telah berhasil dikonfigurasi. Silakan ajukan validasi ke tim Operasional untuk peninjauan akhir sebelum dipublikasikan atau dijual ke Mitra.
+              Paket Anda telah berhasil dikonfigurasi. Silakan ajukan validasi
+              ke tim Operasional untuk peninjauan akhir sebelum dipublikasikan
+              atau dijual ke Mitra.
             </p>
-            
+
             <div className="flex flex-col sm:flex-row justify-between items-center bg-[#F8F9FB] border border-gray-200 rounded-[2rem] p-6 mb-10 shadow-inner">
               <div className="flex items-center gap-4 mb-4 sm:mb-0">
                 <div className="w-12 h-12 bg-white rounded-2xl flex items-center justify-center border border-gray-100 shadow-sm text-emerald-500">
                   <Check className="w-6 h-6" />
                 </div>
                 <div className="text-left">
-                  <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">STATUS</p>
-                  <p className="text-sm font-black text-emerald-600 uppercase">MENUNGGU VALIDASI</p>
+                  <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">
+                    STATUS
+                  </p>
+                  <p className="text-sm font-black text-emerald-600 uppercase">
+                    MENUNGGU VALIDASI
+                  </p>
                 </div>
               </div>
               <div className="text-left sm:text-right">
-                <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">NAMA PAKET</p>
-                <p className="text-sm font-black text-gray-900 uppercase max-w-[200px] truncate">{formData.nama || 'BELUM DIISI'}</p>
+                <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">
+                  NAMA PAKET
+                </p>
+                <p className="text-sm font-black text-gray-900 uppercase max-w-[200px] truncate">
+                  {formData.nama || "BELUM DIISI"}
+                </p>
               </div>
             </div>
-            
+
             <div className="flex flex-col sm:flex-row items-center justify-center gap-4 w-full">
-              <button 
+              <button
                 onClick={handlePrev}
                 className="w-full sm:w-auto px-8 py-3.5 bg-white border border-gray-200 text-gray-700 font-bold rounded-xl hover:bg-gray-50 flex items-center justify-center text-[10px] uppercase tracking-widest shadow-sm transition-colors"
                 disabled={isSaving}
               >
                 <ChevronLeft className="w-4 h-4 mr-1" /> KEMBALI
               </button>
-              <button 
+              <button
                 onClick={handleSave}
                 disabled={isSaving}
                 className="w-full sm:w-auto px-8 py-3.5 flex items-center justify-center gap-2 font-bold rounded-xl shadow-lg bg-emerald-600 hover:bg-emerald-700 text-white shadow-emerald-600/20 text-[10px] sm:text-xs uppercase tracking-widest transition-colors disabled:opacity-50"
               >
-                {isSaving ? 'MENYIMPAN...' : 'SIMPAN & SELESAI'}
+                {isSaving ? "MENYIMPAN..." : "SIMPAN & SELESAI"}
                 {!isSaving && <ChevronRight className="w-4 h-4 ml-1" />}
               </button>
             </div>
           </div>
         )}
-
       </div>
 
       {/* Footer Navigation */}
-      {currentStepName !== 'VALIDASI AKHIR' && (
-        formData.kategori === 'WISATA HALAL' && currentStepName === 'INFORMASI DASAR' ? (
+      {currentStepName !== "VALIDASI AKHIR" &&
+        (formData.kategori === "WISATA HALAL" &&
+        currentStepName === "INFORMASI DASAR" ? (
           <div className="mt-8">
-            <button 
+            <button
               onClick={handleNext}
               className="w-full flex items-center justify-center gap-2 px-8 py-4 font-bold rounded-xl transition-colors shadow-lg bg-[#009B66] hover:bg-[#008A5A] text-white shadow-[#009B66]/20 text-[10px] sm:text-xs uppercase tracking-widest"
             >
               LIHAT PAKET <ChevronRight className="w-4 h-4 ml-1" />
             </button>
           </div>
-        ) : formData.kategori === 'WISATA HALAL' && currentStepName === 'PILIH PAKET WISATA' ? (
+        ) : formData.kategori === "WISATA HALAL" &&
+          currentStepName === "PILIH PAKET WISATA" ? (
           <div className="border-t border-gray-100 mt-10 pt-6 flex gap-4">
-            <button 
+            <button
               onClick={handlePrev}
               className="flex-shrink-0 px-6 py-4 bg-white border border-gray-200 text-gray-700 font-bold rounded-xl hover:bg-gray-50 transition-colors shadow-sm text-[10px] sm:text-xs uppercase tracking-widest flex items-center justify-center"
             >
               <ChevronLeft className="w-4 h-4 mr-1" /> KEMBALI
             </button>
-            <button 
+            <button
               onClick={handleNext}
               disabled={!formData.paketWisataId}
               className="flex-1 flex items-center justify-center gap-2 px-8 py-4 font-bold rounded-xl transition-colors shadow-lg bg-[#009B66] hover:bg-[#008A5A] text-white shadow-[#009B66]/20 text-[10px] sm:text-xs uppercase tracking-widest disabled:opacity-50"
@@ -2456,60 +4875,64 @@ export const PaketMasterWizard: React.FC<PaketMasterWizardProps> = ({ initialDat
               LANJUT DETAIL <ChevronRight className="w-4 h-4 ml-1" />
             </button>
           </div>
-        ) : formData.kategori === 'WISATA HALAL' && currentStepName === 'DETAIL INFO' ? (
+        ) : formData.kategori === "WISATA HALAL" &&
+          currentStepName === "DETAIL INFO" ? (
           <div className="border-t border-gray-100 mt-10 pt-6 flex justify-between items-center bg-white border border-gray-100 p-4 rounded-2xl shadow-sm">
-            <button 
+            <button
               onClick={handlePrev}
               className="px-6 py-3.5 bg-white border border-gray-200 text-gray-700 font-bold rounded-xl hover:bg-gray-50 flex items-center text-[10px] sm:text-xs uppercase tracking-widest"
             >
               <ChevronLeft className="w-4 h-4 mr-1" /> KEMBALI
             </button>
-            <button 
+            <button
               onClick={handleNext}
               className="px-8 py-3.5 flex items-center gap-2 font-bold rounded-xl shadow-lg bg-[#009B66] hover:bg-[#008A5A] text-white shadow-[#009B66]/20 text-[10px] sm:text-xs uppercase tracking-widest"
             >
               LANJUT REVIEW <ChevronRight className="w-4 h-4 ml-1" />
             </button>
           </div>
-        ) : formData.kategori === 'WISATA HALAL' && currentStepName === 'LAYANAN TAMBAHAN' ? (
+        ) : formData.kategori === "WISATA HALAL" &&
+          currentStepName === "LAYANAN TAMBAHAN" ? (
           <div className="border-t border-gray-100 mt-10 pt-6 flex justify-between items-center bg-white border border-gray-100 p-4 rounded-2xl shadow-sm">
-            <button 
+            <button
               onClick={handlePrev}
               className="px-6 py-3.5 bg-white border border-gray-200 text-gray-700 font-bold rounded-xl hover:bg-gray-50 flex items-center text-[10px] sm:text-xs uppercase tracking-widest"
             >
               <ChevronLeft className="w-4 h-4 mr-1" /> KEMBALI
             </button>
-            <button 
+            <button
               onClick={handleNext}
               className="px-8 py-3.5 flex items-center gap-2 font-bold rounded-xl shadow-lg bg-[#009B66] hover:bg-[#008A5A] text-white shadow-[#009B66]/20 text-[10px] sm:text-xs uppercase tracking-widest"
             >
               LANJUT SUMMARY <ChevronRight className="w-4 h-4 ml-1" />
             </button>
           </div>
-        ) : formData.kategori === 'WISATA HALAL' && currentStepName === 'REVIEW FASILITAS' ? (
+        ) : formData.kategori === "WISATA HALAL" &&
+          currentStepName === "REVIEW FASILITAS" ? (
           <div className="border-t border-gray-100 mt-10 pt-6 flex justify-between items-center bg-white border border-gray-100 p-4 rounded-2xl shadow-sm">
-            <button 
+            <button
               onClick={handlePrev}
               className="px-6 py-3.5 bg-white border border-gray-200 text-gray-700 font-bold rounded-xl hover:bg-gray-50 flex items-center text-[10px] sm:text-xs uppercase tracking-widest"
             >
               <ChevronLeft className="w-4 h-4 mr-1" /> KEMBALI
             </button>
-            <button 
+            <button
               onClick={handleNext}
               className="px-8 py-3.5 flex items-center gap-2 font-bold rounded-xl shadow-lg bg-[#009B66] hover:bg-[#008A5A] text-white shadow-[#009B66]/20 text-[10px] sm:text-xs uppercase tracking-widest"
             >
               LANJUT RINGKASAN <ChevronRight className="w-4 h-4 ml-1" />
             </button>
           </div>
-        ) : formData.kategori === 'WISATA HALAL' && currentStepName === 'RINGKASAN HARGA' ? (
+        ) : formData.kategori === "WISATA HALAL" &&
+          currentStepName === "RINGKASAN HARGA" ? (
           <div className="border-t border-gray-100 mt-10 pt-6 flex justify-between items-center bg-white border border-gray-100 p-4 rounded-2xl shadow-sm">
-            <button 
+            <button
               onClick={handlePrev}
               className="px-6 py-3.5 bg-white border border-gray-200 text-gray-700 font-bold rounded-xl hover:bg-gray-50 flex items-center text-[10px] sm:text-xs uppercase tracking-widest"
             >
               <ChevronLeft className="w-4 h-4 mr-1" /> KEMBALI
             </button>
-            <button 
+            <button
               onClick={handleNext}
               className="px-8 py-3.5 flex items-center gap-2 font-bold rounded-xl shadow-lg bg-[#009B66] hover:bg-[#008A5A] text-white shadow-[#009B66]/20 text-[10px] sm:text-xs uppercase tracking-widest"
             >
@@ -2519,29 +4942,38 @@ export const PaketMasterWizard: React.FC<PaketMasterWizardProps> = ({ initialDat
         ) : (
           <div className="border-t border-gray-100 mt-10 pt-6 flex justify-between items-center">
             {currentStep > 1 ? (
-              <button 
+              <button
                 onClick={handlePrev}
                 className="px-6 py-3 bg-gray-50 text-gray-700 font-bold rounded-xl hover:bg-gray-100 transition-colors"
               >
                 Kembali
               </button>
-            ) : <div />}
+            ) : (
+              <div />
+            )}
 
-              <button 
-                onClick={currentStepName === 'PUBLIKASI & DESKRIPSI' ? handleSave : handleNext}
-                disabled={isSaving}
-                className={`flex items-center gap-2 px-8 py-3 font-bold rounded-xl transition-colors shadow-lg disabled:opacity-50 ${
-                  currentStepName === 'PUBLIKASI & DESKRIPSI'
-                    ? 'bg-emerald-600 text-white hover:bg-emerald-700 shadow-emerald-600/20 uppercase text-xs tracking-wider' 
-                    : 'bg-emerald-600 text-white hover:bg-emerald-700 shadow-emerald-600/20'
-                }`}
-              >
-                {isSaving ? 'MENYIMPAN...' : (currentStepName === 'PUBLIKASI & DESKRIPSI' ? 'SIMPAN & SELESAI' : 'Lanjutkan')}
-                {isSaving ? null : <ChevronRight className="w-5 h-5" />}
-              </button>
+            <button
+              onClick={
+                currentStepName === "PUBLIKASI & DESKRIPSI"
+                  ? handleSave
+                  : handleNext
+              }
+              disabled={isSaving}
+              className={`flex items-center gap-2 px-8 py-3 font-bold rounded-xl transition-colors shadow-lg disabled:opacity-50 ${
+                currentStepName === "PUBLIKASI & DESKRIPSI"
+                  ? "bg-emerald-600 text-white hover:bg-emerald-700 shadow-emerald-600/20 uppercase text-xs tracking-wider"
+                  : "bg-emerald-600 text-white hover:bg-emerald-700 shadow-emerald-600/20"
+              }`}
+            >
+              {isSaving
+                ? "MENYIMPAN..."
+                : currentStepName === "PUBLIKASI & DESKRIPSI"
+                  ? "SIMPAN & SELESAI"
+                  : "Lanjutkan"}
+              {isSaving ? null : <ChevronRight className="w-5 h-5" />}
+            </button>
           </div>
-        )
-      )}
+        ))}
     </div>
   );
 };
