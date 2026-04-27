@@ -4,8 +4,38 @@ import { HotelCard } from './HotelCard';
 import { FilterBar } from './FilterBar';
 import { HotelDetailModal } from './HotelDetailModal';
 import { Building2, Download } from 'lucide-react';
-import { isDateInRange } from '../utils/dateUtils';
+import { isDateInRange, parseDate, parseDateRange } from '../utils/dateUtils';
 import * as XLSX from 'xlsx';
+
+const MASTER_PERIODS = [
+  { name: 'LOW SEASON JUN–JUL 2026', start: '16 Jun 2026', end: '31 Jul 2026', hijri: '1 Muharram 1448 – 15 Safar 1448' },
+  { name: 'PEAK SUMMER JUL–AUG 2026', start: '01 Jul 2026', end: '15 Aug 2026', hijri: '15 Muharram 1448 – 30 Safar 1448' },
+  { name: 'HIGH SEASON AUG–SEP 2026', start: '01 Aug 2026', end: '30 Sep 2026', hijri: '16 Safar 1448 – 18 Rabiul Awal 1448' },
+  { name: 'TRANSISI SEP–OCT 2026', start: '01 Sep 2026', end: '14 Oct 2026', hijri: '1 Rabiul Awal 1448 – 12 Rabiul Akhir 1448' },
+  { name: 'PEAK MAULID OCT–DEC 2026', start: '01 Oct 2026', end: '16 Dec 2026', hijri: '18 Rabiul Awal 1448 – 5 Jumadil Akhir 1448' },
+  { name: 'AKHIR TAHUN – AWAL TAHUN', start: '16 Dec 2026', end: '08 Feb 2027', hijri: '5 Jumadil Akhir 1448 – 1 Sya’ban 1448' },
+  { name: 'LONG SEASON 2026', start: '01 Jun 2026', end: '15 Dec 2026', hijri: '15 Dzulhijjah 1447 – 5 Jumadil Akhir 1448' },
+];
+
+const getMatchedPeriodName = (rangeStr: string): string => {
+  const { start: seasonStart, end: seasonEnd } = parseDateRange(rangeStr);
+  if (!seasonStart || !seasonEnd) return rangeStr;
+
+  const matches = MASTER_PERIODS.filter(p => {
+    const pStart = parseDate(p.start);
+    const pEnd = parseDate(p.end);
+    if (!pStart || !pEnd) return false;
+    return seasonStart >= pStart && seasonStart <= pEnd;
+  });
+
+  if (matches.length === 0) return rangeStr;
+  
+  const match = matches.length > 1 
+    ? (matches.find(m => m.name !== 'LONG SEASON 2026') || matches[0])
+    : matches[0];
+
+  return match.hijri;
+};
 
 export const HotelView: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState('');
@@ -47,38 +77,39 @@ export const HotelView: React.FC = () => {
   };
 
   const handleExportExcel = () => {
-    // Determine unique hotels logically
-    // To match template, we flatten seasons to individual rows so that all periods and prices are exported
-    const excelData: any[] = [];
+    // Collect all possible rows first
+    const allRows: any[] = [];
     
     hotels.forEach(hotel => {
       if (hotel.seasons && hotel.seasons.length > 0) {
         hotel.seasons.forEach(season => {
-          const priceEntry = season.prices.find(p => p.currency === 'SAR' || p.currency === 'USD') || season.prices[0];
-          excelData.push({
+          const quadPrice = season.prices.find(p => p.roomType === 'Quad')?.price || 0;
+          const singlePrice = season.prices.find(p => p.roomType === 'Single' || p.roomType === 'Full Room')?.price || 0;
+          const mappedPeriod = season.range ? getMatchedPeriodName(season.range) : 'FULL YEAR';
+
+          allRows.push({
             'nama_hotel': hotel.name,
             'nama_vendor': hotel.vendor,
-            'nama_periode': season.id || 'FULL YEAR',
+            'nama_periode': mappedPeriod,
             'kota_hotel': hotel.city,
-            'bintang': hotel.rating,
-            'mata_uang': priceEntry?.currency || 'SAR',
-            'kurs_ke_idr': priceEntry?.currency === 'SAR' ? 4700 : (priceEntry?.currency === 'USD' ? 16500 : 1),
-            'harga_quad_fx': priceEntry?.quad || 0,
-            'harga_single_fx': priceEntry?.fullRoom || 0,
+            'bintang': hotel.stars || 0,
+            'mata_uang': 'SAR',
+            'kurs_ke_idr': 4700,
+            'harga_quad_fx': quadPrice,
+            'harga_single_fx': singlePrice,
             'komisi_persen': 0,
-            'jarak_meter': 0, // In db there is distance, but it is in 'hotelMedia' mostly
+            'jarak_meter': 0,
             'link_maps': '',
-            'deskripsi': `${hotel.mealPlan || ''} ${hotel.distanceToHaram || ''}`
+            'deskripsi': `${hotel.mealPlan || ''}`
           });
         });
       } else {
-        // Fallback for hotels without seasons
-        excelData.push({
+        allRows.push({
           'nama_hotel': hotel.name,
           'nama_vendor': hotel.vendor,
           'nama_periode': 'FULL YEAR',
           'kota_hotel': hotel.city,
-          'bintang': hotel.rating,
+          'bintang': hotel.stars || 0,
           'mata_uang': 'SAR',
           'kurs_ke_idr': 4700,
           'harga_quad_fx': 0,
@@ -86,10 +117,21 @@ export const HotelView: React.FC = () => {
           'komisi_persen': 0,
           'jarak_meter': 0,
           'link_maps': '',
-          'deskripsi': `${hotel.mealPlan || ''} ${hotel.distanceToHaram || ''}`
+          'deskripsi': `${hotel.mealPlan || ''}`
         });
       }
     });
+
+    // Deduplicate: group by (hotel name + period) and pick highest quad price
+    const filteredRowsMap: { [key: string]: any } = {};
+    allRows.forEach(row => {
+      const key = `${row.nama_hotel}|${row.nama_periode}`;
+      if (!filteredRowsMap[key] || row.harga_quad_fx > filteredRowsMap[key].harga_quad_fx) {
+        filteredRowsMap[key] = row;
+      }
+    });
+
+    const excelData = Object.values(filteredRowsMap);
 
     const worksheet = XLSX.utils.json_to_sheet(excelData);
     
@@ -103,8 +145,8 @@ export const HotelView: React.FC = () => {
       ['5', 'Setelah selesai mengisi, simpan tetap dalam format XLSX atau CSV lalu import kembali dari aplikasi.'],
       ['6', 'Kalau memakai file lama yang masih menggunakan Sheet1, sistem tetap akan mencoba membacanya selama header kolom hotel masih sesuai.'],
       ['nama_hotel', 'Wajib diisi. Nama hotel untuk tampil di listing dan paket.'],
-      ['nama_vendor', 'Wajib diisi dan harus sama persis dengan nama vendor pada master vendor.'],
-      ['nama_periode', 'Wajib diisi dan harus sama persis dengan nama periode pada sheet Referensi.'],
+      ['nama_vendor', 'Wajib diisi and harus sama persis dengan nama vendor pada master vendor.'],
+      ['nama_periode', 'Wajib diisi (Hijriah).'],
       ['kota_hotel', 'Wajib diisi dan harus sama dengan master tujuan umrah atau kota wisata.'],
       ['bintang', 'Isi angka 1 sampai 5.'],
       ['mata_uang', 'Wajib diisi. (contoh: SAR, IDR, USD)'],

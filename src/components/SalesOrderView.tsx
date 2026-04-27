@@ -416,6 +416,9 @@ export const SalesOrderView: React.FC = () => {
     if (handlingDomestik) {
       setHandlingDomestikHargaApk(handlingDomestik.hargaJual);
       setHandlingDomestikHargaVendor(handlingDomestik.hargaBeli);
+    } else {
+      setHandlingDomestikHargaApk(0);
+      setHandlingDomestikHargaVendor(0);
     }
   }, [selectedHandlingDomestik]);
 
@@ -424,6 +427,9 @@ export const SalesOrderView: React.FC = () => {
     if (manasik) {
       setManasikHargaApk(manasik.hargaJual);
       setManasikHargaVendor(manasik.hargaBeli);
+    } else {
+      setManasikHargaApk(0);
+      setManasikHargaVendor(0);
     }
   }, [selectedManasik]);
 
@@ -505,8 +511,8 @@ export const SalesOrderView: React.FC = () => {
 
   // Visa
   const visaObj = visaData.find(v => v.id === selectedVisa);
-  const visaHargaVendor = visaObj ? visaObj.vendorPrice : 2301600;
-  const visaHargaApk = visaObj ? visaObj.sellingPrice : 2531760;
+  const visaHargaVendor = visaObj ? visaObj.vendorPrice : 0;
+  const visaHargaApk = visaObj ? visaObj.sellingPrice : 0;
   const visaRow = calculateRow(visaHargaApk, visaHargaVendor, jamaahBayar, jamaahBeli);
 
   // Transport
@@ -1038,7 +1044,7 @@ export const SalesOrderView: React.FC = () => {
               <tr className="border-b border-gray-300 hover:bg-gray-50">
                 <td className="border-r border-gray-300 p-2 font-medium">
                   <select value={selectedHandling} onChange={e => setSelectedHandling(e.target.value)} className="w-full bg-transparent font-medium outline-none">
-                    <option value="">Pilih Handling...</option>
+                    <option value="">Tanpa Handling</option>
                     {HANDLING_TIERS.map(h => (
                       <option key={h.minPax.toString()} value={h.minPax.toString()}>Handling {h.minPax}-{h.maxPax} Pax</option>
                     ))}
@@ -1087,7 +1093,7 @@ export const SalesOrderView: React.FC = () => {
               <tr className="border-b border-gray-300 hover:bg-gray-50">
                 <td className="border-r border-gray-300 p-2 font-medium">
                   <select value={selectedEquipment} onChange={e => setSelectedEquipment(e.target.value)} className="w-full bg-transparent font-medium outline-none">
-                    <option value="">Pilih Perlengkapan...</option>
+                    <option value="">Tanpa Perlengkapan</option>
                     {equipmentData.map(e => (
                       <option key={e.id} value={e.id}>{e.name}</option>
                     ))}
@@ -1109,7 +1115,7 @@ export const SalesOrderView: React.FC = () => {
               <tr className="border-b border-gray-300 hover:bg-gray-50">
                 <td className="border-r border-gray-300 p-2 font-medium">
                   <select value={selectedVisa} onChange={e => setSelectedVisa(e.target.value)} className="w-full bg-transparent font-medium outline-none">
-                    <option value="">Pilih Visa...</option>
+                    <option value="">Tanpa Visa</option>
                     {visaData.map(v => (
                       <option key={v.id} value={v.id}>VISA {v.paxRange}</option>
                     ))}
@@ -1178,7 +1184,7 @@ export const SalesOrderView: React.FC = () => {
               <tr className="border-b border-gray-300 hover:bg-gray-50">
                 <td className="border-r border-gray-300 p-2 font-medium">
                   <select value={selectedManasik} onChange={e => setSelectedManasik(e.target.value)} className="w-full bg-transparent font-medium outline-none">
-                    <option value="">Pilih Manasik...</option>
+                    <option value="">Tanpa Manasik</option>
                     {manasikData.map(m => (
                       <option key={m.id} value={m.id}>MANASIK {m.item}</option>
                     ))}
@@ -1244,7 +1250,7 @@ export const SalesOrderView: React.FC = () => {
               <tr className="border-b border-gray-300 hover:bg-gray-50">
                 <td className="border-r border-gray-300 p-2 font-medium">
                   <select value={selectedHandlingDomestik} onChange={e => setSelectedHandlingDomestik(e.target.value)} className="w-full bg-transparent font-medium outline-none">
-                    <option value="">Pilih Handling Domestik...</option>
+                    <option value="">Tanpa Handling Domestik</option>
                     {handlingDomestikData.map(h => (
                       <option key={h.id} value={h.id}>{h.item}</option>
                     ))}
